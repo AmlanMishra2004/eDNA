@@ -1,6 +1,12 @@
 import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
+import utils
+import models
+import time
+from tqdm import tqdm
+from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import confusion_matrix
 from sklearn.svm import SVC
@@ -8,32 +14,41 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import SGDClassifier
 from dataset import Sequence_Data  
 from model import My_CNN
-from augment import RandomBPFlip
+from torchinfo import summary
+# from augment import RandomBPFlip
+from torch.utils.data import DataLoader 
+import datetime
 
-def evaluate(model, train_dataset, test_dataset):
-    # The number of training epochs
-    num_train_epochs = 300
-    # Will hold the results of cross validation
-    results = {}
+def evaluate(model, train_dataset, test_dataset, epochs, batch_size, lr):
 
-    # K-fold Cross Validation model evaluation
-    # Much of this script is taken from 
-    # https://www.machinecurve.com/index.php/2021/02/03/how-to-use-k-fold-cross-validation-with-pytorch/
-    
     # Define data loaders for training and testing data in this fold
     trainloader = torch.utils.data.DataLoader(
                     train_dataset, 
-                    batch_size=200)
+                    batch_size=batch_size)
     testloader = torch.utils.data.DataLoader(
                     test_dataset,
-                    batch_size=200)
+                    batch_size=batch_size)
+    
+    dataiter = iter(trainloader)
+    data, labels = next(dataiter)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=5e-5)
-    print("Batch size 200")
+    print("Shape of data: ", data.shape)
+    print("Shape of labels: ", labels.shape)
+
+    # pause = input("PAUSE")
+
+    train_accuracies = []
+    test_accuracies = []
+    train_losses = []
+
+    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
     loss_function = nn.CrossEntropyLoss()
 
-    for epoch in range(num_train_epochs):
-        print(f'Starting epoch {epoch+1}')
+    # TRAINING ----------------------------------------------------------------
+    print(f"\n\nTraining Status:")
+    for epoch in tqdm(range(epochs)):
+        model.train()  # Set the model to training mode
+        # print(f'Starting epoch {epoch+1}')
         loss = 0
         current_loss = 0
         
@@ -56,11 +71,12 @@ def evaluate(model, train_dataset, test_dataset):
             
             # Print statistics
             current_loss += loss.item()
-            print('Loss after mini-batch %5d: %.6f' %
-            (i + 1, current_loss))
+            # print('Loss after mini-batch %5d: %.6f' %
+            # (i + 1, current_loss))
             current_loss = 0.0
-        
-        # Evaluationfor this fold
+    
+    # EVALUATION --------------------------------------------------------------
+    model.eval() # Set the model to evaluation mode
     correct, total = 0, 0
     with torch.no_grad():
 
@@ -76,21 +92,23 @@ def evaluate(model, train_dataset, test_dataset):
             total += targets.size(0)
             correct += (predicted == targets).sum().item()
 
-            '''if con_matrix is None:
-                con_matrix = confusion_matrix(predicted.cpu(), targets.cpu())
-            else:
-                con_matrix += confusion_matrix(predicted.cpu(), targets.cpu())'''
+            # if con_matrix is None:
+            #     con_matrix = confusion_matrix(predicted.cpu(), targets.cpu())
+            # else:
+            #     con_matrix += confusion_matrix(predicted.cpu(), targets.cpu())
 
         # Print accuracy
-        print('Accuracy: %d %%' % (100.0 * correct / total))
-        print(con_matrix)
+        print(f'Accuracy: {100.0 * correct / total} %')
+        # print(con_matrix)
         print('--------------------------------')
         result = 100.0 * (correct / total)
         model.reset_params()
 
     # Print fold results
     print('--------------------------------')
-    print(f'Accuracy: {result} %')
+    print(f'Final accuracy: {result} %')
+    # utils.graph_train_vs_test_acc(train_acc, test_acc)
+    return result
 
     '''
     X_vectorized = full_dataset.x.reshape(full_dataset.x.shape[0], -1)
@@ -109,33 +127,312 @@ def evaluate(model, train_dataset, test_dataset):
     svm_scores = cross_val_score(svm_model, X_vectorized, y, cv=3)
     print("SVM raw scores: ", svm_scores)
     print("SVM mean score: ", np.mean(svm_scores))'''
-
+    
 
 if __name__ == '__main__':
+
     '''
-    Loading in the data; the dataloader is set up
-    to work with pytorch, so this is a little bit
-    of a hacky way to use it, but it does the trick
+    assumptions:
+    - csv file contains a header row
+    - the number of species'categories can be represented by 'long'
     '''
-    print('Kernel sizes 13, 13, 13')
-    target_sequence_length = 250
-    num_flips = 2
-    print("Augmenting with {} random flips".format(num_flips))
-    print("Trying sequence length: {}".format(target_sequence_length))
-    train_dataset = Sequence_Data(data_path='./datasets/split_datasets/Data Prep_ novel species - train d2_ ood dataset of maine genus.csv',
-        target_sequence_length=target_sequence_length,
-        transform=RandomBPFlip(num_flips))
-    test_dataset = Sequence_Data(data_path='./datasets/split_datasets/Data Prep_ novel species - test d2.csv',
-        target_sequence_length=target_sequence_length)
-    n_classes = train_dataset.current_max_label
-    for conv1_out_channels in [4, 64, 128]:
-        model = My_CNN(conv1_out_channels=conv1_out_channels, conv1_kernel_size=13,
-                    conv2_out_channels=conv1_out_channels*2, conv2_kernel_size=13,
-                    conv3_out_channels=conv1_out_channels*4, conv3_kernel_size=13,
-                    n_classes=n_classes, in_len=target_sequence_length).cuda()
-        print("--- Evaluation for CNN (2 layers)---")
-        print("conv1_out_channels: {}".format(conv1_out_channels))
-        evaluate(model, train_dataset, test_dataset)
+
+    # read in all data
+    # remove unused sequences with <2 seq species
+    # oversample underrepresented species
+    # add reverse complements
+    # cap/fill to get 60 bp length
+    # train test split
+    # create train and test Datasets
+        # in the Datasets, add 
+        # - random insertions per sequence
+        # - random deletions per sequence (either zeroing out a vector or
+        #       deleting and adding a zeroed-vector to the end of the sequence)
+        # - mutation rate (random flips I think)
+        # - turn into a vector
+
+    # Note: I separate the processing of the data inside and outside of the
+    #   Dataset because it is easier to add noise to the base pairs than it is
+    #   to add to the encoded vectors, and noise should be added in the Dataset.
+    # Note: Zurich also adds 10x'n' onto the front, then the forward and
+    #   backward primer (refer to page 9-10 of the published paper)
+
+    print(f"Loading and processing data")
+    
+    # IUPAC ambiguity codes
+    iupac = {'a':'t', 't':'a', 'c':'g', 'g':'c',
+             'r':'y', 'y':'r', 'k':'m', 'm':'k', 
+             'b':'v', 'd':'h', 'h':'d', 'v':'b',
+             's':'w', 'w':'s', 'n':'n', 'z':'z'}
+    
+
+    data_path='./datasets/v4_combined_reference_sequences.csv'
+    sep = ';'                       # separator character in the csv file
+    species_col = 'species_cat'     # name of the column containing species
+    seq_col = 'seq'                 # name of the column containing sequences
+    seq_count_thresh = 2            # keep species with >1 sequence
+    seq_target_length = 60          # cap sequences at 60bp
+    test_split = 0.3                # 30% test data, 70% train data
+    trainRandomInsertions = [0,2]   # between 0 and 2 per sequence
+    trainRandomDeletions = [0,2]    # between 0 and 2 per sequence
+    trainMutationRate = 0.05        # 5% chance for a bp to be randomly flipped
+    testRandomInsertions = [1,1]    # 1 per sequence
+    testRandomDeletions = [1,1]     # 1 per sequence
+    testMutationRate = 0.02         # 2% chance to be randomly flipped
+    encoding_mode = 'probability'   # 'probability' or 'random'
+    train_batch_size = 1            # run 1 sequence through model before updating weights
+    test_batch_size = 1             # 1 sequence evaluated a time during test
+    epochs = 10                     # number of times to run through all data
+
+    use_autokeras = True
+    use_my_model = False
+
+    df = pd.read_csv(data_path, sep=sep)
+    print(f"Original df shape: {df.shape}")
+
+    utils.print_descriptive_stats(df, ['species','family', 'genus', 'order'])
+
+    df = utils.remove_species_with_too_few_sequences(df, species_col, seq_count_thresh)
+    print(f"Removed rows shape: {df.shape}")
+
+    df = utils.add_reverse_complements(df, seq_col, iupac)
+    print(f"Reverse complements added shape: {df.shape}")
+
+    df = utils.oversample_underrepresented_species(df, species_col)
+    print(f"Oversampled shape: {df.shape}")
+
+    utils.print_descriptive_stats(df, ['species','family', 'genus', 'order'])
+
+    le = LabelEncoder()
+    df[species_col] = le.fit_transform(df[species_col])
+
+    train, test = utils.stratified_split(df, species_col, test_split)
+    # Train and test are both dataframes w/ 9 columns
+    print(f"Train shape: {train.shape}")
+    print(f"Test shape: {test.shape}")
+
+    
+###############################################################################
+# AUTOKERAS                                                                   #
+###############################################################################
+    if use_autokeras:
+        # auto ML finds the best architecture, then you can export the model to keras
+        import autokeras as ak
+        from tensorflow.keras.models import load_model
+
+        X_train, y_train = utils.encode_all_data(train.copy(), seq_target_length, seq_col, species_col, encoding_mode, True, "np", True, trainRandomInsertions, trainRandomDeletions, trainMutationRate, iupac)
+        X_test, y_test = utils.encode_all_data(test.copy(), seq_target_length, seq_col, species_col, encoding_mode, True, "np", True, testRandomInsertions, testRandomDeletions, testMutationRate, iupac)
+        print(f"X_train SHAPE: {X_train.shape}")
+        print(f"y_train SHAPE: {y_train.shape}")
+        # print(f"FIRST ELEMENT\n{X_train.head(1)}")
+        # X_train_wo_height, y_train_wo_height = utils.encode_all_data(train.copy(), seq_target_length, seq_col, species_col, encoding_mode, False, "np")
+        # X_test_wo_height, y_test_wo_height = utils.encode_all_data(test.copy(), seq_target_length, seq_col, species_col, encoding_mode, False, "np")
+        # print(f"X_train_wo_height SHAPE: {X_train_wo_height.shape}")
+        # print(f"y_train_wo_height SHAPE: {y_train_wo_height.shape}")
+        # train_df = utils.encode_all_data(train.copy(), seq_target_length, seq_col, species_col, encoding_mode, False, "df")
+        # test_df = utils.encode_all_data(test.copy(), seq_target_length, seq_col, species_col, encoding_mode, False, "df")
+
+        # Try autokeras using its image classifier ----------------------------
+        # Data shape is (11269, 1, 60, 4)
+
+        start_time = time.time()
+
+        # Initialize and train the classifier
+        clf = ak.ImageClassifier(overwrite=False, max_trials=1)
+        clf.fit(X_train, y_train, epochs=5) # optiona2lly specify epochs=5
+
+        # Export as a Keras Model
+        model = clf.export_model()
+
+        # Save the model
+        now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        try:
+            model.save(f"saved_models/image_model_ak_{now}", save_format="tf")
+        except Exception:
+            model.save(f"saved_models/image_model_ak_{now}.h5")
+
+        # Load the model
+        loaded_model = load_model(f"saved_models/image_model_ak_{now}", custom_objects=ak.CUSTOM_OBJECTS)
+        print(loaded_model.summary())
+
+        # Make predictions
+        results = loaded_model.predict(X_test)
+
+        # Convert the predictions to the same type as your labels
+        predicted_labels = np.argmax(results, axis=1)
+
+        # Calculate the accuracy
+        accuracy = np.mean(predicted_labels == y_test)
+        print(f"Image test accuracy: {accuracy}")
+        print(f"Image ak took {round((time.time() - start_time)/60,1)} minutes to run.")
+
+        '''
+        # Try autokeras using its structured data classifier ------------------
+        # Data shape is (11269, 60, 4)
+        start_time = time.time()
+        clf = ak.StructuredDataClassifier(overwrite=True, max_trials=1)
+        # t = train_df[seq_col].to_frame()
+        # t = train_df[seq_col].apply(pd.Series)
+        t = pd.DataFrame(train_df[seq_col].to_numpy())
+        print(t[0].shape)
+        print(t[0][0].shape)
+        l = train_df[species_col]
+        clf.fit(t, l)
+        # clf.fit(X_train_wo_height, y_train_wo_height, epochs=5)
+
+        # Export as a Keras Model
+        model = clf.export_model()
+
+        # Save the model
+        now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        try:
+            model.save(f"saved_models/sdc_model_ak_{now}", save_format="tf")
+        except Exception:
+            model.save(f"saved_models/sdc_model_ak_{now}.h5")
+
+        # Load the model
+        loaded_model = load_model(f"saved_models/sdc_model_ak_{now}", custom_objects=ak.CUSTOM_OBJECTS)
+        print(loaded_model.summary())
+
+        # Make predictions
+        results = loaded_model.predict(test_df[seq_col])
+
+        # Convert the predictions to the same type as your labels
+        predicted_labels = np.argmax(results, axis=1)
+
+        # Calculate the accuracy
+        accuracy = np.mean(predicted_labels == test_df[species_col].to_numpy())
+        print(f"SDC test accuracy: {accuracy}")
+        print(f"SDC ak took {round((time.time() - start_time)/60,1)} minutes to run.")
+
+        '''
+
+###############################################################################
+# END AUTOKERAS                                                               #
+###############################################################################
+
+    if use_my_model:
+        train_dataset = Sequence_Data(data=train,
+                                    seq_col=seq_col,
+                                    species_col=species_col,
+                                    insertions=trainRandomInsertions,
+                                    deletions=trainRandomDeletions,
+                                    mutation_rate=trainMutationRate,
+                                    encoding_mode=encoding_mode,
+                                    iupac=iupac,
+                                    seq_len=seq_target_length)
+        test_dataset = Sequence_Data(data=test, 
+                                    seq_col=seq_col,
+                                    species_col=species_col,
+                                    insertions=testRandomInsertions,
+                                    deletions=testRandomDeletions,
+                                    mutation_rate=testMutationRate,
+                                    encoding_mode=encoding_mode,
+                                    iupac=iupac,
+                                    seq_len=seq_target_length)
+        
+        # # This is just a test to see the data output
+        # train_loader = DataLoader(train_dataset,shuffle=True,batch_size=3)
+        # dataiter = iter(train_loader)
+        # print(next(dataiter))
+        # print(next(dataiter))
+
+        start_time = time.time()
+        model = models.CNN1(num_classes=156)
+        # model = models.CNN1(num_classes=156)
+        model.to('cuda')
+        summary(model)
+        print("Evaluation for Zurich Model")
+        num_trials = 10
+        accuracies = [0,0,0,0,0,0,0,0,0,0]
+        for trial in range(num_trials):
+            for idx, lr in enumerate([0.001, 0.003, 0.005, 0.007, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3]):
+                acc = evaluate(model, train_dataset, test_dataset, epochs=epochs, batch_size=30, lr=5e-5)
+                print(f"The model took {round((time.time() - start_time)/60,1)} minutes to run.")
+                accuracies[idx] += acc
+        for accuracy in accuracies:
+            accuracy = accuracy/num_trials
+        print(f"Accuracies for different learning rates: {accuracies}")
 
 
+    
+
+
+
+
+
+
+
+    # num_classes = len(np.unique(train_dataset.labels))
+
+    # for conv1_out_channels in [4, 64, 128]:
+    #     model = My_CNN(conv1_out_channels=conv1_out_channels, conv1_kernel_size=13,
+    #                 conv2_out_channels=conv1_out_channels*2, conv2_kernel_size=13,
+    #                 conv3_out_channels=conv1_out_channels*4, conv3_kernel_size=13,
+    #                 n_classes=num_classes, in_len=seq_target_length).cuda()
+    #     summary(model)
+    #     print("--- Evaluation for CNN (2 layers)---")
+    #     print("conv1_out_channels: {}".format(conv1_out_channels))
+    #     evaluate(model, train_dataset, test_dataset, epochs=epochs, batch_size=30, lr=5e-5)
+
+    # for conv1_out_channels in [4, 64, 128]:
+    #     model = My_CNN(conv1_out_channels=conv1_out_channels, conv1_kernel_size=13,
+    #                 conv2_out_channels=conv1_out_channels*2, conv2_kernel_size=13,
+    #                 conv3_out_channels=conv1_out_channels*4, conv3_kernel_size=13,
+    #                 n_classes=num_classes, in_len=seq_target_length).cuda()
+    #     print("--- Evaluation for CNN (2 layers)---")
+    #     print("conv1_out_channels: {}".format(conv1_out_channels))
+    #     evaluate(model, train_dataset, test_dataset, epochs=epochs, batch_size=30, lr=5e-5)
+
+    
+    # given a prediction output from the model predicted_class (a list),
+    # Convert to original label
+    # original_label = le.inverse_transform([predicted_class])
+
+
+
+
+
+
+
+
+    # '''
+    # Loading in the data; the dataloader is set up
+    # to work with pytorch, so this is a little bit
+    # of a hacky way to use it, but it does the trick
+    # '''
+    # print('Kernel sizes 13, 13, 13')
+    # target_sequence_length = 60 # Jon: 250
+    # num_flips = 2
+    # print("Augmenting with {} random flips".format(num_flips))
+    # print("Trying sequence length: {}".format(target_sequence_length))
+    # train_dataset = Sequence_Data(data_path='./datasets/split_datasets/Data Prep_ novel species - train d2_ ood dataset of maine genus.csv',
+    #     target_sequence_length=target_sequence_length,
+    #     transform=RandomBPFlip(num_flips))
+    # test_dataset = Sequence_Data(data_path='./datasets/split_datasets/Data Prep_ novel species - test d2.csv',
+    #     target_sequence_length=target_sequence_length)
+    # n_classes = train_dataset.current_max_label
+    # for conv1_out_channels in [4, 64, 128]:
+    #     model = My_CNN(conv1_out_channels=conv1_out_channels, conv1_kernel_size=13,
+    #                 conv2_out_channels=conv1_out_channels*2, conv2_kernel_size=13,
+    #                 conv3_out_channels=conv1_out_channels*4, conv3_kernel_size=13,
+    #                 n_classes=n_classes, in_len=target_sequence_length).cuda()
+    #     print("--- Evaluation for CNN (2 layers)---")
+    #     print("conv1_out_channels: {}".format(conv1_out_channels))
+    #     evaluate(model, train_dataset, test_dataset)
+
+
+# JON's OLD DATASET CODE
+# if __name__ == '__main__':
+#     dataset = Sequence_Data(data_path='./datasets/v4_combined_reference_sequences_no_unique_rev.csv',
+#                             sep=',',                    # Jon: ','
+#                             seq_col='seq',              # Jon's assumed sequence was the second column
+#                             species_col='species_cat',  # Jon's assumed species was the first column
+#                             target_seq_length=60,       # Jon: 250 (Sam: confusion about 150 vs 60)
+#                             seq_count_thresh=2,         # Jon: 2
+#                             transform=0,                # Jon: None (would be 0 now)
+#                             mode='probability'          # Jon: (would be'random' now)     
+#                             )           
+#     from torch.utils.data import DataLoader 
+#     train_loader = DataLoader(dataset,shuffle=True,batch_size=1)
     
