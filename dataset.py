@@ -1,197 +1,106 @@
-import csv
 import torch
-import os
 import numpy as np
+import pandas as pd
+import random
+import utils
+from collections import defaultdict
 from torch.utils.data import Dataset
+from torch.utils.data import DataLoader 
+
 
 saved_sequences_prefix = './datasets/known_maine_species/'
 labels_file = 'labels.npy'
 labels_dict_file = 'labels_dict.npy'
 sequence_file = 'sequences.npy'
 
+"""
+Input
+data: (dataframe) that includes all columns
+seq_col: the (string) name of the column containing the sequences
+species_col: the (string) name of the column containing the species labels
+insertions: an (array) of length 2, inclusively describing the range of number
+    of insertions in each sequence.
+    ex. [0,2] would insert between 0 and 2 random insertions to each sequence
+deletions: same as insertions, except describes the possible range of number of
+    base pairs that will be deleted for each sequence.
+mutation_rate: the decimal number that indicates the likelihood of a base pair
+    being flipped. This is applied to all base pairs in all sequences.
+    ex. 0.05 would mean there is a 5% chance A is replaced with T.
+encoding_mode: (string) how to deal with IUPAC ambiguity codes
+    - 'probability' turns them into decimals
+    - 'random' turns it into a random choice out of the possible base pairs
+iupac: a (dict) containing every base pair and its opposite, ex. a:t, s:w
+seq_len: the (int) length to which you want to cap/pad all sequences
+
+Output
+- able to return a portion of self.sequences as a vector that is
+    (num_sequences x 4 x sequence_length)
+
+Improvements:
+- Jon's version assumed species to be the first column in the csv, sequence the second
+- Jon's version assumed that the species were grouped together
+"""
 class Sequence_Data(Dataset):
-    def __init__(self,
-                data_path='./datasets/Data Prep_ novel species - ood dataset of maine genus.csv',
-                target_sequence_length=250,
-                sequence_count_threshold=2,
-                transform=None):
-        # It's easier to work with the tsv version, since there are some commas
-        # used in it that mess everything up for the csv conversion
-        print("Using dataset: {}".format(data_path))
-        self.data_path = data_path
-        # The length to restrict sequeneces to
-        self.target_sequence_length = target_sequence_length
-
-        self.label_dict = {}
-        self.current_max_label = 0
-        self.len = 0
-        self.sequence_count_threshold = sequence_count_threshold
-        self.transform = transform
-
-        print("Initializing data...")
-        with open(data_path) as csv_data:
-            csv_file = list(csv.reader(csv_data, delimiter=','))
-
-            self.len = len(csv_file) - 1
-
-            # self.sequences is a tensor of shape num_sequences x 4 x sequence_length
-            self.sequences = torch.zeros(self.len, 4, self.target_sequence_length)
-            self.labels = torch.zeros(self.len)
-            species1=''
-            species_counter=0
-            drop_species_offset=0
-            for index, row in enumerate(csv_file):
-                if index == 0:
-                    header_row = row
-                else:
-                    if species1==row[0]:
-                        species_counter+=1
-                    else:
-                        if species_counter < self.sequence_count_threshold:
-                            for subtractor in range(species_counter):
-                                self.sequences[index-subtractor-1-drop_species_offset]=0
-                            drop_species_offset+=species_counter
-                        species_counter=0
-                    # Update the label dictionary to include this class if it doesn't
-                    if row[0] not in self.label_dict.keys():
-                        self.label_dict[row[0]] = self.current_max_label
-                        self.current_max_label += 1
-
-                    self.labels[index-1-drop_species_offset] = int(self.label_dict[row[0]])
-                    if len(row[1]) < self.target_sequence_length:
-                        self.sequences[index-1-drop_species_offset, :, :len(row[1])] = torch.Tensor(self.sequence_to_array(row[1])[:, :])
-                    else:
-                        self.sequences[index-1-drop_species_offset] = torch.Tensor(self.sequence_to_array(row[1])[:, :target_sequence_length])
-                    species1=row[0]
-
-
-        print("Total dataset size is %d" % (self.len))
-
-    def __getitem__(self,idx):
-        item = self.sequences[idx]
-        label = int(self.labels[idx])
-
-        if self.transform is not None:
-            item = self.transform(item)
-        return item, label
-  
-    def __len__(self):
-        return self.len
+    def __init__(self, data, seq_col, species_col, insertions, deletions,
+                 mutation_rate, encoding_mode, iupac, seq_len):
         
+        # Ensure all agruments are supplied
+        if None in [seq_col, species_col, insertions, deletions,
+                    mutation_rate, encoding_mode, iupac]:
+            raise Exception("Please specify all arguments when creating Dataset")
+        
+        # 'data' is used to keep all of the columns, but it is not used later
+        #   since only seq and species are used, and they are assigned to 
+        #   different variables below.
+        self.data = data
+        # sequences are turned to nparrays *after* mutation, since they are
+        #   manipulated as strings anyway when buffering to 60 chars
+        self.sequences = data[seq_col].to_numpy()
+        self.labels = torch.tensor(data[species_col].values).long()
+        self.seq_col = seq_col
+        self.species_col = species_col
+        self.insertions = insertions
+        self.deletions = deletions
+        self.mutation_rate = mutation_rate
+        self.encoding_mode = encoding_mode
+        self.iupac = iupac
+        self.seq_len = seq_len
+
+        # print(f"Shape of self.sequences: {self.sequences.shape}")
+        # print(f"Number of sequences: {len(self.sequences)}")
+        # print(f"Length of labels (should match): {len(self.labels)}")
+        # print("Created Dataset\n")
+
     '''
-    Converts an array of DNA bases to a 4 channel numpy array, 
-    with A -> channel 0, T -> channel 1, C -> channel 2, and G -> channel 3,
-    assigning fractional values for ambiguity codes. A full list of these 
-    codes can be found at https://droog.gs.washington.edu/mdecode/images/iupac.html 
-    Input: String of bases
-    Output: 4 * str_len array of integers
+    Required function for Dataset that gets a single item given an index.
+    - adds random insertions for each sequence
+    - deletes random bp from each sequence
+    - mutates random bp in each sequence
+    - truncates or pads sequence to certain length (60bp)
+    - returns the sequence turned into a vector using sequence_to_array()
     '''
-    def sequence_to_array(self, bp_sequence):
-        output_array = torch.zeros(4, len(bp_sequence))
+    def __getitem__(self,idx):
+        seq = self.sequences[idx]
+        label = self.labels[idx]
 
-        for i, letter in enumerate(bp_sequence):
-            # Actual bases
-            if letter == 'A':
-                output_array[0, i] = 1
-            elif letter == 'T':
-                output_array[1, i] = 1
-            elif letter == 'C':
-                output_array[2, i] = 1
-            elif letter == 'G':
-                output_array[3, i] = 1
-            # Uncertainty codes
-            elif letter == 'M':
-                # A or C
-                if np.random.rand() < 0.5:
-                    output_array[0, i] = 1
-                else:
-                    output_array[2, i] = 1
-            elif letter == 'R':
-                # A or G
-                if np.random.rand() < 0.5:
-                    output_array[0, i] = 1
-                else:
-                    output_array[3, i] = 1
-            elif letter == 'W':
-                # A or T
-                if np.random.rand() < 0.5:
-                    output_array[0, i] = 1
-                else:
-                    output_array[1, i] = 1
-            elif letter == 'S':
-                # C or G
-                if np.random.rand() < 0.5:
-                    output_array[2, i] = 1
-                else:
-                    output_array[3, i] = 1
-            elif letter == 'Y':
-                # C or T
-                if np.random.rand() < 0.5:
-                    output_array[1, i] = 1
-                else:
-                    output_array[2, i] = 1
-            elif letter == 'K':
-                # G or T
-                if np.random.rand() < 0.5:
-                    output_array[1, i] = 1
-                else:
-                    output_array[3, i] = 1
-            elif letter == 'V':
-                # A or C or G
-                rand_num = np.random.rand()
-                if rand_num < 1/3:
-                    output_array[0, i] = 1
-                elif 1/3 < rand_num and rand_num < 2/3:
-                    output_array[2, i] = 1
-                else:
-                    output_array[3, i] = 1
-            elif letter == 'H':
-                # A or C or T
-                rand_num = np.random.rand()
-                if rand_num < 1/3:
-                    output_array[0, i] = 1
-                elif 1/3 < rand_num and rand_num < 2/3:
-                    output_array[1, i] = 1
-                else:
-                    output_array[2, i] = 1
-            elif letter == 'D':
-                # A or G or T
-                rand_num = np.random.rand()
-                if rand_num < 1/3:
-                    output_array[0, i] = 1
-                elif 1/3 < rand_num and rand_num < 2/3:
-                    output_array[1, i] = 1
-                else:
-                    output_array[3, i] = 1
-            elif letter == 'B':
-                # C or G or T
-                rand_num = np.random.rand()
-                if rand_num < 1/3:
-                    output_array[1, i] = 1
-                elif 1/3 < rand_num and rand_num < 2/3:
-                    output_array[2, i] = 1
-                else:
-                    output_array[3, i] = 1
-            elif letter == 'N':
-                # N indicates complete uncertainty
-                rand_num = np.random.rand()
-                if rand_num < 1/4:
-                    output_array[0, i] = 1
-                elif 1/4 < rand_num and rand_num < 2/4:
-                    output_array[1, i] = 1
-                elif 2/4 < rand_num and rand_num < 3/4:
-                    output_array[2, i] = 1
-                else:
-                    output_array[3, i] = 1
-            else:
-                print("ERROR: Unknown base '{}' encountered at index {} in {}".format(letter, i, bp_sequence))
+        mutation_options = {'a':'cgt', 'c':'agt', 'g':'act', 't':'acg'}
+        # defaultdict returns 'acgt' if a key is not present in the dictionary
+        mutation_options = defaultdict(lambda: 'acgt', mutation_options)
 
-        return output_array
+        seq = utils.add_random_insertions(seq, self.insertions)
+        seq = utils.apply_random_deletions(seq, self.deletions)
+        seq = utils.apply_random_mutations(seq, self.mutation_rate, mutation_options)
 
-if __name__ == '__main__':
-    dataset = Sequence_Data() #dataloader
-    from torch.utils.data import DataLoader 
-    train_loader = DataLoader(dataset,shuffle=True,batch_size=1)
-    for item, label in train_loader:
-        print("label: ", label)
-        print("For sequence: ", item)
+        # Pad or truncate to 60bp. 'z' padding will be turned to [0,0,0,0] below
+        seq = seq.ljust(self.seq_len, 'z')[:self.seq_len]
+
+        # Turn every base pair character into a vector
+        seq = utils.sequence_to_array(seq, self.encoding_mode)
+
+        return torch.from_numpy(seq), label
+
+    '''
+    Required function for Dataset that returns the number of examples in the set.
+    '''
+    def __len__(self):
+        return self.labels.shape[0]

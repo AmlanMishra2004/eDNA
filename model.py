@@ -8,10 +8,10 @@ sequence data using convolutional neural networks"
 - it seems somewhat silly, and will likely need to be replaced'''
 class My_CNN(nn.Module):
     def __init__(self, in_channels=4, 
-                    conv1_out_channels=16, conv1_kernel_size=7,
-                    conv2_out_channels=32, conv2_kernel_size=7,
-                    conv3_out_channels=64, conv3_kernel_size=7,
-                    in_len=150, n_classes=1):
+                 conv1_out_channels=16, conv1_kernel_size=7,
+                 conv2_out_channels=32, conv2_kernel_size=7,
+                 conv3_out_channels=64, conv3_kernel_size=7,
+                 in_len=150, n_classes=1):
         super().__init__()
         self.in_channels = in_channels
         self.in_len = in_len
@@ -27,7 +27,8 @@ class My_CNN(nn.Module):
         print("conv1_out_channels: ", conv1_out_channels)
         print("conv2_out_channels: ", conv2_out_channels)
         print("conv3_out_channels: ", conv3_out_channels)
-        
+
+        # input shape: (batch_size, channels=4, width=sequence_length)
         self.conv_layers = nn.Sequential(
             nn.Conv1d(in_channels=in_channels, 
                     out_channels=conv1_out_channels, 
