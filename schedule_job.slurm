@@ -22,7 +22,7 @@ echo "==========================================="
 #   bash_scripts/, then this will not work. (You would have to change it to be
 #   ../zurich_replica/src/... Instead, do: ./bash_scripts/schedule_job.sh
 
-source ../../eDNA_env/bin/activate
+source ../eDNA_env/bin/activate
 
 
 singularity run --nv ~/containers/pytorch-waggoner.simg python3 evaluate_model.py
