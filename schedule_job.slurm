@@ -24,7 +24,6 @@ echo "==========================================="
 
 source ../../eDNA_env/bin/activate
 
-
 singularity run --nv ~/containers/pytorch-waggoner.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 testScript.py
