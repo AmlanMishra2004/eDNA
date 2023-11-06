@@ -14,7 +14,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import SGDClassifier
 from dataset import Sequence_Data  
 from model import My_CNN
-from torchinfo import summary
+# from torchinfo import summary
 # from augment import RandomBPFlip
 from torch.utils.data import DataLoader 
 import datetime
@@ -341,7 +341,7 @@ if __name__ == '__main__':
         model = models.CNN1(num_classes=156)
         # model = models.CNN1(num_classes=156)
         model.to('cuda')
-        summary(model)
+        # summary(model)
         print("Evaluation for Zurich Model")
         num_trials = 10
         accuracies = [0,0,0,0,0,0,0,0,0,0]
