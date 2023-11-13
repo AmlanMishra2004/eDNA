@@ -20,9 +20,11 @@ from model import My_CNN
 from torch.utils.data import DataLoader 
 import datetime
 
-def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function, early_stopper):
+def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function,
+             early_stopper, confidence_threshold):
     
-    early_stopper.reset()
+    if early_stopper:
+        early_stopper.reset()
     train_accuracies = []
     val_accuracies = []
 
@@ -52,15 +54,29 @@ def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function, e
         # Evaluation using test set -------------------------------------------
         model.eval() # Set the model to evaluation mode
         val_correct = 0
+        val_total = 0
         with torch.no_grad():
             # Iterate over the test data and generate predictions
             for i, (inputs, labels) in enumerate(testloader, 0):
                 inputs, labels = inputs.cuda(), labels.cuda()
                 outputs = model(inputs)
-                _, predicted = torch.max(outputs, 1)
-                val_correct += (predicted == labels).sum().item()
 
-        val_acc = val_correct/len(testloader.dataset)
+                if confidence_threshold:
+                    # Get the predicted classes and their corresponding probabilities
+                    max_probs, predicted = torch.max(outputs, 1)
+                    # Apply the confidence threshold
+                    confident_predictions = predicted[max_probs > confidence_threshold]
+                    confident_labels = labels[max_probs > confidence_threshold]
+                    val_total += len(confident_predictions) # since the total number of examples we are considering is no longer the length of the trainloader
+                    val_correct += (confident_predictions == confident_labels).sum().item()
+                else:
+                    _, predicted = torch.max(outputs, 1)
+                    val_correct += (predicted == labels).sum().item()
+                
+        if confidence_threshold:
+            val_acc = val_correct/val_total
+        else:
+            val_acc = val_correct/len(testloader.dataset)
         
         if early_stopper: # if using early stopping
             early_stopper(val_acc)
@@ -104,7 +120,7 @@ def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function, e
     # utils.graph_train_loss(train_losses)
     utils.graph_train_acc(train_accuracies)
     # utils.graph_train_vs_test_acc(train_acc, test_acc)
-    return acc, epochs
+    return acc, epoch
     
 
 
@@ -291,7 +307,8 @@ if __name__ == '__main__':
                     epochs,
                     optimizer= torch.optim.Adam(model.parameters(),lr=lr),
                     loss_function= nn.CrossEntropyLoss(),
-                    early_stopper=early_stopper)
+                    early_stopper=early_stopper,
+                    confidence_threshold= 0.9)
                 
                 print(f"The model took {round((time.time() - start_time)/60,1)} minutes to run.")
                 accuracies[idx] += acc
@@ -303,6 +320,18 @@ if __name__ == '__main__':
         print(f"\nAverage accuracies, epochs taken for different learning rates:")
         for ele in zip(learning_rates, max_epochs, accuracies):
             print(ele)
+
+        # Best Model Combinations:
+        # 94.5%     SmallCNN2, 0.0005 lr, 80 epochs, 32 batch size, NO MUTATIONS
+
+
+        # NO MUTATIONS SmallCNN2       
+        # Average accuracies, epochs taken for different learning rates:
+        # (0.0005, 500.0, 0.9424790356394129)
+        # (0.001, 500.0, 0.9160115303983228)
+        # (0.003, 500.0, 0.8583595387840671)
+        # (0.005, 500.0, 0.8078485324947589)
+
 
 
         # SmallCNN2, 10 epochs, 30 batch size, NO MUTATIONS
@@ -320,7 +349,7 @@ if __name__ == '__main__':
         # 0.001     89%, could train longer
         # 0.0005    87%, not too much longer
 
-        # SmallCNN2, 10 epochs, 30 batch size, NO MUTATIONS
+        # ??? SmallCNN2, 10 epochs, 30 batch size, NO MUTATIONS
         # 0.005     93%, could train longer, 75%, peaked after 6 epochs
         # 0.003     87%, could train longer
         # 0.001     89%, could train longer
