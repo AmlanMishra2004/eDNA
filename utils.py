@@ -485,3 +485,8 @@ class EarlyStopping:
             if self.counter >= self.patience:
                 self.stop = True
 
+    def reset(self):
+        self.counter = 0
+        self.best_acc = 0
+        self.stop = False
+
