@@ -5,6 +5,7 @@ import torch.nn as nn
 import utils
 import models
 import time
+import sys
 from tqdm import tqdm
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import StratifiedKFold
@@ -19,63 +20,60 @@ from model import My_CNN
 from torch.utils.data import DataLoader 
 import datetime
 
-def evaluate(model, train_dataset, test_dataset, epochs, batch_size, lr):
-
-    # Define data loaders for training and testing data in this fold
-    trainloader = torch.utils.data.DataLoader(
-                    train_dataset, 
-                    batch_size=batch_size)
-    testloader = torch.utils.data.DataLoader(
-                    test_dataset,
-                    batch_size=batch_size)
-    
-    dataiter = iter(trainloader)
-    data, labels = next(dataiter)
-
-    print("Shape of data: ", data.shape)
-    print("Shape of labels: ", labels.shape)
-
-    # pause = input("PAUSE")
+def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function, early_stopper=None):
 
     train_accuracies = []
-    test_accuracies = []
-    train_losses = []
+    val_accuracies = []
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=lr)
-    loss_function = nn.CrossEntropyLoss()
+    np.set_printoptions(threshold=sys.maxsize)
 
     # TRAINING ----------------------------------------------------------------
     print(f"\n\nTraining Status:")
     for epoch in tqdm(range(epochs)):
         model.train()  # Set the model to training mode
-        # print(f'Starting epoch {epoch+1}')
-        loss = 0
-        current_loss = 0
+        train_correct = 0
         
-        # Iterate over the entire training set
+        # TRAINING ------------------------------------------------------------
         for i, data in enumerate(trainloader, 0):
             inputs, labels = data
-            inputs = inputs.cuda()
-            labels = labels.cuda()
-            optimizer.zero_grad()
+            inputs,labels = inputs.cuda(), labels.cuda()
 
-            # Compute loss
-            outputs = model(inputs)
-            loss = loss_function(outputs, labels)
+            optimizer.zero_grad()   # zero the gradients for all the weights
+            outputs = model(inputs) # run the inputs through the model
+            loss = loss_function(outputs, labels) # compute the loss
+            loss.backward()         # perform backward pass, updating weights
+            optimizer.step()        # perform optimization
+            _, predicted = torch.max(outputs, 1)
+            train_correct += (predicted == labels).sum().item()
 
-            # Perform backward pass
-            loss.backward()
-            
-            # Perform optimization
-            optimizer.step()
-            
-            # Print statistics
-            current_loss += loss.item()
-            # print('Loss after mini-batch %5d: %.6f' %
-            # (i + 1, current_loss))
-            current_loss = 0.0
+        train_acc = train_correct / len(trainloader.dataset)
     
-    # EVALUATION --------------------------------------------------------------
+        # Evaluation using test set -------------------------------------------
+        model.eval() # Set the model to evaluation mode
+        val_correct = 0
+        with torch.no_grad():
+            # Iterate over the test data and generate predictions
+            for i, (inputs, labels) in enumerate(testloader, 0):
+                inputs, labels = inputs.cuda(), labels.cuda()
+                outputs = model(inputs)
+                _, predicted = torch.max(outputs, 1)
+                val_correct += (predicted == labels).sum().item()
+
+        val_acc = val_correct/len(testloader.dataset)
+        
+        if early_stopper: # if using early stopping
+            early_stopper(val_acc)
+            if early_stopper.stop:
+                print(f"Early stopping\n")
+                break
+
+        print(f"\n{train_correct} / {len(trainloader.dataset)} training examples correct")
+        print(f'Epoch {epoch+1}/{epochs}, Train Accuracy: {train_acc*100}%, Validation Accuracy: {val_acc*100}%\n')
+        train_accuracies.append(train_acc)
+        val_accuracies.append(val_acc)
+
+    
+    # TESTING -----------------------------------------------------------------
     model.eval() # Set the model to evaluation mode
     correct, total = 0, 0
     with torch.no_grad():
@@ -87,46 +85,46 @@ def evaluate(model, train_dataset, test_dataset, epochs, batch_size, lr):
             targets = targets.cuda()
 
             outputs = model(inputs)
+            loss = loss_function(outputs, targets)
+            # test_losses.append(loss)
 
             _, predicted = torch.max(outputs.data, 1)
             total += targets.size(0)
             correct += (predicted == targets).sum().item()
 
-            # if con_matrix is None:
-            #     con_matrix = confusion_matrix(predicted.cpu(), targets.cpu())
-            # else:
-            #     con_matrix += confusion_matrix(predicted.cpu(), targets.cpu())
-
-        # Print accuracy
-        print(f'Accuracy: {100.0 * correct / total} %')
-        # print(con_matrix)
-        print('--------------------------------')
-        result = 100.0 * (correct / total)
-        model.reset_params()
-
-    # Print fold results
+    # Print accuracy
+    acc = correct / total
+    print(f"{correct}/{total} correct")
     print('--------------------------------')
-    print(f'Final accuracy: {result} %')
+    print(f'Model Accuracy: {acc*100} %')
+    # print(con_matrix)
+    print('--------------------------------')
+    model.reset_params()
+    # utils.graph_train_loss(train_losses)
+    utils.graph_train_acc(train_accuracies)
     # utils.graph_train_vs_test_acc(train_acc, test_acc)
-    return result
+    return acc, epochs
+    
 
-    '''
-    X_vectorized = full_dataset.x.reshape(full_dataset.x.shape[0], -1)
-    y = full_dataset.y
 
-    del full_dataset
 
-    # Fit and test a Naieve Bayes classifier using 5-fold cross-validation
-    naive_bayes_model = GaussianNB()
-    naive_bayes_scores = cross_val_score(naive_bayes_model, X_vectorized, y, cv=5)
-    print("Naive Bayes raw scores: ", naive_bayes_scores)
-    print("Naive Bayes mean score: ", np.mean(naive_bayes_scores))
+    # X_vectorized = full_dataset.x.reshape(full_dataset.x.shape[0], -1)
+    # y = full_dataset.y
 
-    # Fit and test a SVM classifier using 5-fold cross-validation
-    svm_model = SVC(kernel='linear', C=1, random_state=1)
-    svm_scores = cross_val_score(svm_model, X_vectorized, y, cv=3)
-    print("SVM raw scores: ", svm_scores)
-    print("SVM mean score: ", np.mean(svm_scores))'''
+    # del full_dataset
+
+    # # Fit and test a Naieve Bayes classifier using 5-fold cross-validation
+    # naive_bayes_model = GaussianNB()
+    # naive_bayes_scores = cross_val_score(naive_bayes_model, X_vectorized, y, cv=5)
+    # print("Naive Bayes raw scores: ", naive_bayes_scores)
+    # print("Naive Bayes mean score: ", np.mean(naive_bayes_scores))
+
+    # # Fit and test a SVM classifier using 5-fold cross-validation
+    # svm_model = SVC(kernel='linear', C=1, random_state=1)
+    # svm_scores = cross_val_score(svm_model, X_vectorized, y, cv=3)
+    # print("SVM raw scores: ", svm_scores)
+    # print("SVM mean score: ", np.mean(svm_scores))
+
     
 
 if __name__ == '__main__':
@@ -180,12 +178,9 @@ if __name__ == '__main__':
     testRandomDeletions = [1,1]     # 1 per sequence
     testMutationRate = 0.02         # 2% chance to be randomly flipped
     encoding_mode = 'probability'   # 'probability' or 'random'
-    train_batch_size = 1            # run 1 sequence through model before updating weights
-    test_batch_size = 1             # 1 sequence evaluated a time during test
-    epochs = 10                     # number of times to run through all data
 
-    use_autokeras = True
-    use_my_model = False
+    use_autokeras = False
+    use_my_model = True
 
     df = pd.read_csv(data_path, sep=sep)
     print(f"Original df shape: {df.shape}")
@@ -211,15 +206,171 @@ if __name__ == '__main__':
     print(f"Train shape: {train.shape}")
     print(f"Test shape: {test.shape}")
 
-    
+
+    if use_my_model:
+        train_dataset = Sequence_Data(data=train,
+                                    seq_col=seq_col,
+                                    species_col=species_col,
+                                    insertions=trainRandomInsertions,
+                                    deletions=trainRandomDeletions,
+                                    mutation_rate=trainMutationRate,
+                                    encoding_mode=encoding_mode,
+                                    iupac=iupac,
+                                    seq_len=seq_target_length)
+        test_dataset = Sequence_Data(data=test, 
+                                    seq_col=seq_col,
+                                    species_col=species_col,
+                                    insertions=testRandomInsertions,
+                                    deletions=testRandomDeletions,
+                                    mutation_rate=testMutationRate,
+                                    encoding_mode=encoding_mode,
+                                    iupac=iupac,
+                                    seq_len=seq_target_length)
+        
+        # # This is just a test to see the data output
+        # train_loader = DataLoader(train_dataset,shuffle=True,batch_size=3)
+        # dataiter = iter(train_loader)
+        # print(next(dataiter))
+        # print(next(dataiter))
+
+        # Example to see how data will be fed into the model
+        ex_dataiter = iter(train_dataset)
+        ex_data, ex_labels = next(ex_dataiter)
+        print("Shape of data: ", ex_data.shape)
+        print("Shape of labels: ", ex_labels.shape)
+
+
+
+        start_time = time.time()
+
+        # model = models.CNN1(num_classes=156)
+        model = models.SmallCNN2(stride=1, in_width=60, num_classes=156)
+        # model = models.Linear1(in_width=60, num_classes=156)
+        # model = models.Linear2(in_width=60, num_classes=156)
+        # model = models.Zurich(stride=1, in_width=60, num_classes=156)
+        # model = models.SmallCNN1_1(stride=1, in_width=60, num_classes=156)
+        # model = models.SmallCNN2_1(stride=1, in_width=60, num_classes=156)
+
+        model.to('cuda')
+        # summary(model)
+
+        print("Evaluation for Personal Model")
+
+        num_trials = 3
+        # learning_rates = [0.001, 0.005]
+        learning_rates = [0.0005, 0.001, 0.003, 0.005]
+        # learning_rates = [0.0005, 0.001, 0.005, 0.01, 0.05]
+        batch_size = 32
+        epochs = 500
+        early_stopper = utils.EarlyStopping(patience=15, min_pct_improvement=3)
+
+        # records the sum accuracy associated with each learning rate
+        #   divide by num_trials to get the average accuracy
+        accuracies = [0] * len(learning_rates)
+        # records the sum number of epochs taken, whether that be the specified
+        #   number <epochs>, or a smaller number because of early stopping
+        #   divide by num_trials to get the average num epochs taken for that lr
+        max_epochs = [0] * len(learning_rates) 
+
+        for idx, lr in enumerate(learning_rates):
+            for trial in range(num_trials):
+                # Define data loaders for training and testing data in this fold
+                trainloader = torch.utils.data.DataLoader(
+                                train_dataset, 
+                                batch_size=batch_size,
+                                shuffle=True)
+                testloader = torch.utils.data.DataLoader(
+                                test_dataset,
+                                batch_size=batch_size,
+                                shuffle=True)
+                acc, epochs_taken = evaluate(
+                    model,
+                    trainloader,
+                    testloader,
+                    epochs,
+                    optimizer= torch.optim.Adam(model.parameters(),lr=lr),
+                    loss_function= nn.CrossEntropyLoss(),
+                    early_stopper=False)
+                
+                print(f"The model took {round((time.time() - start_time)/60,1)} minutes to run.")
+                accuracies[idx] += acc
+                max_epochs[idx] += epochs_taken
+        for i in range(len(learning_rates)):
+            accuracies[i] = accuracies[i]/num_trials
+            max_epochs[i] = max_epochs[i]/num_trials
+
+        print(f"\nAverage accuracies, epochs taken for different learning rates:")
+        for ele in zip(learning_rates, max_epochs, accuracies):
+            print(ele)
+
+
+        # SmallCNN2, 10 epochs, 30 batch size, NO MUTATIONS
+        # 0.04      0.8%, flattened after 1 epoch
+        # 0.02      16%, kind of rocky, up and down
+        # 0.01      0.8%, flattened after 1 epoch
+        # 0.008     0.8%, flatlined from 0 epochs
+        # 0.007     0.8%, flatlined from 0 epochs
+        # 0.006     72%, peaked after 7 epochs
+        # 0.0055    71%, peaked after 9 epochs
+        # 0.005     93%, could train longer, 75%, peaked after 6 epochs
+        # 0.0045    70%, could train longer
+        # 0.004     80%, peaked around 5 epochs, 78%, could be trained longer
+        # 0.003     87%, could train longer
+        # 0.001     89%, could train longer
+        # 0.0005    87%, not too much longer
+
+        # SmallCNN1, 10 epochs, 30 batch size, NO MUTATIONS
+        # 0.0005    90%, could train longer, 87%, slowly increasing after 10
+        # 0.001     84%, slowly increasing after 10, 87%, slowly increasing after 10
+        # 0.005     83%, slowly increasing after 10, 84%, train longer!
+        # 0.01      78%, slowly increasing after 10, 79%, could train longer
+        # 0.05      8%,  rocky but increasing after 10, 11%, rocky, slowly increasing
+
+        # Linear1, 10 epochs, 30 batch size, NO MUTATIONS
+        # 0.0005    17%, rocky, 8%
+        # 0.001     7%, rocky
+        # 0.005     0.8%, flatlined after 1 epoch
+        # 0.01      0.8%, flatlined after 3 epochs
+        # 0.05      0.5%, rocky
+
+        # Linear2, 10 epochs, 30 batch size, NO MUTATIONS
+        # 0.0005    17%, rocky, peaked at 4
+        # 0.001     11%, peaked around 2
+        # 0.005     3%, very rocky
+        # 0.01      2%, very rocky
+
+        # Zurich, 80 epochs, 32 batch size, NO MUTATIONS
+        # 0.0005    67%, keep training!, 74%, keep training!
+        # 0.001     74%, keep training?
+        # 0.005     49%, peaked around 20 epochs
+
+        # SmallCNN1_1, 10 epochs, 32 batch size, NO MUTATIONS
+        # 0.0005    83%, slowly increasing at 10
+        # 0.001     81%, very slowly increasing at 10
+        # 0.005     77%, very slowly increasing at 10
+        # 0.01      75%, slowly increasing at 10
+        # 0.05      27%, rocky and slitghly decreasing
+
+        # SmallCNN2_1, 10 epochs, 32 batch size, NO MUTATIONS
+        # 0.0005    64%, still learning at 10!
+        # 0.001     69%, slowly learning at 10
+        # 0.005     54%, still learning at 10!
+        # 0.01      58%, very slowly learning at 10
+        # 0.05      .8%, getting worse
+
+        # 0.0005    
+        # 0.001     
+        # 0.005     
+        # 0.01      
+        # 0.05      
+
 ###############################################################################
 # AUTOKERAS                                                                   #
 ###############################################################################
     if use_autokeras:
-        # auto ML finds the best architecture, then you can export the model to keras
         import autokeras as ak
         from tensorflow.keras.models import load_model
-
+        # auto ML finds the best architecture, then you can export the model to keras
         X_train, y_train = utils.encode_all_data(train.copy(), seq_target_length, seq_col, species_col, encoding_mode, True, "np", True, trainRandomInsertions, trainRandomDeletions, trainMutationRate, iupac)
         X_test, y_test = utils.encode_all_data(test.copy(), seq_target_length, seq_col, species_col, encoding_mode, True, "np", True, testRandomInsertions, testRandomDeletions, testMutationRate, iupac)
         print(f"X_train SHAPE: {X_train.shape}")
@@ -304,55 +455,15 @@ if __name__ == '__main__':
         accuracy = np.mean(predicted_labels == test_df[species_col].to_numpy())
         print(f"SDC test accuracy: {accuracy}")
         print(f"SDC ak took {round((time.time() - start_time)/60,1)} minutes to run.")
-
         '''
 
 ###############################################################################
 # END AUTOKERAS                                                               #
 ###############################################################################
 
-    if use_my_model:
-        train_dataset = Sequence_Data(data=train,
-                                    seq_col=seq_col,
-                                    species_col=species_col,
-                                    insertions=trainRandomInsertions,
-                                    deletions=trainRandomDeletions,
-                                    mutation_rate=trainMutationRate,
-                                    encoding_mode=encoding_mode,
-                                    iupac=iupac,
-                                    seq_len=seq_target_length)
-        test_dataset = Sequence_Data(data=test, 
-                                    seq_col=seq_col,
-                                    species_col=species_col,
-                                    insertions=testRandomInsertions,
-                                    deletions=testRandomDeletions,
-                                    mutation_rate=testMutationRate,
-                                    encoding_mode=encoding_mode,
-                                    iupac=iupac,
-                                    seq_len=seq_target_length)
         
-        # # This is just a test to see the data output
-        # train_loader = DataLoader(train_dataset,shuffle=True,batch_size=3)
-        # dataiter = iter(train_loader)
-        # print(next(dataiter))
-        # print(next(dataiter))
 
-        start_time = time.time()
-        model = models.CNN1(num_classes=156)
-        # model = models.CNN1(num_classes=156)
-        model.to('cuda')
-        # summary(model)
-        print("Evaluation for Zurich Model")
-        num_trials = 10
-        accuracies = [0,0,0,0,0,0,0,0,0,0]
-        for trial in range(num_trials):
-            for idx, lr in enumerate([0.001, 0.003, 0.005, 0.007, 0.01, 0.03, 0.05, 0.07, 0.1, 0.3]):
-                acc = evaluate(model, train_dataset, test_dataset, epochs=epochs, batch_size=30, lr=5e-5)
-                print(f"The model took {round((time.time() - start_time)/60,1)} minutes to run.")
-                accuracies[idx] += acc
-        for accuracy in accuracies:
-            accuracy = accuracy/num_trials
-        print(f"Accuracies for different learning rates: {accuracies}")
+
 
 
     

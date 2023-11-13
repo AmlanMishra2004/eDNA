@@ -426,7 +426,6 @@ def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
             raise ValueError("Framework name is incorrect. Use 'torch' or 'tf' or 'np'.")
 
 
-# Unfinished
 def graph_train_vs_test_acc(train_accuracies, test_accuracies):
     plt.figure(figsize=(10, 5))
     plt.plot(train_accuracies, label='Train')
@@ -436,3 +435,53 @@ def graph_train_vs_test_acc(train_accuracies, test_accuracies):
     plt.ylabel('Accuracy')
     plt.legend()
     plt.show()
+
+# expects list
+def graph_train_acc(train_acc):
+    plt.figure(figsize=(10, 5))
+    plt.plot(range(1, len(train_acc) + 1), train_acc, label='Train Accuracy')
+    plt.title('Train Accuracy vs Epochs')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.show()
+
+def graph_train_loss(train_losses):
+    print(train_losses)
+    plt.figure(figsize=(10, 5))
+    # The next two lines are needed if you feed this function a pytorch tensor
+    # Convert list of tensors to a single tensor
+    train_losses_tensor = torch.stack(train_losses)
+    # Move to CPU, detach, and convert to numpy
+    train_losses = train_losses_tensor.cpu().detach().numpy()
+
+    # Plot
+    plt.plot(train_losses, label='Train Loss')
+    plt.title('Train Loss vs Epochs')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.show()
+
+# Stops if the accuracy hasn't improved by <min_pct_improvement> percent
+#   after <patience> epochs
+class EarlyStopping:
+    def __init__(self, patience=3, min_pct_improvement=3):
+        self.patience = patience
+        self.min_pct_improvement = min_pct_improvement
+        self.counter = 0
+        self.best_acc = None
+        self.stop = False
+
+    def __call__(self, curr_val_acc):
+        if self.best_acc is None:
+            self.best_acc = curr_val_acc
+        elif curr_val_acc > self.best_acc:
+            self.best_acc = curr_val_acc
+            self.counter = 0
+        else:
+            self.counter += 1
+            print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+            if self.counter >= self.patience:
+                self.stop = True
+
