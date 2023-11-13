@@ -120,7 +120,7 @@ class SmallCNN2(nn.Module):
         super(SmallCNN2, self).__init__()
         self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
         self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
-        self.relu = nn.ReLU()
+        self.leakyrelu = nn.LeakyReLU() # was previously relu I believe
         self.pool = nn.MaxPool1d(2)
         self.dropout = nn.Dropout(0.5)
         self.fc1 = nn.Linear(1856, num_classes) # 64*in_width
