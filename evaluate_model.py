@@ -263,6 +263,7 @@ if __name__ == '__main__':
         batch_size = 32
         epochs = 500
         early_stopper = utils.EarlyStopping(patience=15, min_pct_improvement=3)
+        # early_stopper = None
 
         # records the sum accuracy associated with each learning rate
         #   divide by num_trials to get the average accuracy
@@ -290,7 +291,7 @@ if __name__ == '__main__':
                     epochs,
                     optimizer= torch.optim.Adam(model.parameters(),lr=lr),
                     loss_function= nn.CrossEntropyLoss(),
-                    early_stopper=False)
+                    early_stopper=early_stopper)
                 
                 print(f"The model took {round((time.time() - start_time)/60,1)} minutes to run.")
                 accuracies[idx] += acc
