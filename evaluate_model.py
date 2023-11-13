@@ -20,8 +20,9 @@ from model import My_CNN
 from torch.utils.data import DataLoader 
 import datetime
 
-def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function, early_stopper=None):
-
+def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function, early_stopper):
+    
+    early_stopper.reset()
     train_accuracies = []
     val_accuracies = []
 
@@ -162,7 +163,6 @@ if __name__ == '__main__':
              'r':'y', 'y':'r', 'k':'m', 'm':'k', 
              'b':'v', 'd':'h', 'h':'d', 'v':'b',
              's':'w', 'w':'s', 'n':'n', 'z':'z'}
-    
 
     data_path='./datasets/v4_combined_reference_sequences.csv'
     sep = ';'                       # separator character in the csv file
@@ -234,10 +234,10 @@ if __name__ == '__main__':
         # print(next(dataiter))
 
         # Example to see how data will be fed into the model
-        ex_dataiter = iter(train_dataset)
-        ex_data, ex_labels = next(ex_dataiter)
-        print("Shape of data: ", ex_data.shape)
-        print("Shape of labels: ", ex_labels.shape)
+        # ex_dataiter = iter(train_dataset)
+        # ex_data, ex_labels = next(ex_dataiter)
+        # print("Shape of data: ", ex_data.shape)
+        # print("Shape of labels: ", ex_labels.shape)
 
 
 
@@ -315,6 +315,12 @@ if __name__ == '__main__':
         # 0.005     93%, could train longer, 75%, peaked after 6 epochs
         # 0.0045    70%, could train longer
         # 0.004     80%, peaked around 5 epochs, 78%, could be trained longer
+        # 0.003     87%, could train longer
+        # 0.001     89%, could train longer
+        # 0.0005    87%, not too much longer
+
+        # SmallCNN2, 10 epochs, 30 batch size, NO MUTATIONS
+        # 0.005     93%, could train longer, 75%, peaked after 6 epochs
         # 0.003     87%, could train longer
         # 0.001     89%, could train longer
         # 0.0005    87%, not too much longer
