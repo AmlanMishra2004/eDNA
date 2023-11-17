@@ -13,29 +13,45 @@ import tensorflow as tf
 
 
 # PREPROCESSING ---------------------------------------------------------------
-    
+'''
+For every row in column of data, modifies to be:
+<tag><forward_primer><original sequence><reverse complement of reverse_primer><reversed tag>
+'''
+def add_tag_and_primer(data, column, comp, tag, forward_primer, reverse_primer, verbose):
+    rev_tag = tag[::-1]  # tag in reverse order
+    # reverse the reverse_primer, then take the complement of every base pair
+    rev_reverse_primer = ''.join(map(lambda y: comp[y], reverse_primer[::-1]))
+    data[column] = data[column].apply(lambda x: tag + forward_primer + x + rev_reverse_primer + rev_tag)
+    if verbose:
+        print(f"Tag and primer added shape: {data.shape}")
+    return data
+
 '''
 From Zurich
 Returns a dataframe that contains the reverse complement of every sequence,
 in addition to all of the original sequences.
 '''
-def add_reverse_complements(data, seq_col, comp):
+def add_reverse_complements(data, seq_col, comp, verbose=False):
     data_rev = data.copy()
     data_rev[seq_col] = data_rev[seq_col].apply(lambda x: ''.join(map(lambda y: comp[y], x[::-1]))) 
     new_data = pd.concat([data, data_rev])
+    if verbose:
+        print(f"Reverse complements added shape: {data.shape}")
     return new_data
 
 '''
 Remove any sequences that belong to species who have fewer than
 seq_count_thresh sequences.
 '''
-def remove_species_with_too_few_sequences(df, species_col, seq_count_thresh):
+def remove_species_with_too_few_sequences(df, species_col, seq_count_thresh, verbose=False):
     orig_num_rows = df.shape[0]
     species_counts = df[species_col].value_counts()
     valid_species = species_counts[species_counts >= seq_count_thresh].index
     df = df[df[species_col].isin(valid_species)]
-    print(f"Removed {orig_num_rows - df.shape[0]} rows while enforcing "
+    if verbose:
+        print(f"Removed {orig_num_rows - df.shape[0]} rows while enforcing "
             f"the {seq_count_thresh} sequence threshold per species.")
+        print(f"Removed rows shape: {df.shape}")
     return df
 
 
@@ -56,7 +72,7 @@ species. Each species has the same number of sequences as the maximum number of
 sequences for a single species. Species are upsampled by randomly duplicating
 a sequence.
 '''
-def oversample_underrepresented_species(df, species_col):
+def oversample_underrepresented_species(df, species_col, verbose=False):
     value_counts = df[species_col].value_counts()
     seq_counts = value_counts.to_dict()
     max_count = max(value_counts)
@@ -69,6 +85,8 @@ def oversample_underrepresented_species(df, species_col):
         new_ind.extend(random.choices(ind, k=k))
 
     oversample = df.iloc[new_ind]
+    if verbose:
+        print(f"Oversampled shape: {df.shape}")
     return oversample
 
 '''
