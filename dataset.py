@@ -82,14 +82,17 @@ class Sequence_Data(Dataset):
     def __getitem__(self,idx):
         seq = self.sequences[idx]
         label = self.labels[idx]
+        print(f"ORIGINAL SEQUENCE: \n{seq}")
 
         mutation_options = {'a':'cgt', 'c':'agt', 'g':'act', 't':'acg'}
         # defaultdict returns 'acgt' if a key is not present in the dictionary
         mutation_options = defaultdict(lambda: 'acgt', mutation_options)
 
-        # seq = utils.add_random_insertions(seq, self.insertions)
-        # seq = utils.apply_random_deletions(seq, self.deletions)
-        # seq = utils.apply_random_mutations(seq, self.mutation_rate, mutation_options)
+        seq = utils.add_random_insertions(seq, self.insertions)
+        seq = utils.apply_random_deletions(seq, self.deletions)
+        seq = utils.apply_random_mutations(seq, self.mutation_rate, mutation_options)
+
+        print(f"MUTATED SEQUENCE: \n{seq}")
 
         # Pad or truncate to 60bp. 'z' padding will be turned to [0,0,0,0] below
         seq = seq.ljust(self.seq_len, 'z')[:self.seq_len]

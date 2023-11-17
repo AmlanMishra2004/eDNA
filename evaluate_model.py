@@ -154,6 +154,7 @@ if __name__ == '__main__':
 
     # read in all data
     # remove unused sequences with <2 seq species
+    # add tags and primers to every sequence
     # oversample underrepresented species
     # add reverse complements
     # cap/fill to get 60 bp length
@@ -185,7 +186,7 @@ if __name__ == '__main__':
     species_col = 'species_cat'     # name of the column containing species
     seq_col = 'seq'                 # name of the column containing sequences
     seq_count_thresh = 2            # keep species with >1 sequence
-    seq_target_length = 60          # cap sequences at 60bp
+    seq_target_length = 150         # cap sequences at 150bp
     test_split = 0.3                # 30% test data, 70% train data
     trainRandomInsertions = [0,2]   # between 0 and 2 per sequence
     trainRandomDeletions = [0,2]    # between 0 and 2 per sequence
@@ -197,20 +198,19 @@ if __name__ == '__main__':
 
     use_autokeras = False
     use_my_model = True
+    verbose = True
 
     df = pd.read_csv(data_path, sep=sep)
     print(f"Original df shape: {df.shape}")
-
     utils.print_descriptive_stats(df, ['species','family', 'genus', 'order'])
 
-    df = utils.remove_species_with_too_few_sequences(df, species_col, seq_count_thresh)
-    print(f"Removed rows shape: {df.shape}")
-
-    df = utils.add_reverse_complements(df, seq_col, iupac)
-    print(f"Reverse complements added shape: {df.shape}")
-
-    df = utils.oversample_underrepresented_species(df, species_col)
-    print(f"Oversampled shape: {df.shape}")
+    df = utils.remove_species_with_too_few_sequences(df, species_col, seq_count_thresh, verbose)
+    df = utils.add_tag_and_primer(df, seq_col, iupac, 'n'*10,
+                     'acaccgcccgtcactct',
+                     'cttccggtacacttaccatg',
+                     verbose)
+    df = utils.add_reverse_complements(df, seq_col, iupac, verbose)
+    df = utils.oversample_underrepresented_species(df, species_col, verbose)
 
     utils.print_descriptive_stats(df, ['species','family', 'genus', 'order'])
 
@@ -243,42 +243,44 @@ if __name__ == '__main__':
                                     iupac=iupac,
                                     seq_len=seq_target_length)
         
-        # # This is just a test to see the data output
-        # train_loader = DataLoader(train_dataset,shuffle=True,batch_size=3)
-        # dataiter = iter(train_loader)
-        # print(next(dataiter))
-        # print(next(dataiter))
-
         # Example to see how data will be fed into the model
-        # ex_dataiter = iter(train_dataset)
+        # torch.set_printoptions(threshold=10_000_000)
+        # ex_trainloader = DataLoader(
+        #                         train_dataset, 
+        #                         batch_size=3,
+        #                         shuffle=True)
+        # ex_dataiter = iter(ex_trainloader)
         # ex_data, ex_labels = next(ex_dataiter)
+        # print(f"Example data: \n{ex_data}\n")
+        # print(f"Example label: \n{ex_labels}\n")
         # print("Shape of data: ", ex_data.shape)
         # print("Shape of labels: ", ex_labels.shape)
+        # pause = input("PAUSE")
 
 
 
         start_time = time.time()
 
         # model = models.CNN1(num_classes=156)
-        model = models.SmallCNN2(stride=1, in_width=60, num_classes=156)
-        # model = models.Linear1(in_width=60, num_classes=156)
-        # model = models.Linear2(in_width=60, num_classes=156)
-        # model = models.Zurich(stride=1, in_width=60, num_classes=156)
-        # model = models.SmallCNN1_1(stride=1, in_width=60, num_classes=156)
-        # model = models.SmallCNN2_1(stride=1, in_width=60, num_classes=156)
+        model = models.SmallCNN2(stride=1, in_width=150, num_classes=156)
+        # model = models.Linear1(in_width=150, num_classes=156)
+        # model = models.Linear2(in_width=150, num_classes=156)
+        # model = models.Zurich(stride=1, in_width=150, num_classes=156)
+        # model = models.SmallCNN1_1(stride=1, in_width=150, num_classes=156)
+        # model = models.SmallCNN2_1(stride=1, in_width=150, num_classes=156)
 
         model.to('cuda')
         # summary(model)
 
         print("Evaluation for Personal Model")
 
-        num_trials = 3
+        num_trials = 1
         # learning_rates = [0.001, 0.005]
         learning_rates = [0.0005, 0.001, 0.003, 0.005]
         # learning_rates = [0.0005, 0.001, 0.005, 0.01, 0.05]
         batch_size = 32
         epochs = 500
-        early_stopper = utils.EarlyStopping(patience=15, min_pct_improvement=3)
+        early_stopper = utils.EarlyStopping(patience=5, min_pct_improvement=3)
         # early_stopper = None
 
         # records the sum accuracy associated with each learning rate
@@ -292,14 +294,14 @@ if __name__ == '__main__':
         for idx, lr in enumerate(learning_rates):
             for trial in range(num_trials):
                 # Define data loaders for training and testing data in this fold
-                trainloader = torch.utils.data.DataLoader(
+                trainloader = DataLoader(
                                 train_dataset, 
                                 batch_size=batch_size,
                                 shuffle=True)
-                testloader = torch.utils.data.DataLoader(
+                testloader = DataLoader(
                                 test_dataset,
                                 batch_size=batch_size,
-                                shuffle=True)
+                                shuffle=False)
                 acc, epochs_taken = evaluate(
                     model,
                     trainloader,
@@ -325,12 +327,21 @@ if __name__ == '__main__':
         # 94.5%     SmallCNN2, 0.0005 lr, 80 epochs, 32 batch size, NO MUTATIONS
 
 
+
         # NO MUTATIONS SmallCNN2       
         # Average accuracies, epochs taken for different learning rates:
         # (0.0005, 500.0, 0.9424790356394129)
         # (0.001, 500.0, 0.9160115303983228)
         # (0.003, 500.0, 0.8583595387840671)
         # (0.005, 500.0, 0.8078485324947589)
+
+        # MUTATIONS SmallCNN2
+        # Average accuracies, epochs taken for different learning rates:
+        # (0.0005, 500.0, 0.7443166798836902)
+        # (0.001, 500.0, 0.74649748876553)
+        # (0.003, 500.0, 0.3926116838487972)
+        # (0.005, 500.0, 0.4037800687285223)
+
 
 
 
