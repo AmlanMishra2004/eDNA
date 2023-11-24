@@ -499,7 +499,7 @@ class EarlyStopping:
             self.counter = 0
         else:
             self.counter += 1
-            print(f'EarlyStopping counter: {self.counter} out of {self.patience}')
+            print(f'\nEarlyStopping counter: {self.counter} out of {self.patience}')
             if self.counter >= self.patience:
                 self.stop = True
 
