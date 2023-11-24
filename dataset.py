@@ -82,7 +82,7 @@ class Sequence_Data(Dataset):
     def __getitem__(self,idx):
         seq = self.sequences[idx]
         label = self.labels[idx]
-        print(f"ORIGINAL SEQUENCE: \n{seq}")
+        # print(f"ORIGINAL SEQUENCE: \n{seq}")
 
         mutation_options = {'a':'cgt', 'c':'agt', 'g':'act', 't':'acg'}
         # defaultdict returns 'acgt' if a key is not present in the dictionary

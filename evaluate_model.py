@@ -6,6 +6,7 @@ import utils
 import models
 import time
 import sys
+import os
 from tqdm import tqdm
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import StratifiedKFold
@@ -118,9 +119,9 @@ def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function,
     print('--------------------------------')
     model.reset_params()
     # utils.graph_train_loss(train_losses)
-    utils.graph_train_acc(train_accuracies)
+    # utils.graph_train_acc(train_accuracies) # this is helpful
     # utils.graph_train_vs_test_acc(train_acc, test_acc)
-    return acc, epoch
+    return acc, epoch+1
     
 
 
@@ -216,8 +217,8 @@ if __name__ == '__main__':
         testMutationRate = 0            # 0% chance to be randomly flipped
 
 
-    use_autokeras = True
-    use_my_model = False
+    use_autokeras = False
+    use_my_model = True
     verbose = True
 
 
@@ -281,69 +282,141 @@ if __name__ == '__main__':
 
         start_time = time.time()
 
-        # model = models.CNN1(num_classes=156)
-        model = models.SmallCNN2(stride=1, in_width=seq_target_length, num_classes=156)
-        # model = models.Linear1(in_width=seq_target_length, num_classes=156)
-        # model = models.Linear2(in_width=seq_target_length, num_classes=156)
-        # model = models.Zurich(stride=1, in_width=seq_target_length, num_classes=156)
-        # model = models.SmallCNN1_1(stride=1, in_width=seq_target_length, num_classes=156)
-        # model = models.SmallCNN2_1(stride=1, in_width=seq_target_length, num_classes=156)
+        cnn1 = models.CNN1(num_classes=156)
+        smallcnn2 = models.SmallCNN2(stride=1, in_width=seq_target_length, num_classes=156)
+        linear1 = models.Linear1(in_width=seq_target_length, num_classes=156)
+        linear2 = models.Linear2(in_width=seq_target_length, num_classes=156)
+        zurich = models.Zurich(stride=1, in_width=seq_target_length, num_classes=156)
+        smallcnn1_1 = models.SmallCNN1_1(stride=1, in_width=seq_target_length, num_classes=156)
+        smallcnn2_1 = models.SmallCNN2_1(stride=1, in_width=seq_target_length, num_classes=156)
+        models = [smallcnn2, zurich]
+        # models = [cnn1, smallcnn2, linear1, linear2, zurich, smallcnn1_1, smallcnn2_1]
 
-        model.to('cuda')
-        # summary(model)
+        for model in models:
+            model.to('cuda')
+            # summary(model)
 
-        print("Evaluation for Personal Model")
+        print(f"Evaluation for Personal Model(s):\n{[f'{model.name}' for model in models]}")
 
-        num_trials = 1
+        num_trials = 3
+        # learning_rates = [0.008]
         # learning_rates = [0.001, 0.005]
-        learning_rates = [0.0005, 0.001, 0.003, 0.005]
-        # learning_rates = [0.0005, 0.001, 0.005, 0.01, 0.05]
+        # learning_rates = [0.0005, 0.001, 0.003, 0.005]
+        learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
         batch_size = 32
         epochs = 10_000
-        # confidence_threshold = 0.9 # called the 'binzarization threshold' in the Zurich paper
+        # confidence_threshold = 0.9 # Zurich called this 'binzarization threshold'
         confidence_threshold = None
-        early_stopper = utils.EarlyStopping(patience=10, min_pct_improvement=0.5)
+        patience = 12
+        min_pct_improvement = 0.5
+        early_stopper = utils.EarlyStopping(patience=patience, min_pct_improvement=min_pct_improvement)
         # early_stopper = None
 
-        # records the sum accuracy associated with each learning rate
-        #   divide by num_trials to get the average accuracy
-        accuracies = [0] * len(learning_rates)
-        # records the sum number of epochs taken, whether that be the specified
-        #   number <epochs>, or a smaller number because of early stopping
-        #   divide by num_trials to get the average num epochs taken for that lr
-        max_epochs = [0] * len(learning_rates) 
+        model_results = []
 
-        for idx, lr in enumerate(learning_rates):
-            for trial in range(num_trials):
-                # Define data loaders for training and testing data in this fold
-                trainloader = DataLoader(
-                                train_dataset, 
-                                batch_size=batch_size,
-                                shuffle=True)
-                testloader = DataLoader(
-                                test_dataset,
-                                batch_size=batch_size,
-                                shuffle=False)
-                acc, epochs_taken = evaluate(
-                    model,
-                    trainloader,
-                    testloader,
-                    epochs,
-                    optimizer= torch.optim.Adam(model.parameters(),lr=lr),
-                    loss_function= nn.CrossEntropyLoss(),
-                    early_stopper= early_stopper,
-                    confidence_threshold= confidence_threshold)
-                
-                print(f"The model took {round((time.time() - start_time)/60,1)} minutes to run.")
-                accuracies[idx] += acc
-                max_epochs[idx] += epochs_taken
-        for i in range(len(learning_rates)):
-            accuracies[i] = accuracies[i]/num_trials
-            max_epochs[i] = max_epochs[i]/num_trials
+        for model in models:
+            # records the sum accuracy associated with each learning rate
+            #   divide by num_trials to get the average accuracy
+            accuracies = [0] * len(learning_rates)
+            # records the sum number of epochs taken, whether that be the specified
+            #   number <epochs>, or a smaller number because of early stopping
+            #   divide by num_trials to get the average num epochs taken for that lr
+            max_epochs = [0] * len(learning_rates) 
+            for idx, lr in enumerate(learning_rates):
+                for trial in range(num_trials):
+                    print(f"\n\nTraining Model {model.name}, Trial {trial+1}")
+                    # Define data loaders for training and testing data in this fold
+                    trainloader = DataLoader(
+                                    train_dataset, 
+                                    batch_size=batch_size,
+                                    shuffle=True)
+                    testloader = DataLoader(
+                                    test_dataset,
+                                    batch_size=batch_size,
+                                    shuffle=False)
+                    acc, epochs_taken = evaluate(
+                        model,
+                        trainloader,
+                        testloader,
+                        epochs,
+                        optimizer= torch.optim.Adam(model.parameters(),lr=lr),
+                        loss_function= nn.CrossEntropyLoss(),
+                        early_stopper= early_stopper,
+                        confidence_threshold= confidence_threshold)
+                    
+                    print(f"The model took {round((time.time() - start_time)/60,1)} minutes to run.")
+                    accuracies[idx] += acc
+                    max_epochs[idx] += epochs_taken
+            for i in range(len(learning_rates)):
+                accuracies[i] = accuracies[i]/num_trials
+                max_epochs[i] = max_epochs[i]/num_trials
+            model_results.append((model.name, zip(learning_rates, max_epochs, accuracies)))
+        print("\n##################################################################")
+        print("##################################################################")
+        print(f"RESULTS")
+        desc_width = 50
+        value_width = 20
 
-        print(f"\nAverage accuracies, epochs taken for different learning rates:")
-        for ele in zip(learning_rates, max_epochs, accuracies):
-            print(ele)
+        print(f"{'Maximum number of epochs':<{desc_width}}{epochs:>{value_width}}")
+        print(f"{'Batch size':<{desc_width}}{batch_size:>{value_width}}")
+        if confidence_threshold is not None:
+            print(f"{'Confidence threshold (binarization)':<{desc_width}}{confidence_threshold:>{value_width}}")
+        else:
+            print(f"{'Confidence threshold (binarization)':<{desc_width}}{'None':>{value_width}}")
+        print(f"{'Number of trials per model':<{desc_width}}{num_trials:>{value_width}}")
+        print(f"{'Early stopping patience (num epochs)':<{desc_width}}{patience:>{value_width}}")
+        print(f"{'Early stopping minimum percent improvement':<{desc_width}}{min_pct_improvement:>{value_width}}")
+
+        print(f"In the form of (LR, avg epochs taken, avg accuracy)...")
+        for model_result in model_results:
+            print(f"{model_result[0]}:")
+            for lr_combination in model_result[1]:
+                print(f"\t{lr_combination}")
+        print("##################################################################")
+        print("##################################################################\n")
+
+        # Get the current date and time
+        now = datetime.datetime.now()
+
+        # Format the date and time as a string
+        date_time = now.strftime("%Y-%m-%d_%H-%M-%S")
+
+        # Define the filename using the date and time
+        filename = f'model_results/results_{date_time}.txt'
+
+        # Create directory 'model_results' if it does not exist
+        if not os.path.exists('model_results'):
+            os.makedirs('model_results')
+
+        # Open the file in write mode
+        with open(filename, 'w') as f:
+            f.write("\n##################################################################\n")
+            f.write("##################################################################\n")
+            f.write("RESULTS\n")
+            
+            desc_width = 50
+            value_width = 20
+
+            f.write(f"{'Maximum number of epochs':<{desc_width}}{epochs:>{value_width}}\n")
+            f.write(f"{'Batch size':<{desc_width}}{batch_size:>{value_width}}\n")
+            if confidence_threshold is not None:
+                f.write(f"{'Confidence threshold (binarization)':<{desc_width}}{confidence_threshold:>{value_width}}\n")
+            else:
+                f.write(f"{'Confidence threshold (binarization)':<{desc_width}}{'None':>{value_width}}\n")
+            f.write(f"{'Number of trials per model':<{desc_width}}{num_trials:>{value_width}}\n")
+            f.write(f"{'Early stopping patience (num epochs)':<{desc_width}}{patience:>{value_width}}\n")
+            f.write(f"{'Early stopping minimum percent improvement':<{desc_width}}{min_pct_improvement:>{value_width}}\n")
+            f.write(f"In the form of (LR, avg epochs taken, avg accuracy)...")
+            for model_result in model_results:
+                f.write(f"{model_result[0]}:")
+                for lr_combination in model_result[1]:
+                    f.write(f"\t{lr_combination}")
+            f.write("##################################################################\n")
+            f.write("##################################################################\n")
+
+
+
+
 
         # Best Model Combinations:
         # 94.5%     SmallCNN2, 0.0005 lr, 80 epochs, 32 batch size, NO MUTATIONS
@@ -351,18 +424,19 @@ if __name__ == '__main__':
 
 
         # NO MUTATIONS SmallCNN2       
-        # Average accuracies, epochs taken for different learning rates:
         # (0.0005, 500.0, 0.9424790356394129)
         # (0.001, 500.0, 0.9160115303983228)
         # (0.003, 500.0, 0.8583595387840671)
         # (0.005, 500.0, 0.8078485324947589)
 
-        # MUTATIONS SmallCNN2
-        # Average accuracies, epochs taken for different learning rates:
+        # MUTATIONS SmallCNN2, step=1
         # (0.0005, 500.0, 0.7443166798836902)
+        # (0.008, 18.0, 0.23175355450236967)    2 trials
         # (0.001, 500.0, 0.74649748876553)
+        # (0.001, 54.5, 0.9455626715462031)     2 trials
         # (0.003, 500.0, 0.3926116838487972)
         # (0.005, 500.0, 0.4037800687285223)
+        # (0.005, 45.0, 0.6967063129002744)     2 trials
 
 
 

@@ -16,6 +16,7 @@ same_padding = lambda stride, in_width, out_width, filter_size : math.floor((str
 class Zurich(nn.Module):
     def __init__(self, stride=1, in_width=60, num_classes=156):
         super(Zurich, self).__init__()
+        self.name = "Zurich"
         self.conv1 = nn.Conv1d(in_channels=4, out_channels=4, kernel_size=7, padding=same_padding(stride, in_width, in_width, 7))
         self.leakyrelu = nn.LeakyReLU()
         self.fc1 = nn.Linear(60*4, 128)
@@ -43,6 +44,7 @@ class Zurich(nn.Module):
 class CNN1(nn.Module):
     def __init__(self, num_classes):
         super(CNN1, self).__init__()
+        self.name = "CNN1"
         # padding = (1*(60-1) - 60 + 3)/2 = 1
         self.conv1 = nn.Conv1d(in_channels=4, out_channels=16, kernel_size=3, padding=1)
         self.conv2 = nn.Conv1d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
@@ -73,6 +75,7 @@ class CNN1(nn.Module):
 class SmallCNN1(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN1, self).__init__()
+        self.name = "SmallCNN1"
         self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
         self.relu = nn.ReLU()
         self.pool = nn.MaxPool1d(2)
@@ -97,6 +100,7 @@ class SmallCNN1(nn.Module):
 class SmallCNN1_1(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN1_1, self).__init__()
+        self.name = "SmallCNN1_1"
         self.conv1 = nn.Conv1d(4, 4, 7, padding=same_padding(stride, in_width, in_width, 3))
         self.leakyrelu = nn.LeakyReLU()
         self.dropout = nn.Dropout(0.2)
@@ -118,6 +122,7 @@ class SmallCNN1_1(nn.Module):
 class SmallCNN2(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN2, self).__init__()
+        self.name = "SmallCNN2"
         self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
         self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
         self.leakyrelu = nn.LeakyReLU() # was previously relu I believe
@@ -143,6 +148,7 @@ class SmallCNN2(nn.Module):
 class SmallCNN2_1(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN2_1, self).__init__()
+        self.name = "SmallCNN2_1"
         self.conv1 = nn.Conv1d(4, 4, 3, padding=same_padding(stride, in_width, in_width, 3))
         self.conv2 = nn.Conv1d(4, 4, 5, padding=same_padding(stride, in_width, in_width, 5))
         self.leakyrelu = nn.LeakyReLU()
@@ -171,6 +177,7 @@ class SmallCNN2_1(nn.Module):
 class Linear1(nn.Module):
     def __init__(self, in_width, num_classes):
         super(Linear1, self).__init__()
+        self.name = "Linear1"
         self.fc1 = nn.Linear(4*in_width, 320)
         self.fc2 = nn.Linear(320, 400)
         self.fc3 = nn.Linear(400, num_classes)
@@ -196,6 +203,7 @@ class Linear1(nn.Module):
 class Linear2(nn.Module):
     def __init__(self, in_width, num_classes):
         super(Linear2, self).__init__()
+        self.name = "Linear1"
         self.fc1 = nn.Linear(4*in_width, 320)
         self.fc2 = nn.Linear(320, num_classes)
         self.relu = nn.ReLU()
