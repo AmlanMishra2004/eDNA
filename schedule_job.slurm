@@ -5,8 +5,8 @@
 #SBATCH --nodes=1			# Run on 1 node
 #SBATCH --ntasks=1 			# One process (shared-memory)
 #SBATCH --partition=grtx		# Select partition
-#SBATCH --mem=10gb			# Job memory request
-#SBATCH --time=500:00:00		# Time limit, hrs:min:sec
+#SBATCH --mem=15gb			# Job memory request
+#SBATCH --time=72:00:00		# Time limit, hrs:min:sec
 #SBATCH --gres=gpu:4			# Request 1 gpu            
 #SBATCH --output=out.%j.log		# Standard output and error log
 
@@ -24,7 +24,7 @@ echo "==========================================="
 
 source ../eDNA_env/bin/activate
 
-singularity run --nv ~/containers/pytorch-waggoner.simg python3 evaluate_model.py
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 testScript.py
 # singularity run --nv $PYTORCH_CONT python3 zurich_replica/src/models/testScript.py

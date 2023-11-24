@@ -216,8 +216,8 @@ if __name__ == '__main__':
         testMutationRate = 0            # 0% chance to be randomly flipped
 
 
-    use_autokeras = False
-    use_my_model = True
+    use_autokeras = True
+    use_my_model = False
     verbose = True
 
 
@@ -458,8 +458,8 @@ if __name__ == '__main__':
         start_time = time.time()
 
         # Initialize and train the classifier
-        clf = ak.ImageClassifier(overwrite=False, max_trials=1)
-        clf.fit(X_train, y_train, epochs=5) # optiona2lly specify epochs=5
+        clf = ak.ImageClassifier(overwrite=False, max_trials=50)
+        clf.fit(X_train, y_train) # optiona2lly specify epochs=5
 
         # Export as a Keras Model
         model = clf.export_model()
