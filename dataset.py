@@ -54,7 +54,7 @@ class Sequence_Data(Dataset):
         #   different variables below.
         self.data = data
         # sequences are turned to nparrays *after* mutation, since they are
-        #   manipulated as strings anyway when buffering to 60 chars
+        #   manipulated as strings anyway when buffering to 60 or 150 chars
         self.sequences = data[seq_col].to_numpy()
         self.labels = torch.tensor(data[species_col].values).long()
         self.seq_col = seq_col
@@ -92,9 +92,9 @@ class Sequence_Data(Dataset):
         seq = utils.apply_random_deletions(seq, self.deletions)
         seq = utils.apply_random_mutations(seq, self.mutation_rate, mutation_options)
 
-        print(f"MUTATED SEQUENCE: \n{seq}")
+        # print(f"MUTATED SEQUENCE: \n{seq}")
 
-        # Pad or truncate to 60bp. 'z' padding will be turned to [0,0,0,0] below
+        # Pad or truncate to 60bp or 150bp. 'z' padding will be turned to [0,0,0,0] below
         seq = seq.ljust(self.seq_len, 'z')[:self.seq_len]
 
         # Turn every base pair character into a vector

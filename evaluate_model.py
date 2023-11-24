@@ -186,34 +186,54 @@ if __name__ == '__main__':
     species_col = 'species_cat'     # name of the column containing species
     seq_col = 'seq'                 # name of the column containing sequences
     seq_count_thresh = 2            # keep species with >1 sequence
-    seq_target_length = 150         # cap sequences at 150bp
     test_split = 0.3                # 30% test data, 70% train data
     trainRandomInsertions = [0,2]   # between 0 and 2 per sequence
     trainRandomDeletions = [0,2]    # between 0 and 2 per sequence
     trainMutationRate = 0.05        # 5% chance for a bp to be randomly flipped
-    testRandomInsertions = [1,1]    # 1 per sequence
-    testRandomDeletions = [1,1]     # 1 per sequence
-    testMutationRate = 0.02         # 2% chance to be randomly flipped
     encoding_mode = 'probability'   # 'probability' or 'random'
+    applying_on_raw_data = False    # applying on raw unlabeled data or ref db data
+    augment_test_data = True        # whether or not to augment the test set
+
+    if applying_on_raw_data:
+        seq_target_length = 150         # cap sequences at 150bp
+        addTagAndPrimer = True          # do not add tag and primer
+        addRevComplements = True        # add the reverse complement of every seq
+    elif not applying_on_raw_data:
+        seq_target_length = 60          # cap sequences at 60bp
+        addTagAndPrimer = False         # do not add tag and primer
+        addRevComplements = False       # do not add the reverse complement of every seq
+    """ For the evaluations, we either added no augmentation or 2% noise and
+        singular insertions and deletions, as we expected the PCR amplifcation
+        and sequencing to be better than the 5% noise considered during the
+        training phase."""
+    if augment_test_data:
+        testRandomInsertions = [1,1]    # 1 per sequence
+        testRandomDeletions = [1,1]     # 1 per sequence
+        testMutationRate = 0.02         # 2% chance to be randomly flipped
+    elif not augment_test_data:
+        testRandomInsertions = [0,0]    # 0 per sequence
+        testRandomDeletions = [0,0]     # 0 per sequence
+        testMutationRate = 0            # 0% chance to be randomly flipped
+
 
     use_autokeras = False
     use_my_model = True
     verbose = True
 
+
     df = pd.read_csv(data_path, sep=sep)
     print(f"Original df shape: {df.shape}")
     utils.print_descriptive_stats(df, ['species','family', 'genus', 'order'])
-
     df = utils.remove_species_with_too_few_sequences(df, species_col, seq_count_thresh, verbose)
-    df = utils.add_tag_and_primer(df, seq_col, iupac, 'n'*10,
-                     'acaccgcccgtcactct',
-                     'cttccggtacacttaccatg',
-                     verbose)
-    df = utils.add_reverse_complements(df, seq_col, iupac, verbose)
+    if addTagAndPrimer:
+        df = utils.add_tag_and_primer(df, seq_col, iupac, 'n'*10,
+                        'acaccgcccgtcactct',
+                        'cttccggtacacttaccatg',
+                        verbose)
+    if addRevComplements:
+        df = utils.add_reverse_complements(df, seq_col, iupac, verbose)
     df = utils.oversample_underrepresented_species(df, species_col, verbose)
-
     utils.print_descriptive_stats(df, ['species','family', 'genus', 'order'])
-
     le = LabelEncoder()
     df[species_col] = le.fit_transform(df[species_col])
 
@@ -262,12 +282,12 @@ if __name__ == '__main__':
         start_time = time.time()
 
         # model = models.CNN1(num_classes=156)
-        model = models.SmallCNN2(stride=1, in_width=150, num_classes=156)
-        # model = models.Linear1(in_width=150, num_classes=156)
-        # model = models.Linear2(in_width=150, num_classes=156)
-        # model = models.Zurich(stride=1, in_width=150, num_classes=156)
-        # model = models.SmallCNN1_1(stride=1, in_width=150, num_classes=156)
-        # model = models.SmallCNN2_1(stride=1, in_width=150, num_classes=156)
+        model = models.SmallCNN2(stride=1, in_width=seq_target_length, num_classes=156)
+        # model = models.Linear1(in_width=seq_target_length, num_classes=156)
+        # model = models.Linear2(in_width=seq_target_length, num_classes=156)
+        # model = models.Zurich(stride=1, in_width=seq_target_length, num_classes=156)
+        # model = models.SmallCNN1_1(stride=1, in_width=seq_target_length, num_classes=156)
+        # model = models.SmallCNN2_1(stride=1, in_width=seq_target_length, num_classes=156)
 
         model.to('cuda')
         # summary(model)
@@ -279,8 +299,10 @@ if __name__ == '__main__':
         learning_rates = [0.0005, 0.001, 0.003, 0.005]
         # learning_rates = [0.0005, 0.001, 0.005, 0.01, 0.05]
         batch_size = 32
-        epochs = 500
-        early_stopper = utils.EarlyStopping(patience=5, min_pct_improvement=3)
+        epochs = 10_000
+        # confidence_threshold = 0.9 # called the 'binzarization threshold' in the Zurich paper
+        confidence_threshold = None
+        early_stopper = utils.EarlyStopping(patience=10, min_pct_improvement=0.5)
         # early_stopper = None
 
         # records the sum accuracy associated with each learning rate
@@ -309,8 +331,8 @@ if __name__ == '__main__':
                     epochs,
                     optimizer= torch.optim.Adam(model.parameters(),lr=lr),
                     loss_function= nn.CrossEntropyLoss(),
-                    early_stopper=early_stopper,
-                    confidence_threshold= 0.9)
+                    early_stopper= early_stopper,
+                    confidence_threshold= confidence_threshold)
                 
                 print(f"The model took {round((time.time() - start_time)/60,1)} minutes to run.")
                 accuracies[idx] += acc
@@ -586,7 +608,7 @@ if __name__ == '__main__':
 #                             sep=',',                    # Jon: ','
 #                             seq_col='seq',              # Jon's assumed sequence was the second column
 #                             species_col='species_cat',  # Jon's assumed species was the first column
-#                             target_seq_length=60,       # Jon: 250 (Sam: confusion about 150 vs 60)
+#                             target_seq_length=60,       # Jon: 250 Sam: 60 or 150
 #                             seq_count_thresh=2,         # Jon: 2
 #                             transform=0,                # Jon: None (would be 0 now)
 #                             mode='probability'          # Jon: (would be'random' now)     
