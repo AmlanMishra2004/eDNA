@@ -119,6 +119,30 @@ class SmallCNN1_1(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
+# Similar to SmallCNN1_1 except with a higher number of output channels and thus
+#    a larger number of nodes in the FC layer
+class SmallCNN1_2(nn.Module):
+    def __init__(self, stride, in_width, num_classes):
+        super(SmallCNN1_2, self).__init__()
+        self.name = "SmallCNN1_1"
+        self.conv1 = nn.Conv1d(4, 128, 7, padding=same_padding(stride, in_width, in_width, 3))
+        self.leakyrelu = nn.LeakyReLU()
+        self.dropout = nn.Dropout(0.2)
+        self.fc1 = nn.Linear(7168, num_classes)
+
+    def forward(self, x):
+        x = self.leakyrelu(self.conv1(x))
+        x = self.dropout(x)
+        x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
+        x = self.fc1(x)
+        x = F.softmax(x, dim=1)
+        return x
+    
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
 class SmallCNN2(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN2, self).__init__()
@@ -145,6 +169,7 @@ class SmallCNN2(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
+# Same as SmallCNN2 except much smaller depth &-> smaller FC layer
 class SmallCNN2_1(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN2_1, self).__init__()
@@ -161,6 +186,179 @@ class SmallCNN2_1(nn.Module):
         x = self.leakyrelu(self.conv2(x))
         x = self.pool(x)
         x = self.dropout(x)
+        x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
+        x = self.fc1(x)
+        x = F.softmax(x, dim=1)
+        return x
+
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+# same as SmallCNN2 except small dropout is applied to the first conv layer
+class SmallCNN2_2(nn.Module):
+    def __init__(self, stride, in_width, num_classes):
+        super(SmallCNN2_2, self).__init__()
+        self.name = "SmallCNN2_2"
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.leakyrelu = nn.LeakyReLU()
+        self.pool = nn.MaxPool1d(2)
+        self.smalldropout = nn.Dropout(0.2)
+        self.bigdropout = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(1856, num_classes)
+
+    def forward(self, x):
+        x = self.leakyrelu(self.conv1(x))
+        x = self.smalldropout(x)
+        x = self.leakyrelu(self.conv2(x))
+        x = self.pool(x)
+        x = self.bigdropout(x)
+        x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
+        x = self.fc1(x)
+        x = F.softmax(x, dim=1)
+        return x
+
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+# Same as SmallCNN2 except max pool 2->3
+class SmallCNN2_3(nn.Module):
+    def __init__(self, stride, in_width, num_classes):
+        super(SmallCNN2_3, self).__init__()
+        self.name = "SmallCNN2_3"
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.leakyrelu = nn.LeakyReLU() # was previously relu I believe
+        self.pool = nn.MaxPool1d(3)
+        self.dropout = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(1216, num_classes) # 64*in_width
+
+    def forward(self, x):
+        x = self.leakyrelu(self.conv1(x))
+        x = self.leakyrelu(self.conv2(x))
+        x = self.pool(x)
+        x = self.dropout(x)
+        x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
+        x = self.fc1(x)
+        x = F.softmax(x, dim=1)
+        return x
+
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+# undeveloped copy of smallcnn2
+class SmallCNN2_4(nn.Module):
+    def __init__(self, stride, in_width, num_classes):
+        super(SmallCNN2, self).__init__()
+        self.name = "SmallCNN2"
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.leakyrelu = nn.LeakyReLU() # was previously relu I believe
+        self.pool = nn.MaxPool1d(2)
+        self.dropout = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(1856, num_classes) # 64*in_width
+
+    def forward(self, x):
+        x = self.leakyrelu(self.conv1(x))
+        x = self.leakyrelu(self.conv2(x))
+        x = self.pool(x)
+        x = self.dropout(x)
+        x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
+        x = self.fc1(x)
+        x = F.softmax(x, dim=1)
+        return x
+
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+# undeveloped copy of smallcnn2
+class SmallCNN2_5(nn.Module):
+    def __init__(self, stride, in_width, num_classes):
+        super(SmallCNN2, self).__init__()
+        self.name = "SmallCNN2"
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.leakyrelu = nn.LeakyReLU() # was previously relu I believe
+        self.pool = nn.MaxPool1d(2)
+        self.dropout = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(1856, num_classes) # 64*in_width
+
+    def forward(self, x):
+        x = self.leakyrelu(self.conv1(x))
+        x = self.leakyrelu(self.conv2(x))
+        x = self.pool(x)
+        x = self.dropout(x)
+        x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
+        x = self.fc1(x)
+        x = F.softmax(x, dim=1)
+        return x
+
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+# Same as SmallCNN2 except one more layer, pooling 2->3, &-> larger FC layer (1856 -> 1792)
+# 79% at lr=0.0005, 0.001 was also good
+class SmallCNN3(nn.Module):
+    def __init__(self, stride, in_width, num_classes):
+        super(SmallCNN3, self).__init__()
+        self.name = "SmallCNN3"
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.conv3 = nn.Conv1d(64, 64, 5, padding=same_padding(stride, in_width, in_width, 5))
+        self.leakyrelu = nn.LeakyReLU()
+        self.pool = nn.MaxPool1d(2)
+        self.dropout = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(1856, num_classes)
+
+    def forward(self, x):
+        x = self.leakyrelu(self.conv1(x))
+        x = self.leakyrelu(self.conv2(x))
+        x = self.leakyrelu(self.conv3(x))
+        x = self.pool(x)
+        x = self.dropout(x)
+        x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
+        x = self.fc1(x)
+        x = F.softmax(x, dim=1)
+        return x
+
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+# Same as SmallCNN3, except added 0.2 dropout on the conv layers
+class SmallCNN3_1(nn.Module):
+    def __init__(self, stride, in_width, num_classes):
+        super(SmallCNN3_1, self).__init__()
+        self.name = "SmallCNN3_1"
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.conv3 = nn.Conv1d(64, 64, 5, padding=same_padding(stride, in_width, in_width, 5))
+        self.leakyrelu = nn.LeakyReLU()
+        self.pool = nn.MaxPool1d(2)
+        self.dropout1 = nn.Dropout(0.2)
+        self.dropout2 = nn.Dropout(0.5)
+        self.fc1 = nn.Linear(1856, num_classes)
+
+    def forward(self, x):
+        x = self.leakyrelu(self.conv1(x))
+        x = self.dropout1(x)
+        x = self.leakyrelu(self.conv2(x))
+        x = self.dropout1(x)
+        x = self.leakyrelu(self.conv3(x))
+        x = self.dropout1(x)
+        x = self.pool(x)
+        x = self.dropout2(x)
         x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
         x = self.fc1(x)
         x = F.softmax(x, dim=1)

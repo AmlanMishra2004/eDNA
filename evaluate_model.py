@@ -288,8 +288,14 @@ if __name__ == '__main__':
         linear2 = models.Linear2(in_width=seq_target_length, num_classes=156)
         zurich = models.Zurich(stride=1, in_width=seq_target_length, num_classes=156)
         smallcnn1_1 = models.SmallCNN1_1(stride=1, in_width=seq_target_length, num_classes=156)
+        smallcnn1_2 = models.SmallCNN1_2(stride=1, in_width=seq_target_length, num_classes=156)
         smallcnn2_1 = models.SmallCNN2_1(stride=1, in_width=seq_target_length, num_classes=156)
-        models = [smallcnn2, zurich]
+        smallcnn2_2 = models.SmallCNN2_2(stride=1, in_width=seq_target_length, num_classes=156)
+        smallcnn2_3 = models.SmallCNN2_3(stride=1, in_width=seq_target_length, num_classes=156)
+        smallcnn3 = models.SmallCNN3(stride=1, in_width=seq_target_length, num_classes=156)
+        smallcnn3_1 = models.SmallCNN3_1(stride=1, in_width=seq_target_length, num_classes=156)
+        models = [smallcnn2_3]
+        # models = [smallcnn2, zurich]
         # models = [cnn1, smallcnn2, linear1, linear2, zurich, smallcnn1_1, smallcnn2_1]
 
         for model in models:
@@ -298,11 +304,12 @@ if __name__ == '__main__':
 
         print(f"Evaluation for Personal Model(s):\n{[f'{model.name}' for model in models]}")
 
-        num_trials = 3
-        # learning_rates = [0.008]
+        num_trials = 1
+        # learning_rates = [0.001]
+        learning_rates = [0.0005, 0.001]
         # learning_rates = [0.001, 0.005]
         # learning_rates = [0.0005, 0.001, 0.003, 0.005]
-        learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
+        # learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
         batch_size = 32
         epochs = 10_000
         # confidence_threshold = 0.9 # Zurich called this 'binzarization threshold'
