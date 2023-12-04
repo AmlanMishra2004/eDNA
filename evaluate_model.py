@@ -8,9 +8,9 @@ import time
 import sys
 import os
 from tqdm import tqdm
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, label_binarize
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import confusion_matrix
+from sklearn.metrics import confusion_matrix, classification_report, roc_auc_score
 from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.linear_model import SGDClassifier
@@ -20,6 +20,10 @@ from model import My_CNN
 # from augment import RandomBPFlip
 from torch.utils.data import DataLoader 
 import datetime
+import random
+
+random.seed(1327)
+
 
 def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function,
              early_stopper, confidence_threshold):
@@ -28,6 +32,8 @@ def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function,
         early_stopper.reset()
     train_accuracies = []
     val_accuracies = []
+    train_losses = []
+    val_losses = []
 
     np.set_printoptions(threshold=sys.maxsize)
 
@@ -45,6 +51,7 @@ def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function,
             optimizer.zero_grad()   # zero the gradients for all the weights
             outputs = model(inputs) # run the inputs through the model
             loss = loss_function(outputs, labels) # compute the loss
+            train_losses.append(loss)
             loss.backward()         # perform backward pass, updating weights
             optimizer.step()        # perform optimization
             _, predicted = torch.max(outputs, 1)
@@ -61,6 +68,8 @@ def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function,
             for i, (inputs, labels) in enumerate(testloader, 0):
                 inputs, labels = inputs.cuda(), labels.cuda()
                 outputs = model(inputs)
+                loss = loss_function(outputs, labels)
+                val_losses.append(loss)
 
                 if confidence_threshold:
                     # Get the predicted classes and their corresponding probabilities
@@ -89,38 +98,60 @@ def evaluate(model, trainloader, testloader, epochs, optimizer, loss_function,
         print(f'Epoch {epoch+1}/{epochs}, Train Accuracy: {train_acc*100}%, Validation Accuracy: {val_acc*100}%\n')
         train_accuracies.append(train_acc)
         val_accuracies.append(val_acc)
-
     
+
     # TESTING -----------------------------------------------------------------
     model.eval() # Set the model to evaluation mode
-    correct, total = 0, 0
+    all_targets = []
+    all_predictions = []
+    all_outputs = []
+
     with torch.no_grad():
 
         # Iterate over the test data and generate predictions
-        con_matrix = None
-        for i, (inputs, targets) in enumerate(testloader, 0):
-            inputs = inputs.cuda()
-            targets = targets.cuda()
+        for i, (input, target) in enumerate(testloader, 0):
+            input = input.cuda()
+            target = target.cuda()
 
-            outputs = model(inputs)
-            loss = loss_function(outputs, targets)
-            # test_losses.append(loss)
+            output = model(input)
 
-            _, predicted = torch.max(outputs.data, 1)
-            total += targets.size(0)
-            correct += (predicted == targets).sum().item()
+            _, predicted = torch.max(output.data, 1)
+
+            # Record the actual values, predictions, and confidence percentages
+            all_targets.extend(target.view(-1).tolist())
+            all_predictions.extend(predicted.view(-1).tolist())
+            all_outputs.extend(output.tolist())
 
     # Print accuracy
-    acc = correct / total
-    print(f"{correct}/{total} correct")
+    correct_predictions = sum(t == p for t, p in zip(all_targets, all_predictions))
+    acc = correct_predictions / len(all_targets)
     print('--------------------------------')
     print(f'Model Accuracy: {acc*100} %')
-    # print(con_matrix)
-    print('--------------------------------')
+
+    # Print precision, recall, and F-1 score
+    print(classification_report(all_targets, all_predictions, zero_division=0))
+
+    # Print ROC AUC for multi-class, assuming 156 classes
+    all_targets_one_hot = label_binarize(all_targets, classes=list(range(156)))
+    roc_auc = roc_auc_score(all_targets_one_hot, all_outputs, multi_class='ovr', average='weighted')
+    print(f'Weighted ROC AUC score: {roc_auc}')
+    utils.graph_roc_curves(all_targets_one_hot, all_outputs, num_classes=156)
+
     model.reset_params()
-    # utils.graph_train_loss(train_losses)
-    # utils.graph_train_acc(train_accuracies) # this is helpful
-    # utils.graph_train_vs_test_acc(train_acc, test_acc)
+
+    # Graph results
+    # turn the lists of tensors into lists of lists on the CPU
+    train_accuracies = utils.make_compatible_for_plotting(train_accuracies)
+    train_losses = utils.make_compatible_for_plotting(train_losses)
+    val_accuracies = utils.make_compatible_for_plotting(val_accuracies)
+    val_losses = utils.make_compatible_for_plotting(val_losses)
+    utils.graph_over_learning(train_accuracies, "Training", "Accuracy")
+    utils.graph_over_learning(train_losses, "Training", "Loss")
+    utils.graph_over_learning(val_accuracies, "Testing", "Accuracy")
+    utils.graph_over_learning(val_losses, "Testing", "Loss")
+    utils.graph_train_vs_test(train_accuracies, val_accuracies, "Accuracy")
+    utils.graph_train_vs_test(train_losses, val_losses, "Loss")
+
     return acc, epoch+1
     
 
@@ -155,9 +186,9 @@ if __name__ == '__main__':
 
     # read in all data
     # remove unused sequences with <2 seq species
-    # add tags and primers to every sequence
+    # (opt) add tags and primers to every sequence
+    # (opt) add reverse complements of every sequence
     # oversample underrepresented species
-    # add reverse complements
     # cap/fill to get 60 bp length
     # train test split
     # create train and test Datasets
@@ -192,7 +223,8 @@ if __name__ == '__main__':
     trainRandomDeletions = [0,2]    # between 0 and 2 per sequence
     trainMutationRate = 0.05        # 5% chance for a bp to be randomly flipped
     encoding_mode = 'probability'   # 'probability' or 'random'
-    applying_on_raw_data = False    # applying on raw unlabeled data or ref db data
+
+    applying_on_raw_data = False    # applying on raw unlabeled data or "clean" ref db data
     augment_test_data = True        # whether or not to augment the test set
 
     if applying_on_raw_data:
@@ -225,6 +257,7 @@ if __name__ == '__main__':
     df = pd.read_csv(data_path, sep=sep)
     print(f"Original df shape: {df.shape}")
     utils.print_descriptive_stats(df, ['species','family', 'genus', 'order'])
+    # utils.plot_species_distribution(df, species_col)
     df = utils.remove_species_with_too_few_sequences(df, species_col, seq_count_thresh, verbose)
     if addTagAndPrimer:
         df = utils.add_tag_and_primer(df, seq_col, iupac, 'n'*10,
@@ -233,15 +266,23 @@ if __name__ == '__main__':
                         verbose)
     if addRevComplements:
         df = utils.add_reverse_complements(df, seq_col, iupac, verbose)
-    df = utils.oversample_underrepresented_species(df, species_col, verbose)
+
     utils.print_descriptive_stats(df, ['species','family', 'genus', 'order'])
+    # utils.plot_species_distribution(df, species_col)
     le = LabelEncoder()
     df[species_col] = le.fit_transform(df[species_col])
 
     train, test = utils.stratified_split(df, species_col, test_split)
+    train = utils.oversample_underrepresented_species(train, species_col, verbose)
+
     # Train and test are both dataframes w/ 9 columns
     print(f"Train shape: {train.shape}")
     print(f"Test shape: {test.shape}")
+
+    # to verify that the train and test sets are the same as in Zurich's paper...
+    # train.to_csv("/Users/Sam/OneDrive/Desktop/my_train.csv")
+    # test.to_csv("/Users/Sam/OneDrive/Desktop/my_test.csv")
+    # pause = input("PAUSE")
 
 
     if use_my_model:
@@ -292,9 +333,10 @@ if __name__ == '__main__':
         smallcnn2_1 = models.SmallCNN2_1(stride=1, in_width=seq_target_length, num_classes=156)
         smallcnn2_2 = models.SmallCNN2_2(stride=1, in_width=seq_target_length, num_classes=156)
         smallcnn2_3 = models.SmallCNN2_3(stride=1, in_width=seq_target_length, num_classes=156)
+        smallcnn2_4 = models.SmallCNN2_4(stride=1, in_width=seq_target_length, num_classes=156)
         smallcnn3 = models.SmallCNN3(stride=1, in_width=seq_target_length, num_classes=156)
         smallcnn3_1 = models.SmallCNN3_1(stride=1, in_width=seq_target_length, num_classes=156)
-        models = [smallcnn2_3]
+        models = [smallcnn2]
         # models = [smallcnn2, zurich]
         # models = [cnn1, smallcnn2, linear1, linear2, zurich, smallcnn1_1, smallcnn2_1]
 
@@ -305,21 +347,50 @@ if __name__ == '__main__':
         print(f"Evaluation for Personal Model(s):\n{[f'{model.name}' for model in models]}")
 
         num_trials = 1
-        # learning_rates = [0.001]
-        learning_rates = [0.0005, 0.001]
+        learning_rates = [0.0005]
+        # learning_rates = [0.0005, 0.001]
         # learning_rates = [0.001, 0.005]
         # learning_rates = [0.0005, 0.001, 0.003, 0.005]
         # learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
-        batch_size = 32
-        epochs = 10_000
+        batch_size = 32 # 512
+        epochs = 10_000 # 15
         # confidence_threshold = 0.9 # Zurich called this 'binzarization threshold'
         confidence_threshold = None
-        patience = 12
-        min_pct_improvement = 0.5
+        patience = 20
+        min_pct_improvement = 0.1
         early_stopper = utils.EarlyStopping(patience=patience, min_pct_improvement=min_pct_improvement)
         # early_stopper = None
 
         model_results = []
+
+
+
+        # INCORRECT PREDICTIONS
+
+        # 10 Auchenipterus nuchalis
+        # 21 Moenkhausia oligolepis
+        # 26 Synbranchus marmoratus
+        # 43 Tetragonopterus chalceus
+        # 47 Microcharacidium eleotrioides
+        # 59 Pimelodus ornatus
+        # 109 Rineloricaria platyura
+        # 117 Guyanancistrus longispinis
+        # 124 Electrophorus electricus
+
+        # 10 
+        # 20 Moenkhausia oligolepis (same as 21)
+        # 26 
+        # 32 Laimosemion geayi
+        # 43 
+        # 47 
+        # 63 Guianacara owroewefi
+        # 76 Charax niger
+        # 109 
+        # 117
+        # 124
+        # 137 Cynopotamus essequibensis
+
+
 
         for model in models:
             # records the sum accuracy associated with each learning rate
@@ -341,6 +412,18 @@ if __name__ == '__main__':
                                     test_dataset,
                                     batch_size=batch_size,
                                     shuffle=False)
+                    
+
+                    # To try to get the first batch to prove it is the same as Zurich
+                    # first_batch = next(iter(trainloader))
+                    # data,labels = first_batch
+                    # data_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_data.npy"
+                    # labels_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_labels.npy"
+                    # np.save(data_path, data.numpy())
+                    # np.save(labels_path, labels.numpy())
+
+
+
                     acc, epochs_taken = evaluate(
                         model,
                         trainloader,
@@ -382,20 +465,13 @@ if __name__ == '__main__':
         print("##################################################################")
         print("##################################################################\n")
 
-        # Get the current date and time
+        # Set up the file
         now = datetime.datetime.now()
-
-        # Format the date and time as a string
         date_time = now.strftime("%Y-%m-%d_%H-%M-%S")
-
-        # Define the filename using the date and time
         filename = f'model_results/results_{date_time}.txt'
-
-        # Create directory 'model_results' if it does not exist
         if not os.path.exists('model_results'):
             os.makedirs('model_results')
 
-        # Open the file in write mode
         with open(filename, 'w') as f:
             f.write("\n##################################################################\n")
             f.write("##################################################################\n")

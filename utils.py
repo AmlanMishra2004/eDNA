@@ -9,6 +9,7 @@ import torch
 import numpy as np
 import matplotlib.pyplot as plt
 import tensorflow as tf
+from sklearn.metrics import roc_curve, auc, precision_recall_curve
 
 
 
@@ -92,16 +93,24 @@ def oversample_underrepresented_species(df, species_col, verbose=False):
 '''
 Splits data into train and test, stratified on a given column.
 Will keep at least one of each species in train and test. This may result in
-a different ratio of train/test than the supplied ratio.
+a different ratio of train/test than the supplied ratio. Ratio is the decimal
+representing the portion of the data that will be used for testing.
 '''
-def stratified_split(data, column, ratio):
+def stratified_split(data, species_col, ratio):
     to_keep = []
     to_hold = []
-    # get each class and its frequency
-    counts = data[column].value_counts()
+    
+    counts = data[species_col].value_counts()
+    # for each species and its frequency (number of rows)
     for t in counts.items():
-        taxa_list = data[data[column]==t[0]][column].index.to_list()
+
+        # get a list of the indexes of every row for the current species
+        taxa_list = data[data[species_col]==t[0]][species_col].index.to_list()
         random.shuffle(taxa_list)
+
+        # split the shuffled list of indexes, keeping at least 1 sequence 
+        # in the validation set
+        # .extend() is like .append(), except it adds items individually
         split = max(1, round(t[1]*ratio))
         to_hold.extend(taxa_list[:split])
         to_keep.extend(taxa_list[split:])
@@ -124,6 +133,17 @@ def print_descriptive_stats(data, cols):
         print(f"{'Range in the number of sequences per ' + col:<50} {range_sequences:>10}")
     print('-' * 60)
 
+def plot_species_distribution(df, species_col):
+    x = df[species_col]
+    species_counts = x.value_counts()
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(species_counts.index, species_counts.values, color='skyblue')
+    
+    plt.title('Species Distribution')
+    plt.xlabel('Species')
+    plt.ylabel('Count')
+    plt.show()
 
 '''
 Converts an array of DNA bases to a 4 channel numpy array, 
@@ -443,43 +463,99 @@ def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
         else:
             raise ValueError("Framework name is incorrect. Use 'torch' or 'tf' or 'np'.")
 
+def make_compatible_for_plotting(data):
+    # If data is a list, check if it contains tensors
+    if isinstance(data, list):
+        # If the first element of the list is a tensor, assume all elements are tensors
+        if torch.is_tensor(data[0]):
+            # Convert each tensor to a numpy array
+            return [d.cpu().detach().numpy() if d.is_cuda else d.detach().numpy() for d in data]
+        else:
+            return np.array(data)
+    
+    # If data is a numpy ndarray, no conversion is needed
+    elif isinstance(data, np.ndarray):
+        return data
+    
+    # If data is a PyTorch tensor, convert it to a numpy array
+    elif torch.is_tensor(data):
+        return data.cpu().detach().numpy() if data.is_cuda else data.detach().numpy()
+    
+    # If data is a TensorFlow tensor, convert it to a numpy array
+    elif isinstance(data, tf.Tensor):
+        if data.device.type == 'cuda':
+            data = data.cpu()
+        return data.numpy()
+    
+    else:
+        raise TypeError("Data type not recognized. Please provide a list, numpy ndarray, PyTorch tensor, or TensorFlow tensor.")
+    
 
-def graph_train_vs_test_acc(train_accuracies, test_accuracies):
+# acc_or_loss should be "Accuracy" or "Loss"
+def graph_train_vs_test(train, test, acc_or_loss):
     plt.figure(figsize=(10, 5))
-    plt.plot(train_accuracies, label='Train')
-    plt.plot(test_accuracies, label='Test')
-    plt.title('Train vs Test Accuracy')
+    plt.plot(train, label='Train')
+    plt.plot(test, label='Test')
+    plt.title(f'Train vs Test {acc_or_loss}')
     plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
+    plt.ylabel(acc_or_loss)
+    plt.legend()
+    plt.show()    
+
+# expects (list, string "Training" or "Testing", string name of metric)
+def graph_over_learning(l, training_or_testing, metric):
+    plt.figure(figsize=(10, 5))
+    label = f"{training_or_testing} {metric}" # ex. "Training Accuracy"
+    plt.plot(range(1, len(l) + 1), l, label=label)
+    plt.title(f"{label} vs Epochs")
+    plt.xlabel('Epochs')
+    plt.ylabel(metric)
     plt.legend()
     plt.show()
 
-# expects list
-def graph_train_acc(train_acc):
-    plt.figure(figsize=(10, 5))
-    plt.plot(range(1, len(train_acc) + 1), train_acc, label='Train Accuracy')
-    plt.title('Train Accuracy vs Epochs')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.legend()
+# Modified from Bing AI
+def graph_roc_curves(all_targets_one_hot, all_outputs, num_classes=156):
+    # Plot ROC curve for each class
+    plt.figure()
+    for i in range(num_classes):
+        fpr, tpr, _ = roc_curve(all_targets_one_hot[:, i], np.array(all_outputs)[:, i])
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, label='ROC curve (area = %0.2f) for class %i' % (roc_auc, i))
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlim([0.0, 1.0])
+    plt.ylim([0.0, 1.05])
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver Operating Characteristic for each class')
+    # plt.legend(loc="lower right") # legend w/ 156 classes doesn't fit
     plt.show()
 
-def graph_train_loss(train_losses):
-    print(train_losses)
-    plt.figure(figsize=(10, 5))
-    # The next two lines are needed if you feed this function a pytorch tensor
-    # Convert list of tensors to a single tensor
-    train_losses_tensor = torch.stack(train_losses)
-    # Move to CPU, detach, and convert to numpy
-    train_losses = train_losses_tensor.cpu().detach().numpy()
+# # expects list
+# def graph_train_loss(train_loss):
+#     plt.figure(figsize=(10, 5))
+#     plt.plot(range(1, len(train_loss) + 1), train_loss, label='Training Loss')
+#     plt.title('Training Loss vs Epochs')
+#     plt.xlabel('Epochs')
+#     plt.ylabel('Loss')
+#     plt.legend()
+#     plt.show()
 
-    # Plot
-    plt.plot(train_losses, label='Train Loss')
-    plt.title('Train Loss vs Epochs')
-    plt.xlabel('Epochs')
-    plt.ylabel('Accuracy')
-    plt.legend()
-    plt.show()
+# def graph_train_loss(train_losses):
+#     print(train_losses)
+#     plt.figure(figsize=(10, 5))
+#     # The next two lines are needed if you feed this function a pytorch tensor
+#     # Convert list of tensors to a single tensor
+#     train_losses_tensor = torch.stack(train_losses)
+#     # Move to CPU, detach, and convert to numpy
+#     train_losses = train_losses_tensor.cpu().detach().numpy()
+
+#     # Plot
+#     plt.plot(train_losses, label='Train Loss')
+#     plt.title('Train Loss vs Epochs')
+#     plt.xlabel('Epochs')
+#     plt.ylabel('Accuracy')
+#     plt.legend()
+#     plt.show()
 
 # Stops if the accuracy hasn't improved by <min_pct_improvement> percent
 #   after <patience> epochs
