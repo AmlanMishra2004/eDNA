@@ -34,4 +34,4 @@ Based off Jon Donnely's code, as well as functions from ETH Zurich's research pa
 - Holds functions that are used by dataset.py and evaluate_model.py. These functions are defined here instead of in those files because it makes those files (which contain the essence of the logic) easier to read. Then, if someone wants to view implementational details, they may look at this file.
 
 # Instructions
-Run evaluate_model.py
+$ python3 evaluate_model.py
