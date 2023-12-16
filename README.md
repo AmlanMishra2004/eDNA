@@ -3,7 +3,8 @@ Identifies DNA sequences's species using a CNN.
 Based off the skeleton of Jon Donnely's code, as well as functions from ETH Zurich's research paper "Applying convolutional neural networks to speed up environmental DNA annotation in a highly diverse ecosystem".
 
 ## What's What
-### ./datasets
+### ./datasets (to download)
+- Download link: https://drive.google.com/file/d/1I9E3uRZBdTFRBPXms59xjCR5bZJRPqMY/view?usp=sharing
 - Contains the csv files that are used as training and testing data. Note that some files use a semicolon separator and others use a comma separator. No need to modify.
 
 ### ./image_classifier (now removed from remote repo)
