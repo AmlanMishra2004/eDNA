@@ -5,13 +5,19 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-same_padding = lambda stride, in_width, out_width, filter_size : math.floor((stride * (out_width - 1) - in_width + filter_size)/2)
+same_padding = lambda stride, in_width, out_width, filter_size: (
+    math.floor(
+        (stride * (out_width - 1) - in_width + filter_size) / 2
+    )
+)
 
 class Zurich(nn.Module):
     def __init__(self, stride=1, in_width=60, num_classes=156):
         super(Zurich, self).__init__()
         self.name = "Zurich"
-        self.conv1 = nn.Conv1d(in_channels=4, out_channels=4, kernel_size=7, padding=same_padding(stride, in_width, in_width, 7))
+        self.conv1 = nn.Conv1d(in_channels=4, out_channels=4, kernel_size=7,
+                               padding=same_padding(stride, in_width,
+                                                    in_width, 7))
         self.leakyrelu = nn.LeakyReLU()
         self.fc1 = nn.Linear(60*4, 128)
         self.fc2 = nn.Linear(128, 128)
@@ -34,16 +40,94 @@ class Zurich(nn.Module):
         for layer in self.children():
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
+
+class Jon_CNN(nn.Module):
+    """Written by Jon Donnely. Architecture taken from "Fast processing of
+    environmental DNA metabarcoding sequence data using convolutional neural
+    networks.
+    """
+    def __init__(self, in_channels=4, 
+                 conv1_out_channels=16, conv1_kernel_size=7,
+                 conv2_out_channels=32, conv2_kernel_size=7,
+                 conv3_out_channels=64, conv3_kernel_size=7,
+                 in_len=150, n_classes=1):
+        super().__init__()
+        self.in_channels = in_channels
+        self.in_len = in_len
+
+        self.conv1_out_channels = conv1_out_channels
+        self.conv2_out_channels = conv2_out_channels
+        self.conv3_out_channels = conv3_out_channels
+
+        self.conv1_kernel_size = conv1_kernel_size
+        self.conv2_kernel_size = conv2_kernel_size
+        self.conv3_kernel_size = conv3_kernel_size
+
+        print("conv1_out_channels: ", conv1_out_channels)
+        print("conv2_out_channels: ", conv2_out_channels)
+        print("conv3_out_channels: ", conv3_out_channels)
+
+        # input shape: (batch_size, channels=4, width=sequence_length)
+        self.conv_layers = nn.Sequential(
+            nn.Conv1d(in_channels=in_channels, 
+                    out_channels=conv1_out_channels, 
+                    kernel_size=conv1_kernel_size,
+                    padding=conv1_kernel_size // 2),
+            nn.ReLU(),
+            nn.Conv1d(in_channels=conv1_out_channels, 
+                    out_channels=conv2_out_channels, 
+                    kernel_size=conv2_kernel_size,
+                    padding=conv2_kernel_size // 2),
+            nn.ReLU(),
+            nn.Conv1d(in_channels=conv2_out_channels, 
+                    out_channels=conv3_out_channels, 
+                    kernel_size=conv3_kernel_size,
+                    padding=conv3_kernel_size // 2),
+            nn.ReLU(),
+            nn.MaxPool1d(3, stride=2, padding=1),
+            nn.Conv1d(in_channels=conv3_out_channels, 
+                    out_channels=conv3_out_channels*2, 
+                    kernel_size=conv1_kernel_size,
+                    padding=conv1_kernel_size // 2),
+            nn.ReLU(),
+            nn.Conv1d(in_channels=conv3_out_channels*2, 
+                    out_channels=conv3_out_channels*4, 
+                    kernel_size=conv2_kernel_size,
+                    padding=conv2_kernel_size // 2),    
+            nn.ReLU(),
+            nn.Conv1d(in_channels=conv3_out_channels*4, 
+                    out_channels=conv3_out_channels*8, 
+                    kernel_size=conv3_kernel_size,
+                    padding=conv3_kernel_size // 2),
+            nn.ReLU()
+        )
+        self.last_layer = nn.Linear(in_len//2*conv3_out_channels*8, n_classes)
+
+    def forward(self, x):
+        out = self.conv_layers(x)
+        # Reshape out to feed into linear layer
+        out = out.view(out.shape[0], -1)
+        out = self.last_layer(out)
+        return out
+
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
     
 class CNN1(nn.Module):
     def __init__(self, num_classes):
         super(CNN1, self).__init__()
         self.name = "CNN1"
         # padding = (1*(60-1) - 60 + 3)/2 = 1
-        self.conv1 = nn.Conv1d(in_channels=4, out_channels=16, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv1d(in_channels=16, out_channels=32, kernel_size=3, padding=1)
-        self.conv3 = nn.Conv1d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
-        self.conv4 = nn.Conv1d(in_channels=64, out_channels=128, kernel_size=3, padding=1)
+        self.conv1 = nn.Conv1d(in_channels=4, out_channels=16,
+                               kernel_size=3, padding=1)
+        self.conv2 = nn.Conv1d(in_channels=16, out_channels=32,
+                               kernel_size=3, padding=1)
+        self.conv3 = nn.Conv1d(in_channels=32, out_channels=64,
+                               kernel_size=3, padding=1)
+        self.conv4 = nn.Conv1d(in_channels=64, out_channels=128,
+                               kernel_size=3, padding=1)
         self.relu = nn.ReLU()
         self.fc = nn.Linear(60*128, num_classes)
         self.softmax = nn.Softmax(dim=1)
@@ -62,15 +146,12 @@ class CNN1(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
-# torch.nn.Conv1d(in_channels, out_channels, kernel_size, stride=1, padding=0,
-#                 dilation=1, groups=1, bias=True, padding_mode='zeros',
-#                 device=None, dtype=None)
-
 class SmallCNN1(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN1, self).__init__()
         self.name = "SmallCNN1"
-        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width,
+                                                              in_width, 3))
         self.relu = nn.ReLU()
         self.pool = nn.MaxPool1d(2)
         self.dropout = nn.Dropout(0.5)
@@ -95,7 +176,8 @@ class SmallCNN1_1(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN1_1, self).__init__()
         self.name = "SmallCNN1_1"
-        self.conv1 = nn.Conv1d(4, 4, 7, padding=same_padding(stride, in_width, in_width, 3))
+        self.conv1 = nn.Conv1d(4, 4, 7, padding=same_padding(stride, in_width,
+                                                             in_width, 3))
         self.leakyrelu = nn.LeakyReLU()
         self.dropout = nn.Dropout(0.2)
         self.fc1 = nn.Linear(224, num_classes)
@@ -113,13 +195,15 @@ class SmallCNN1_1(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
-# Similar to SmallCNN1_1 except with a higher number of output channels and thus
-#    a larger number of nodes in the FC layer
+# Similar to SmallCNN1_1 except with a higher number of output channels and 
+#    thus a larger number of nodes in the FC layer
 class SmallCNN1_2(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN1_2, self).__init__()
         self.name = "SmallCNN1_1"
-        self.conv1 = nn.Conv1d(4, 128, 7, padding=same_padding(stride, in_width, in_width, 3))
+        self.conv1 = nn.Conv1d(4, 128, 7, padding=same_padding(stride,
+                                                               in_width,
+                                                               in_width, 3))
         self.leakyrelu = nn.LeakyReLU()
         self.dropout = nn.Dropout(0.2)
         self.fc1 = nn.Linear(7168, num_classes)
@@ -141,8 +225,11 @@ class SmallCNN2(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN2, self).__init__()
         self.name = "SmallCNN2"
-        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
-        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride,in_width,
+                                                              in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride,
+                                                               in_width,
+                                                               in_width, 8))
         self.leakyrelu = nn.LeakyReLU() # was previously relu I believe
         self.pool = nn.MaxPool1d(2)
         self.dropout = nn.Dropout(0.5)
@@ -168,8 +255,10 @@ class SmallCNN2_1(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN2_1, self).__init__()
         self.name = "SmallCNN2_1"
-        self.conv1 = nn.Conv1d(4, 4, 3, padding=same_padding(stride, in_width, in_width, 3))
-        self.conv2 = nn.Conv1d(4, 4, 5, padding=same_padding(stride, in_width, in_width, 5))
+        self.conv1 = nn.Conv1d(4, 4, 3, padding=same_padding(stride, in_width,
+                                                             in_width, 3))
+        self.conv2 = nn.Conv1d(4, 4, 5, padding=same_padding(stride, in_width, 
+                                                             in_width, 5))
         self.leakyrelu = nn.LeakyReLU()
         self.pool = nn.MaxPool1d(2)
         self.dropout = nn.Dropout(0.2)
@@ -195,8 +284,11 @@ class SmallCNN2_2(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN2_2, self).__init__()
         self.name = "SmallCNN2_2"
-        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
-        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width,
+                                                               in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride,
+                                                               in_width,
+                                                               in_width, 8))
         self.leakyrelu = nn.LeakyReLU()
         self.pool = nn.MaxPool1d(2)
         self.smalldropout = nn.Dropout(0.2)
@@ -224,8 +316,11 @@ class SmallCNN2_3(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN2_3, self).__init__()
         self.name = "SmallCNN2_3"
-        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
-        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width,
+                                                               in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride,
+                                                               in_width,
+                                                               in_width, 8))
         self.leakyrelu = nn.LeakyReLU() # was previously relu I believe
         self.pool = nn.MaxPool1d(3)
         self.dropout = nn.Dropout(0.5)
@@ -251,8 +346,11 @@ class SmallCNN2_4(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN2_4, self).__init__()
         self.name = "SmallCNN2_4"
-        self.conv1 = nn.Conv1d(4, 64, 3, padding=same_padding(stride, in_width, in_width, 3))
-        self.conv2 = nn.Conv1d(64, 128, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.conv1 = nn.Conv1d(4, 64, 3, padding=same_padding(stride, in_width,
+                                                               in_width, 3))
+        self.conv2 = nn.Conv1d(64, 128, 8, padding=same_padding(stride,
+                                                                in_width,
+                                                                in_width, 8))
         self.leakyrelu = nn.LeakyReLU() # was previously relu I believe
         self.pool = nn.MaxPool1d(2)
         self.dropout = nn.Dropout(0.5)
@@ -278,8 +376,11 @@ class SmallCNN2_5(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN2, self).__init__()
         self.name = "SmallCNN2"
-        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
-        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width,
+                                                               in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride,
+                                                               in_width,
+                                                               in_width, 8))
         self.leakyrelu = nn.LeakyReLU() # was previously relu I believe
         self.pool = nn.MaxPool1d(2)
         self.dropout = nn.Dropout(0.5)
@@ -305,11 +406,15 @@ class SmallCNN2_6(nn.Module):
     def __init__(self, in_width, num_classes):
         super(SmallCNN2_6, self).__init__()
         self.name = "SmallCNN2_6"
-        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(1, in_width, in_width, 3))
-        self.conv2 = nn.Conv1d(32, 64, 3, padding=same_padding(1, in_width, in_width, 3))
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(1, in_width,
+                                                              in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 3, padding=same_padding(1, in_width,
+                                                               in_width, 3))
         self.pool1d = nn.MaxPool1d(2, stride=2, padding=1)
-        self.pool2d = nn.MaxPool2d((2,2), stride=1, padding=1) # ak says stride should be 2
-        self.fc1 = nn.Linear(3965, num_classes) # stride 1(1921 for 1d, 1023 for 2d)
+        # ak says stride should be 2 for the pool2d
+        self.pool2d = nn.MaxPool2d((2,2), stride=1, padding=1) 
+        # for stride 1, number of nodes should be: (1921 for 1d, 1023 for 2d)
+        self.fc1 = nn.Linear(3965, num_classes) 
         self.dropout1 = nn.Dropout(0.25)
         self.dropout2 = nn.Dropout(0.5)
         self.relu = nn.ReLU()
@@ -333,15 +438,21 @@ class SmallCNN2_6(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
-# Same as SmallCNN2 except one more layer, pooling 2->3, &-> larger FC layer (1856 -> 1792)
+# Same as SmallCNN2 except one more layer, pooling 2->3, &-> larger FC layer
+#   (1856 -> 1792)
 # 79% at lr=0.0005, 0.001 was also good
 class SmallCNN3(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN3, self).__init__()
         self.name = "SmallCNN3"
-        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
-        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
-        self.conv3 = nn.Conv1d(64, 64, 5, padding=same_padding(stride, in_width, in_width, 5))
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width,
+                                                               in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride,
+                                                               in_width,
+                                                               in_width, 8))
+        self.conv3 = nn.Conv1d(64, 64, 5, padding=same_padding(stride,
+                                                               in_width,
+                                                               in_width, 5))
         self.leakyrelu = nn.LeakyReLU()
         self.pool = nn.MaxPool1d(2)
         self.dropout = nn.Dropout(0.5)
@@ -368,9 +479,14 @@ class SmallCNN3_1(nn.Module):
     def __init__(self, stride, in_width, num_classes):
         super(SmallCNN3_1, self).__init__()
         self.name = "SmallCNN3_1"
-        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width, in_width, 3))
-        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride, in_width, in_width, 8))
-        self.conv3 = nn.Conv1d(64, 64, 5, padding=same_padding(stride, in_width, in_width, 5))
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(stride, in_width,
+                                                               in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 8, padding=same_padding(stride,
+                                                               in_width,
+                                                               in_width, 8))
+        self.conv3 = nn.Conv1d(64, 64, 5, padding=same_padding(stride,
+                                                               in_width,
+                                                               in_width, 5))
         self.leakyrelu = nn.LeakyReLU()
         self.pool = nn.MaxPool1d(2)
         self.dropout1 = nn.Dropout(0.2)
@@ -395,9 +511,6 @@ class SmallCNN3_1(nn.Module):
         for layer in self.children():
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
-
-
-
 
 class Linear1(nn.Module):
     def __init__(self, in_width, num_classes):
@@ -446,20 +559,15 @@ class Linear2(nn.Module):
         for layer in self.children():
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
-    
-# model = Zurich(num_classes=5)
-# input = torch.randn(3, 4, 60)
-# output = model(input)
-# print(f"OUTPUT\n{output}\n")
-
 
 ###############################################################################
 # End of viable models
 ###############################################################################
 
 # ABANDONED 
-#   ...because their data was formatted as (batch_size, height=150, width=4, channels=1)
-#   and they did depthwise-seperable convolutions on that, which is pointless
+#   ...because their data was formatted as (batch_size, height=150, width=4,
+#   channels=1).
+#   They did depthwise-seperable convolutions on that, which is pointless
 #   because the depth is 1 (channels) so it is equivalent to a 1D convolution.
 class ZurichModel(nn.Module):
     # assumes (pytorch) input size of (bs, channels=4, height=1, width=60)
@@ -473,8 +581,11 @@ class ZurichModel(nn.Module):
         padding = (stride * (output_width - 1) - input_width + filter_size)/2
 
         self.conv_layers = nn.Sequential(
-            nn.Conv2d(4, 4, (1,filter_size), stride=stride, padding=padding, groups=4, bias=True), # depthwise
-            nn.Conv2d(4, 4, kernel_size=1, stride=1, padding=0, bias=True), # pointwise, 4 channels output
+            # depthwise
+            nn.Conv2d(4, 4, (1,filter_size), stride=stride, padding=padding,
+                      groups=4, bias=True),
+            # pointwise
+            nn.Conv2d(4, 4, kernel_size=1, stride=1, padding=0, bias=True),
             nn.LeakyReLU(),
         )
         self.flatten = nn.Flatten()
@@ -502,11 +613,17 @@ class ZurichModel(nn.Module):
 # ABANDONED
 # ...because of the reasons explained above
 class SeparableConv2d(nn.Module):
-    def __init__(self, in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, bias=True):
+    def __init__(self, in_channels, out_channels, kernel_size, stride=1,
+                 padding=0, dilation=1, bias=True):
         super(SeparableConv2d, self).__init__()
-        # Note: groups=in_channels makes it so that each input channel is convolved with its own set of filters, producing one output channel per input channel
-        self.depthwise = nn.Conv2d(in_channels, in_channels, kernel_size, stride, padding, dilation, groups=in_channels, bias=bias)
-        self.pointwise = nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=1, padding=0, bias=bias)
+        # Note: groups=in_channels makes it so that each input channel is
+        # convolved with its own set of filters, producing one output channel
+        # per input channel
+        self.depthwise = nn.Conv2d(in_channels, in_channels, kernel_size,
+                                   stride, padding, dilation,
+                                   groups=in_channels, bias=bias)
+        self.pointwise = nn.Conv2d(in_channels, out_channels, kernel_size=1,
+                                   stride=1, padding=0, bias=bias)
         self.relu = nn.LeakyReLU()
 
     def forward(self, x):
