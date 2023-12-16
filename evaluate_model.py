@@ -24,7 +24,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from sklearn.linear_model import SGDClassifier
-from sklearn.metrics import classification_report, confusion_matrix, roc_auc_score
+from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.naive_bayes import GaussianNB
 from sklearn.preprocessing import LabelEncoder, label_binarize
@@ -32,10 +32,9 @@ from sklearn.svm import SVC
 from tqdm import tqdm
 
 from dataset import Sequence_Data
-from model import My_CNN
 import models
-import utils
 from torch.utils.data import DataLoader
+import utils
 
 random.seed(1327)
 

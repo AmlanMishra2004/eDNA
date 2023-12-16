@@ -1,3 +1,10 @@
+# (c) 2023 Sam Waggoner
+# License: AGPLv3
+
+"""Defines PyTorch models (CNN and linear) intended to be used for classifying
+species based on eDNA sequences.
+"""
+
 import math
 
 import torch
