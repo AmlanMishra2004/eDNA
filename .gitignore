@@ -1,7 +1,11 @@
 # Sam Included
 *.out
 *.sh
-datasets
+/__pycache__
+*.py[cod]
+/.vscode
+/datasets
+/image_classifier
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
