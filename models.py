@@ -1,15 +1,9 @@
+import math
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import math
 
-# torch.nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0,
-#                 dilation=1, groups=1, bias=True, padding_mode='zeros',
-#                 device=None, dtype=None)
-
-# torch.nn.Conv1d(in_channels, out_channels, kernel_size, stride=1, padding=0,
-#                 dilation=1, groups=1, bias=True, padding_mode='zeros',
-#                 device=None, dtype=None)
 
 same_padding = lambda stride, in_width, out_width, filter_size : math.floor((stride * (out_width - 1) - in_width + filter_size)/2)
 
@@ -297,6 +291,39 @@ class SmallCNN2_5(nn.Module):
         x = self.pool(x)
         x = self.dropout(x)
         x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
+        x = self.fc1(x)
+        x = F.softmax(x, dim=1)
+        return x
+
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+# chosen by AutoKeras after 63 trials
+class SmallCNN2_6(nn.Module):
+    def __init__(self, in_width, num_classes):
+        super(SmallCNN2_6, self).__init__()
+        self.name = "SmallCNN2_6"
+        self.conv1 = nn.Conv1d(4, 32, 3, padding=same_padding(1, in_width, in_width, 3))
+        self.conv2 = nn.Conv1d(32, 64, 3, padding=same_padding(1, in_width, in_width, 3))
+        self.pool1d = nn.MaxPool1d(2, stride=2, padding=1)
+        self.pool2d = nn.MaxPool2d((2,2), stride=1, padding=1) # ak says stride should be 2
+        self.fc1 = nn.Linear(3965, num_classes) # stride 1(1921 for 1d, 1023 for 2d)
+        self.dropout1 = nn.Dropout(0.25)
+        self.dropout2 = nn.Dropout(0.5)
+        self.relu = nn.ReLU()
+        self.leakyrelu = nn.LeakyReLU()
+
+    def forward(self, x):
+        x = self.leakyrelu(self.conv1(x))
+        x = self.leakyrelu(self.conv2(x))
+        # x = torch.flatten(x, start_dim=1)
+        # x = self.pool1d(x)
+        x = self.pool2d(x)
+        x = self.dropout1(x)
+        x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
+        x = self.dropout2(x)
         x = self.fc1(x)
         x = F.softmax(x, dim=1)
         return x

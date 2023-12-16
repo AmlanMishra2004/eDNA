@@ -7,7 +7,6 @@ from collections import defaultdict
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader 
 
-
 saved_sequences_prefix = './datasets/known_maine_species/'
 labels_file = 'labels.npy'
 labels_dict_file = 'labels_dict.npy'
@@ -41,7 +40,7 @@ Improvements:
 - Jon's version assumed that the species were grouped together
 """
 class Sequence_Data(Dataset):
-    def __init__(self, data, seq_col, species_col, insertions, deletions,
+    def __init__(self, X, y, seq_col, species_col, insertions, deletions,
                  mutation_rate, encoding_mode, iupac, seq_len):
         
         # Ensure all agruments are supplied
@@ -49,14 +48,10 @@ class Sequence_Data(Dataset):
                     mutation_rate, encoding_mode, iupac]:
             raise Exception("Please specify all arguments when creating Dataset")
         
-        # 'data' is used to keep all of the columns, but it is not used later
-        #   since only seq and species are used, and they are assigned to 
-        #   different variables below.
-        self.data = data
         # sequences are turned to nparrays *after* mutation, since they are
         #   manipulated as strings anyway when buffering to 60 or 150 chars
-        self.sequences = data[seq_col].to_numpy()
-        self.labels = torch.tensor(data[species_col].values).long()
+        self.sequences = X.to_numpy()
+        self.labels = torch.tensor(y.values).long()
         self.seq_col = seq_col
         self.species_col = species_col
         self.insertions = insertions
