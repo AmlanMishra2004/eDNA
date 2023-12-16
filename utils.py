@@ -34,7 +34,8 @@ from sklearn.metrics import auc, precision_recall_curve, roc_curve
 
 
 # PREPROCESSING ---------------------------------------------------------------
-def add_tag_and_primer(data, column, comp, tag, forward_primer, reverse_primer, verbose):
+def add_tag_and_primer(data, column, comp, tag, forward_primer, reverse_primer,
+                       verbose):
     """For every row in the specified column of data, modifies the sequence to
     be: <tag><forward_primer><original sequence><reverse complement of
     reverse_primer><reversed tag>
@@ -50,13 +51,15 @@ def add_tag_and_primer(data, column, comp, tag, forward_primer, reverse_primer, 
         verbose (bool): If True, print the shape of the new DataFrame.
 
     Returns:
-        pandas.DataFrame: The DataFrame after adding the tag and primers to all sequences.
-
+        pandas.DataFrame: The DataFrame after adding the tag and primers to all
+        sequences.
     """
     rev_tag = tag[::-1]  # the tag in reverse order
     # Reverse the reverse_primer, then take the complement of every base.
     rev_reverse_primer = ''.join(map(lambda y: comp[y], reverse_primer[::-1]))
-    data[column] = data[column].apply(lambda x: tag + forward_primer + x + rev_reverse_primer + rev_tag)
+    data[column] = data[column].apply(
+        lambda x: tag + forward_primer + x + rev_reverse_primer + rev_tag
+    )
     if verbose:
         print(f"Tag and primer added shape: {data.shape}")
     return data
@@ -72,20 +75,24 @@ def add_reverse_complements(data, seq_col, comp, verbose=False):
         data (pandas.DataFrame): The DataFrame containing the sequence data.
         seq_col (str): The column name in data that contains the sequences.
         comp (dict): A dictionary mapping each nucleotide to its complement.
-        verbose (bool, optional): If True, print the shape of the new DataFrame. Defaults to False.
+        verbose (bool, optional): If True, print the shape of the new
+            DataFrame. Defaults to False.
 
     Returns:
-        pandas.DataFrame: The DataFrame after adding the reverse complements of all sequences.
-
+        pandas.DataFrame: The DataFrame after adding the reverse complements of
+        all sequences.
     """
     data_rev = data.copy()
-    data_rev[seq_col] = data_rev[seq_col].apply(lambda x: ''.join(map(lambda y: comp[y], x[::-1]))) 
+    data_rev[seq_col] = data_rev[seq_col].apply(
+        lambda x: ''.join(map(lambda y: comp[y], x[::-1]))
+    ) 
     new_data = pd.concat([data, data_rev])
     if verbose:
         print(f"Reverse complements added shape: {data.shape}")
     return new_data
 
-def remove_species_with_too_few_sequences(df, species_col, seq_count_thresh, verbose=False):
+def remove_species_with_too_few_sequences(df, species_col, seq_count_thresh,
+                                          verbose=False):
     """
     Removes any sequences that belong to species who have fewer than
     seq_count_thresh sequences.
@@ -223,11 +230,13 @@ def print_descriptive_stats(data, cols):
         print(f"{'Number of distinct ' + col:<50} {num_distinct:>10}")
 
         avg_sequences = round(len(data) / num_distinct, 2)
-        print(f"{'Average number of sequences per ' + col:<50} {avg_sequences:>10.2f}")
+        print(f"{'Average number of sequences per ' + col:<50}"
+              f"{avg_sequences:>10.2f}")
 
         value_counts = data[col].value_counts()
         range_sequences = value_counts.max() - value_counts.min()
-        print(f"{'Range in the number of sequences per ' + col:<50} {range_sequences:>10}")
+        print(f"{'Range in the number of sequences per ' + col:<50}"
+              f"{range_sequences:>10}")
     print('-' * 60)
 
 def plot_species_distribution(df, species_col):
@@ -266,6 +275,8 @@ def sequence_to_array(sequence, mode):
     random mode, it randomly chooses one of the possible bases and replaces the
     ambiguity code with the chosen base, instead of using decimals. For
     example, N could be encoded as [0, 1, 0, 0] or [0, 0, 0, 1] or other ways.
+    If a character is not a member of the IUPAC ambiguity codes, then it will
+    be encoded as [0, 0, 0, 0]. (This is how padding bases are encoded.)
 
     Args:
         sequence (str): A string of bases, can be lowercase or uppercase.
@@ -435,6 +446,8 @@ def sequence_to_array(sequence, mode):
 
 def add_random_insertions(seq, insertions):
     """Takes a sequence and inserts a random number of random bases. 
+    
+    Taken from Zurich.
 
     Args:
         seq (str): The sequence into which base are to be inserted.
@@ -453,6 +466,8 @@ def add_random_insertions(seq, insertions):
 
 def apply_random_deletions(seq, deletions):
     """Takes a sequence and deletes a random number of bases from it. 
+
+    Taken from Zurich.
 
     Args:
         seq (str): The sequence from which bases are to be deleted.
@@ -473,7 +488,7 @@ def apply_random_mutations(seq, mutation_rate, mutation_options):
     """Applies random mutations to a given sequence.
 
     Each base in the sequence has a mutation_rate chance (as a decimal) of 
-    switching to some other base, as defined in mutation_options.
+    switching to some other base, as defined in mutation_options. From Zurich.
 
     Args:
         seq (str): The original sequence to which mutations will be applied.
@@ -559,10 +574,14 @@ def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
         )
 
     # Pad or truncate to 60bp. 'z' padding will be turned to [0,0,0,0] below.
-    df[seq_col] = df[seq_col].apply(lambda seq: seq.ljust(seq_len, 'z')[:seq_len])
+    df[seq_col] = df[seq_col].apply(
+        lambda seq: seq.ljust(seq_len, 'z')[:seq_len]
+    )
 
     # Turn every base character into a vector.
-    df[seq_col] = df[seq_col].map(lambda x: sequence_to_array(x, encoding_mode))
+    df[seq_col] = df[seq_col].map(
+        lambda x: sequence_to_array(x, encoding_mode)
+    )
 
     sequences = np.array(df[seq_col].tolist())
 
@@ -629,11 +648,11 @@ def make_compatible_for_plotting(data):
     Matplotlib does not work with PyTorch or TensorFlow tensors. If the input
     data is one of these two types, this function makes the data into a numpy
     array, which is can then be used to graph using matplotlib.
-    This function handles several types of input data: 2D lists, lists of tensors,
-    numpy ndarrays, PyTorch tensors, and TensorFlow tensors. For 2D lists, it averages
-    the inner lists. For lists of tensors, it converts each tensor to a numpy array.
-    For PyTorch and TensorFlow tensors, it ensures they are on the CPU before converting
-    them to numpy arrays.
+    This function handles several types of input data: 2D lists, lists of
+    tensors, numpy ndarrays, PyTorch tensors, and TensorFlow tensors. For 2D
+    lists, it averages the inner lists. For lists of tensors, it converts each
+    tensor to a numpy array. For PyTorch and TensorFlow tensors, it ensures
+    they are on the CPU before converting them to numpy arrays.
 
     Args:
         data: The input data. This can be a 2D list, a list of tensors, a numpy
@@ -735,9 +754,12 @@ def graph_roc_curves(all_targets_one_hot, all_outputs, num_classes=156):
     """
     plt.figure()
     for i in range(num_classes):
-        fpr, tpr, _ = roc_curve(all_targets_one_hot[:, i], np.array(all_outputs)[:, i])
+        fpr, tpr, _ = roc_curve(all_targets_one_hot[:, i],
+                                np.array(all_outputs)[:, i]
+                                )
         roc_auc = auc(fpr, tpr)
-        plt.plot(fpr, tpr, label='ROC curve (area = %0.2f) for class %i' % (roc_auc, i))
+        plt.plot(fpr, tpr, label='ROC curve (area = %0.2f) for class %i'
+                  % (roc_auc, i))
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
@@ -756,9 +778,12 @@ class EarlyStopping:
     <patience> number of epochs. 
 
     Attributes:
-        patience (int): The number of epochs to wait for improvement before stopping.
-        min_pct_improvement (float): The minimum percent improvement in accuracy to continue training.
-        counter (int): The number of epochs since the last improvement in accuracy.
+        patience (int): The number of epochs to wait for improvement before
+            stopping.
+        min_pct_improvement (float): The minimum percent improvement in
+            accuracy to continue training.
+        counter (int): The number of epochs since the last improvement in
+            accuracy.
         best_acc (float): The best validation accuracy observed so far.
         stop (bool): A flag indicating whether training should be stopped.
     """
@@ -782,7 +807,7 @@ class EarlyStopping:
         """Updates the state of the EarlyStopping instance for a new epoch.
 
         Args:
-            curr_val_acc (float): The validation accuracy for the current epoch.
+            curr_val_acc (float): Validation accuracy for the current epoch.
         """
         if self.best_acc is None:
             self.best_acc = curr_val_acc
@@ -791,7 +816,8 @@ class EarlyStopping:
             self.counter = 0
         else:
             self.counter += 1
-            print(f'\nEarlyStopping counter: {self.counter} out of {self.patience}')
+            print(f'\nEarlyStopping counter: {self.counter} out of "
+                  f"{self.patience}')
             if self.counter >= self.patience:
                 self.stop = True
 

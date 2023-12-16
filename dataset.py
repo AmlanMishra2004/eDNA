@@ -1,104 +1,114 @@
-import torch
-import numpy as np
-import pandas as pd
-import random
-import utils
+# (c) 2023 Sam Waggoner
+# License: AGPLv3
+
+"""Defines the dataset class for feeding augmented data to a network.
+
+The three required functions for a PyTorch Dataset class are __init__() that
+initializes any necessary variables, __getitem__() that is able to get a single
+item from the dataset, and __len__() which gives the length of the dataset. In
+__getitem__(), it augments the data before returning it. This is called online
+augmentation, since it is performed when any data item is fetched, instead of
+performing it all beforehand. This file was originally written by Jon Donnely
+(jon.donnely@duke.edu), but it has been heavily modified such that only the
+skeleton of the original code remains. This version improves upon Jon's version
+which assumed species to be the first column in the csv, sequence the second,
+and that the species were grouped together. This version uses the column names
+and doesn't assume species are grouped by rows.
+"""
+
 from collections import defaultdict
+
+import torch
 from torch.utils.data import Dataset
-from torch.utils.data import DataLoader 
+
+import utils
 
 saved_sequences_prefix = './datasets/known_maine_species/'
 labels_file = 'labels.npy'
 labels_dict_file = 'labels_dict.npy'
 sequence_file = 'sequences.npy'
 
-"""
-Input
-data: (dataframe) that includes all columns
-seq_col: the (string) name of the column containing the sequences
-species_col: the (string) name of the column containing the species labels
-insertions: an (array) of length 2, inclusively describing the range of number
-    of insertions in each sequence.
-    ex. [0,2] would insert between 0 and 2 random insertions to each sequence
-deletions: same as insertions, except describes the possible range of number of
-    base pairs that will be deleted for each sequence.
-mutation_rate: the decimal number that indicates the likelihood of a base pair
-    being flipped. This is applied to all base pairs in all sequences.
-    ex. 0.05 would mean there is a 5% chance A is replaced with T.
-encoding_mode: (string) how to deal with IUPAC ambiguity codes
-    - 'probability' turns them into decimals
-    - 'random' turns it into a random choice out of the possible base pairs
-iupac: a (dict) containing every base pair and its opposite, ex. a:t, s:w
-seq_len: the (int) length to which you want to cap/pad all sequences
-
-Output
-- able to return a portion of self.sequences as a vector that is
-    (num_sequences x 4 x sequence_length)
-
-Improvements:
-- Jon's version assumed species to be the first column in the csv, sequence the second
-- Jon's version assumed that the species were grouped together
-"""
 class Sequence_Data(Dataset):
-    def __init__(self, X, y, seq_col, species_col, insertions, deletions,
-                 mutation_rate, encoding_mode, iupac, seq_len):
+    """A class to hold and distribute sequence data for training or testing.
+
+    This class is able to return a portion of self.sequences as a vector that
+    is (batch_size x 4 x sequence_length). By specifying the parameters, an
+    amount of noise can be added to the data before returning it.
+
+    Attributes:
+        X (pandas Series): The examples.
+        y (pandas Series): The numerically-encoded labels for every sample.
+        insertions: An array of length 2, inclusively describing the range of
+            number of possible insertions in each sequence. For example, [0,2]
+            would insert between 0 and 2 random insertions to each sequence.
+        deletions: An array of length 2, inclusively describing the range of
+            number of possible deletions in each sequence. For example, [1,1]
+            would perform 1 random deletion for each sequence.
+        mutation_rate: A decimal number that indicates the likelihood of a base
+            being changed. This is applied to every bases in every sequence.
+        encoding_mode: A string representing how to encode IUPAC ambiguity
+            codes. 'probability' turns them into decimals. 'random' turns them
+            into a random choice out of the possible base pairs. Other values 
+            should not be used.
+        seq_len: An integer representing the length of bases to which you want
+            to truncate or pad all sequences.        
+    """
+    def __init__(self, X, y, insertions=[0,2], deletions=[0,2],
+                 mutation_rate=0.05, encoding_mode='probability', seq_len=60):
+        """Initializes the Sequence_Data instance."""
+
+        if None in [X, y, insertions, deletions, mutation_rate, encoding_mode,
+                    seq_len]:
+            raise Exception("Please specify all arguments to create Dataset")
         
-        # Ensure all agruments are supplied
-        if None in [seq_col, species_col, insertions, deletions,
-                    mutation_rate, encoding_mode, iupac]:
-            raise Exception("Please specify all arguments when creating Dataset")
-        
-        # sequences are turned to nparrays *after* mutation, since they are
-        #   manipulated as strings anyway when buffering to 60 or 150 chars
         self.sequences = X.to_numpy()
         self.labels = torch.tensor(y.values).long()
-        self.seq_col = seq_col
-        self.species_col = species_col
         self.insertions = insertions
         self.deletions = deletions
         self.mutation_rate = mutation_rate
         self.encoding_mode = encoding_mode
-        self.iupac = iupac
         self.seq_len = seq_len
 
+        # To verify some statistics about the dataset, uncomment below.
+
         # print(f"Shape of self.sequences: {self.sequences.shape}")
-        # print(f"Number of sequences: {len(self.sequences)}")
-        # print(f"Length of labels (should match): {len(self.labels)}")
+        # print(f"Shape of labels (should match len): {self.labels.shape}")
         # print("Created Dataset\n")
 
-    '''
-    Required function for Dataset that gets a single item given an index.
-    - adds random insertions for each sequence
-    - deletes random bp from each sequence
-    - mutates random bp in each sequence
-    - truncates or pads sequence to certain length (60bp)
-    - returns the sequence turned into a vector using sequence_to_array()
-    '''
     def __getitem__(self,idx):
+        """Returns a single pair of (example, label) given an index.
+
+        First, adds random insertions for each sequence, then deletes random
+        bases from each sequence. Then, mutates random bases in each sequence.
+        Lastly, truncates or pads sequence to certain length, then returns the
+        sequence turned into a vector using sequence_to_array(). Sequences are
+        turned to arrays after augmentation because it is easier to augment
+        strings rather than arrays.
+        """
+
         seq = self.sequences[idx]
         label = self.labels[idx]
+
         # print(f"ORIGINAL SEQUENCE: \n{seq}")
 
         mutation_options = {'a':'cgt', 'c':'agt', 'g':'act', 't':'acg'}
-        # defaultdict returns 'acgt' if a key is not present in the dictionary
+        # Defaultdict returns 'acgt' if a key is not present in the dictionary.
         mutation_options = defaultdict(lambda: 'acgt', mutation_options)
 
         seq = utils.add_random_insertions(seq, self.insertions)
         seq = utils.apply_random_deletions(seq, self.deletions)
-        seq = utils.apply_random_mutations(seq, self.mutation_rate, mutation_options)
+        seq = utils.apply_random_mutations(seq, self.mutation_rate,
+                                           mutation_options)
 
         # print(f"MUTATED SEQUENCE: \n{seq}")
 
-        # Pad or truncate to 60bp or 150bp. 'z' padding will be turned to [0,0,0,0] below
+        # Pad or truncate to 60bp or 150bp. 'z' padding will be turned to
+        # [0,0,0,0] in sequence_to_array().
         seq = seq.ljust(self.seq_len, 'z')[:self.seq_len]
-
-        # Turn every base pair character into a vector
         seq = utils.sequence_to_array(seq, self.encoding_mode)
 
         return torch.from_numpy(seq), label
 
-    '''
-    Required function for Dataset that returns the number of examples in the set.
-    '''
     def __len__(self):
+        """Returns the number of labels (presumably the number of examples)."""
         return self.labels.shape[0]
