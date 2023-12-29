@@ -1,6 +1,6 @@
 # Summary
 Identifies DNA sequences's species using a CNN.
-Based off the skeleton of Jon Donnely's code, as well as functions from ETH Zurich's research paper "Applying convolutional neural networks to speed up environmental DNA annotation in a highly diverse ecosystem".
+Based off the skeleton of Jon Donnely's code, as well as functions from ETH Zurich's research paper "Applying convolutional neural networks to speed up environmental DNA annotation in a highly diverse ecosystem". Some code for the baselines was taken from Rose Gurung.
 
 ## What's What
 ### ./datasets (to download)
