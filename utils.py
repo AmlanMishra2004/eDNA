@@ -10,25 +10,35 @@ to understand in evaluate_model.py and dataset.py. This is meant to provide
 some abstraction from the details in these two files. With that being said,
 this file contains functions that process data, split data, print statistics
 about data, and graph data. Note that in order to compare my results to those
-of ETH Zürich's paper, I used several of their functions directly. Zurich's
+of ETH Zürich's paper, I used several of their functions directly. Zürich's
 code comes from https://doi.org/10.1038/s41598-022-13412-w. My copied functions
 include: add_reverse_complements(), oversample_underrepresented_species(),
-add_tag_and_primer(), and stratified_split(). Zurich's function indel_mut() was
+add_tag_and_primer(), and stratified_split(). Zürich's function indel_mut() was
 broken down into add_random_insertions(), apply_random_deletions(), and
 apply_random_mutations(). These functions are copyright 2022 ETH Zürich,
 Switzerland. All functions not included in this list are written by Sam
 Waggoner.
 """
 
+import os
+import warnings
+
 from collections import defaultdict
+from datetime import datetime
 import random
 
+from itertools import product
 import matplotlib.pyplot as plt
 import numpy as np
+import math
 import pandas as pd
 import tensorflow as tf
 import torch
+from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import auc, precision_recall_curve, roc_curve
+from sklearn.metrics import classification_report, roc_auc_score
+from sklearn.metrics import accuracy_score, balanced_accuracy_score
+from sklearn.metrics import precision_score, recall_score, f1_score
 
 
 
@@ -67,7 +77,7 @@ def add_tag_and_primer(data, column, comp, tag, forward_primer, reverse_primer,
 def add_reverse_complements(data, seq_col, comp, verbose=False):
     """Adds reverse complements of every sequence.
 
-    This function was taken from ETH Zurich. This function returns a dataframe
+    This function was taken from ETH Zürich. This function returns a dataframe
     that contains the reverse complement of every sequence, in addition to all
     of the original sequences.
 
@@ -124,7 +134,7 @@ def oversample_underrepresented_species(df, species_col, verbose=False):
     """
     Returns a DataFrame with an equal number of sequences from every species.
 
-    This function was taken from ETH Zurich. This function makes it so that
+    This function was taken from ETH Zürich. This function makes it so that
     each species will have the same number of sequences as the maximum number
     of sequences for a single species. Species are upsampled by randomly
     duplicating a sequence.
@@ -447,7 +457,7 @@ def sequence_to_array(sequence, mode):
 def add_random_insertions(seq, insertions):
     """Takes a sequence and inserts a random number of random bases. 
     
-    Taken from Zurich.
+    Taken from Zürich.
 
     Args:
         seq (str): The sequence into which base are to be inserted.
@@ -467,7 +477,7 @@ def add_random_insertions(seq, insertions):
 def apply_random_deletions(seq, deletions):
     """Takes a sequence and deletes a random number of bases from it. 
 
-    Taken from Zurich.
+    Taken from Zürich.
 
     Args:
         seq (str): The sequence from which bases are to be deleted.
@@ -488,7 +498,7 @@ def apply_random_mutations(seq, mutation_rate, mutation_options):
     """Applies random mutations to a given sequence.
 
     Each base in the sequence has a mutation_rate chance (as a decimal) of 
-    switching to some other base, as defined in mutation_options. From Zurich.
+    switching to some other base, as defined in mutation_options. From Zürich.
 
     Args:
         seq (str): The original sequence to which mutations will be applied.
@@ -641,6 +651,109 @@ def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
             raise ValueError("Framework name is incorrect. Use 'torch' or 'tf'"
                              " or 'np'.")
 
+def add_metrics_to_dict(labels, predicted, epoch, val_acc, fold_val_metrics):
+    labels = labels.cpu()
+    predicted = predicted.cpu()
+    w_precision = precision_score(labels, predicted,
+                                  average='weighted',
+                                  zero_division=1)
+    m_precision = precision_score(labels, predicted,
+                                  average='macro',
+                                  zero_division=1)
+    w_recall = recall_score(labels, predicted,
+                            average='weighted',
+                            zero_division=1)
+    m_recall = recall_score(labels, predicted,
+                            average='macro',
+                            zero_division=1)
+    w_f1 = f1_score(labels, predicted,
+                    average='weighted',
+                    zero_division=1)
+    m_f1 = f1_score(labels, predicted,
+                    average='macro',
+                    zero_division=1)
+    bal_acc = balanced_accuracy_score(labels, predicted)
+    fold_val_metrics['precision'].append((m_precision, w_precision))
+    fold_val_metrics['recall'].append((m_recall, w_recall))
+    fold_val_metrics['f1'].append((m_f1, w_f1))
+    fold_val_metrics['acc'].append(val_acc)
+    fold_val_metrics['balanced_acc'].append(bal_acc)
+    fold_val_metrics['epochs_taken'].append(epoch)
+    return fold_val_metrics
+
+# TODO: instead of checking and only saving if it is original, prevent it from 
+# training in the first place if the hyperparameters and model have already been explored
+def check_hyperparam_originality():
+    pass
+
+# results: a dict
+# be careful when comparing existing cells since they contain arrays (and must use .all()) as well as empty cells which are translated as NaN, and NaN != NaN.
+def update_results(results, model,
+                   filename='results.csv', model_dir='saved_models'):
+    
+    now = datetime.now()
+    timestamp = now.strftime("%Y%m%d_%H%M%S")
+    results['datetime'] = timestamp
+    
+    # Define the columns that distinguish unique rows
+    unique_columns = ['model_name', 'k_folds', 'k_iters', 
+                      'confidence_threshold', 'seq_count_threshold', 'seq_len',
+                      'test_insertions',
+                      'test_deletions', 'test_mutation_rate', 'tag_and_primer',
+                      'reverse_complements', 'encoding_mode', 'test_split',
+                      'load_existing_train_test']
+
+    # Load existing results if file exists
+    if os.path.isfile(filename):
+        df = pd.read_csv(filename)
+    else:
+        df = pd.DataFrame(columns=list(results.keys()))
+
+    def is_none_or_nan(val):
+        return val is None or (isinstance(val, float) and math.isnan(val))
+
+    def compare_none_and_nan(val1, val2):
+        return is_none_or_nan(val1) and is_none_or_nan(val2)
+
+    # Check if the model and hyperparameters have been tried before
+    found_match = False
+    # For each row...
+    for index, row in df.iterrows():
+        matches = True
+        for col in unique_columns:
+            if compare_none_and_nan(results[col], row[col]):
+                continue
+            elif str(results[col]) != str(row[col]):
+                matches = False
+                break
+        if matches:
+            found_match = True
+            print("Found a match!")
+            # If the new val_macro_f1-score is higher, replace the old row
+            if results['val_macro_f1-score'] > row['val_macro_f1-score']:
+                print("Improved a model with the same hyperparams by chance.")
+                df.loc[index] = pd.Series(results)
+            break
+    if not found_match:
+        print("Didnt find a match.")
+        # If the model and hyperparameters haven't been tried before, add a new row
+        warnings.filterwarnings('ignore', category=FutureWarning)
+        df = df.append(pd.Series(results), ignore_index=True)
+        warnings.filterwarnings('default', category=FutureWarning)
+
+    # Save the updated results
+    df_sorted = df.sort_values(by='val_macro_f1-score', ascending=False)
+    df_sorted.to_csv(filename, index=False)
+
+    # If the val_macro_f1-score is the best, save the model parameters
+    if results['val_macro_f1-score'] >= df_sorted['val_macro_f1-score'].max():
+        print("Found a new best model!")
+        torch.save(model.state_dict(),
+                   os.path.join(model_dir, f'best_model_{timestamp}.pt'))
+    
+    print("Saved Model/Hyperparameter Results")
+
+
 def make_compatible_for_plotting(data):
     """Converts given data into a format compatible for plotting with
         matplotlib.
@@ -788,7 +901,7 @@ class EarlyStopping:
         stop (bool): A flag indicating whether training should be stopped.
     """
 
-    def __init__(self, patience=3, min_pct_improvement=3):
+    def __init__(self, patience=3, min_pct_improvement=3, verbose=False):
         """Initializes the EarlyStopping instance.
 
         Args:
@@ -802,6 +915,7 @@ class EarlyStopping:
         self.counter = 0
         self.best_acc = None
         self.stop = False
+        self.verbose = verbose
 
     def __call__(self, curr_val_acc):
         """Updates the state of the EarlyStopping instance for a new epoch.
@@ -816,8 +930,9 @@ class EarlyStopping:
             self.counter = 0
         else:
             self.counter += 1
-            print(f'\nEarlyStopping counter: {self.counter} out of "
-                  f"{self.patience}')
+            if self.verbose:
+                print(f"\nEarlyStopping counter: {self.counter} out of "
+                    f"{self.patience}")
             if self.counter >= self.patience:
                 self.stop = True
 
@@ -826,3 +941,54 @@ class EarlyStopping:
         self.counter = 0
         self.best_acc = 0
         self.stop = False
+
+def get_all_kmers(k):
+    """
+    generates all possible combinations of the letters a, g, t, and c of length k
+    Examples:
+        input: get_all_kmers(1)
+        output: ['a', 'g', 't', 'c'] 
+        input: get_all_kmers(2)
+        output: ['aa', 'ag', 'at', 'ac', 'ga', 'gg', ... ]
+    """
+    all_kmers=[]
+    for i in product('agtc', repeat = k):
+        all_kmers.append(''.join(i))
+    return all_kmers
+
+def list_kmers(seq, k):
+    """
+    generates all kmers for the sequence (cap at 200 length sequence)
+    Example
+        input: list_kmers('agtcagtc', 2)
+        output: ['ag', 'gt', 'tc', 'ca', 'ag', 'gt', 'tc']
+    """
+    kmers = []
+    # Calculate how many kmers of length k there are
+    if len(seq)<200:
+        num_kmers=len(seq)-k+1
+    else:
+        #only for the first 200 letters of the sequence
+        num_kmers = len(seq[:200]) - k + 1 
+    # Loop over the kmer start positions
+    for i in range(num_kmers):
+        # Slice the string to get the kmer
+        kmer = seq[i:i+k]
+        kmers.append(kmer)
+    return kmers
+
+def create_feature_table(sequences,k):
+    """
+    creates a 2D array (or feature table) where each row corresponds to a sequence
+    from the input list sequences, and each column corresponds to a possible k-mer
+    of length k. The value at a specific row and column is the count of the
+    corresponding k-mer in the corresponding sequence.
+    """
+    feature_table=[]
+    for seq in sequences:
+        cv = CountVectorizer(vocabulary=(get_all_kmers(k))) #lists counts of all words
+        #representing sequences as sentences with words that are kmers i.e all kmers separated by space
+        features=np.asarray(cv.fit_transform([(" ".join(list_kmers(seq,k)))]).toarray())  
+        features=features.flatten().tolist()
+        feature_table.append(features)
+    return np.asarray(feature_table)

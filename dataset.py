@@ -57,8 +57,8 @@ class Sequence_Data(Dataset):
                  mutation_rate=0.05, encoding_mode='probability', seq_len=60):
         """Initializes the Sequence_Data instance."""
 
-        if None in [X, y, insertions, deletions, mutation_rate, encoding_mode,
-                    seq_len]:
+        if None in [insertions, deletions, mutation_rate, encoding_mode,
+            seq_len]:
             raise Exception("Please specify all arguments to create Dataset")
         
         self.sequences = X.to_numpy()
