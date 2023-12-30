@@ -160,7 +160,16 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
 
         print(f"Starting fold {fold + 1} ------------------------------------")
 
+        # # oversample the train data for the fold
+        # X_train_fold = X_train.iloc[train_indexes]
+
+        # X_train_fold = utils.oversample_underrepresented_species(
+        #     X_train_fold,
+        #     config['species_col'],
+        #     config['verbose']
+        # )
         train_dataset = Sequence_Data(
+            # X=X_train_fold,
             X=X_train.iloc[train_indexes],
             y=y_train.iloc[train_indexes],
             insertions=config['trainRandomInsertions'],
@@ -168,10 +177,9 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
             mutation_rate=config['trainMutationRate'],
             encoding_mode=config['encoding_mode'],
             seq_len=config['seq_target_length'])
-        # NEW: oversample train dataset
         val_dataset = Sequence_Data(
             X=X_train.iloc[val_indexes],
-            y=y_train.iloc[val_indexes], 
+            y=y_train.iloc[val_indexes],
             insertions=config['testRandomInsertions'],
             deletions=config['testRandomDeletions'],
             mutation_rate=config['testMutationRate'],
@@ -201,10 +209,12 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
                 inputs, labels = inputs.cuda(), labels.cuda()
 
                 optimizer.zero_grad()  # Zeros gradients for all the weights.
+                outputs = model(inputs)
                 try:
                     outputs = model(inputs)  # Runs the inputs through the model.
                 except:
                     # in case the model is incorrectly set up, ex. with not enough nodes in the linear layer
+                    print(f"Unable to run example through model.")
                     return
                 loss = loss_function(outputs, labels)  # Computes the loss.
                 loss.backward()  # Performs backward pass, updating weights.
@@ -254,7 +264,7 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
             if confidence_threshold:
                 if count == 0:
                     print("Warning: No predictions met the confidence "
-                          "threshold. Setting validation accuracy to 1.00")
+                          "threshold. Putting validation accuracy at 1.00")
                     val_acc = 1
                 else:
                     val_acc = val_correct/count
@@ -321,7 +331,16 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
         learn_train_losses = [[] for _ in range(k_iters)] 
             
     # First, retrain on the entire train dataset.
+        
+    # # oversample the train data for the fold
+    # X_train_full = X_train.iloc[train_indexes]
+    # X_train_full = utils.oversample_underrepresented_species(
+    #     X_train_full,
+    #     config['species_col'],
+    #     config['verbose']
+    # )
     train_dataset = Sequence_Data(
+        # X=X_train_full,
         X=X_train,
         y=y_train,
         insertions=config['trainRandomInsertions'],
@@ -617,9 +636,9 @@ if __name__ == '__main__':
     # If set, this will skip the preprocessing and read in an existing train
     # and test csv (that are presumably already processed). For my train and 
     # test file, all semutations have been added, so no need for online augmentation.Whether set or not, it still must be truncated/padded and turned intovectors.
-    run_my_model = False
+    run_my_model = True
     run_autokeras = False
-    run_baselines = True
+    run_baselines = False
     
     num_classes = 156
 
@@ -706,11 +725,9 @@ if __name__ == '__main__':
             config['species_col'],
             config['test_split']
         )
-        train = utils.oversample_underrepresented_species(
-            train,
-            config['species_col'],
-            config['verbose']
-        )
+
+        # Oversampling is performed for each fold of CV, not before. This
+        # prevents duplicates from existing in the train and validation sets.
 
         utils.print_descriptive_stats(df, cols)
         # utils.plot_species_distribution(df, species_col)
@@ -807,26 +824,28 @@ if __name__ == '__main__':
             num_classes=num_classes
         )
 
+        # models = ["VariableCNN"]
+
         # This list holds all of the models that will be trained and evaluated.
-        models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
-                  smallcnn2_2, smallcnn2_3, smallcnn2_4, smallcnn2_6, smallcnn3,
-                  smallcnn3_1]
+        # models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
+        #           smallcnn2_2, smallcnn2_3, smallcnn2_4, smallcnn2_6, smallcnn3,
+        #           smallcnn3_1]
 
-        for model in models:
-            model.to('cuda')
+        # for model in models:
+        #     model.to('cuda')
 
-        print(f"Evaluation for Personal Model(s):\n"
-              f"{[f'{model.name}' for model in models]}")
+        # print(f"Evaluation for Personal Model(s):\n"
+        #       f"{[f'{model.name}' for model in models]}")
         
         # The lines below set up the parameters for grid search.
 
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
-        num_trials = 3
-        # learning_rates = [0.001]
+        num_trials = 1
+        learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
         # learning_rates = [0.0005, 0.001, 0.003, 0.005]
-        learning_rates = [0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
+        # learning_rates = [0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
         # learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 
         #                   0.01, 0.05]
         batch_size = 32
@@ -844,10 +863,43 @@ if __name__ == '__main__':
 
         # Grid search: Evaluates each model with a combination of
         # hyperparameters for a certain number of trials.
-                
-        for model in models:
+        # num_cnn_layers = [1, 2, 3, 4, 5]
+        # num_channels = [4, 8, 16, 24, 32, 40, 48, ...]
+        # kernel_sizes = [3, 5, 7, 9, 11, 13, 15, 17]
+        # strides = [1, 2, 3]
+        # paddings = [1, 2, 3, 4, ...]
+        # dropout_rates = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
+        # activations = ["relu", "sigmoid", ...]
+
+
+        # for cnn_layers in num_cnn_layers:
+        #     for dropout_layer in [(True, False)*num_cnn_layers]:
+        #         model = utils.VariableCNN(in_channels, out_channels, kernel_size, stride, padding,
+        #          dropout_channels, activation, num_classes)
+        #         for latent_layers in num_latent_layers:
+
+
+        #     for 
+        #         model = utils.VariableCNN(in_channels, out_channels, kernel_size, stride, padding,
+        #          dropout_channels, activation, num_classes)
+        #         model = utils.VariableCNN([])
+        model_list = [1]
+        for model in model_list:
             for idx, lr in enumerate(learning_rates):
                 for trial in range(num_trials):
+                                            #  [layer1, layer2, layer3]
+                    model = models.VariableCNN([4, 64, 128],    # input channels
+                                              [64, 128, 256],   # output channels
+                                              [3, 3, 3],        # kernel size
+                                              [1, 1, 1],        # stride
+                                              [1, 1, 1],        # padding
+                                              [0.1, 0.2, 0.3],  # dropout rate
+                                              nn.ReLU,          # activation function
+                                              input_length = config['seq_target_length'],
+                                              num_classes = 156
+                                              ) # this is really good!
+                    model.to('cuda')
+
                     print(f"\n\nTraining Model {model.name}, Trial {trial+1}")
 
                     # To try to get the first batch to prove it is the same as Zurich
@@ -867,7 +919,12 @@ if __name__ == '__main__':
                         k_folds = k_folds,
                         k_iters = k_iters,
                         epochs = epochs,
-                        optimizer = torch.optim.Adam(model.parameters(),lr=lr, betas=(0.9, 0.999), eps=1e-07, weight_decay=0.0, amsgrad=False),
+                        optimizer = torch.optim.Adam(model.parameters(),
+                                                     lr=lr,
+                                                     betas=(0.9, 0.999),
+                                                     eps=1e-07,
+                                                     weight_decay=0.0,
+                                                     amsgrad=False),
                         loss_function = nn.CrossEntropyLoss(),
                         early_stopper = early_stopper,
                         batch_size = batch_size,
