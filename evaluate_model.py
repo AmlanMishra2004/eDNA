@@ -19,6 +19,7 @@ import os
 import random
 import sys
 import time
+import warnings
 
 from joblib import dump, load
 import numpy as np
@@ -31,10 +32,15 @@ from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.metrics import precision_score, recall_score, f1_score
 from sklearn.model_selection import KFold, StratifiedKFold
 from sklearn.naive_bayes import GaussianNB
-from sklearn.preprocessing import LabelEncoder, label_binarize
-from sklearn.svm import SVC
+from sklearn.preprocessing import LabelEncoder, label_binarize, MinMaxScaler
+from sklearn import tree, svm
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
 from tabulate import tabulate
 from tqdm import tqdm
+from varname import nameof
+from xgboost import XGBClassifier
 
 from dataset import Sequence_Data
 import models
@@ -539,7 +545,7 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
         'epochs_taken': train_epochs,
         'train_insertions': config['trainRandomInsertions'],
         'train_deletions': config['trainRandomDeletions'],
-        'train_mutation_rate': config['trainMutationRate'], # xxx
+        'train_mutation_rate': config['trainMutationRate'],
 
         # preprocessing steps. differentiates rows.
         'model_name': model.name,
@@ -611,9 +617,9 @@ if __name__ == '__main__':
     # If set, this will skip the preprocessing and read in an existing train
     # and test csv (that are presumably already processed). For my train and 
     # test file, all semutations have been added, so no need for online augmentation.Whether set or not, it still must be truncated/padded and turned intovectors.
-    run_my_model = True
+    run_my_model = False
     run_autokeras = False
-    run_baselines = False
+    run_baselines = True
     
     num_classes = 156
 
@@ -1024,15 +1030,19 @@ if __name__ == '__main__':
 
         # Note that for the baseline models, there is no need to 1) truncate or
         # pad the sequences to any specific length, or 2) convert the data to
-        # 4D vectors. Sequences are kept as strings.
+        # 4D vectors. Sequences are kept as strings. This is with the sole
+        # exception of KNN, with which I use both a feature table and the raw
+        # data itself, which is truncated to 60 bp.
 
         from itertools import product
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.feature_extraction.text import CountVectorizer
+        from sklearn.neighbors import KNeighborsClassifier
         from sklearn.naive_bayes import MultinomialNB
         from sklearn.preprocessing import LabelEncoder
 
         np.set_printoptions(threshold=sys.maxsize)
+        baseline_start_time = time.time()
 
         # read in unmutated train and test data
 
@@ -1063,13 +1073,15 @@ if __name__ == '__main__':
             )
         )
 
-        # # Pad or truncate to 60bp. 'z' padding may be turned to [0,0,0,0]
-        # train[config['seq_col']] = train[config['seq_col']].apply(
+        # # In a separate dataset, pad or truncate the vectorized data to 60bp.
+        # # 'z' padding will be turned to [0,0,0,0]
+        # train_vectorized = train.copy()
+        # train_vectorized[config['seq_col']] = train_vectorized[config['seq_col']].apply(
         #     lambda seq: seq.ljust(config['seq_target_length'], 'z')[:config['seq_target_length']]
         # )
 
-        # # Turn every base character into a vector.
-        # train[config['seq_col']] = train[config['seq_col']].map(
+        # # In the vectorized dataset, turn every base character into a vector.
+        # train_vectorized[config['seq_col']] = train_vectorized[config['seq_col']].map(
         #     lambda x: utils.sequence_to_array(x, config['encoding_mode'])
         # )
 
@@ -1093,24 +1105,30 @@ if __name__ == '__main__':
             )
         )
 
-        # # Pad or truncate to 60bp. 'z' padding may be turned to [0,0,0,0]
-        # test[config['seq_col']] = test[config['seq_col']].apply(
+        # # In a separate dataset, pad or truncate the vectorized data to 60bp.
+        # # 'z' padding will be turned to [0,0,0,0]
+        # test_vectorized = test.copy()
+        # test_vectorized[config['seq_col']] = test_vectorized[config['seq_col']].apply(
         #     lambda seq: seq.ljust(config['seq_target_length'], 'z')[:config['seq_target_length']]
         # )
 
-        # # Turn every base character into a vector.
-        # test[config['seq_col']] = test[config['seq_col']].map(
+        # # In the vectorized dataset, turn every base character into a vector.
+        # test_vectorized[config['seq_col']] = test_vectorized[config['seq_col']].map(
         #     lambda x: utils.sequence_to_array(x, config['encoding_mode'])
         # )
 
-        X_train =  train.loc[:,[config['seq_col']]].values
-        y_train =  train.loc[:,[config['species_col']]].values
-        X_test =  test.loc[:,[config['seq_col']]].values
-        y_test =  test.loc[:,[config['species_col']]].values
+        X_train = train.loc[:,[config['seq_col']]].values
+        # X_train_vectorized = train_vectorized.loc[:,[config['seq_col']]].values
+        y_train = train.loc[:,[config['species_col']]].values
+        X_test = test.loc[:,[config['seq_col']]].values
+        # X_test_vectorized = test_vectorized.loc[:,[config['seq_col']]].values
+        y_test = test.loc[:,[config['species_col']]].values
 
         # Remove the inner lists for each element.
         X_train = X_train.ravel()
+        # X_train_vectorized = X_train_vectorized.ravel()
         X_test = X_test.ravel()
+        # X_test_vectorized = X_test_vectorized.ravel()
         y_train = y_train.ravel()
         y_test = y_test.ravel()
 
@@ -1119,6 +1137,7 @@ if __name__ == '__main__':
         y_test = le.transform(y_test)
 
         print(f"X_train shape: {X_train.shape}")
+        # print(f"X_train_vectorized shape: {X_train_vectorized.shape}")
         print(f"X_test shape: {X_test.shape}")
         print(f"y_train shape: {y_train.shape}")
         print(f"y_test shape: {y_test.shape}")
@@ -1133,25 +1152,29 @@ if __name__ == '__main__':
         try:
             print("Searching for pre-created k-mer feature tables...")
             # takes ~ 45 seconds
-            ft_3 = np.load('./datasets/ft_3.npy')
-            ft_5 = np.load('./datasets/ft_5.npy')
-            ft_8 = np.load('./datasets/ft_8.npy')
-            ft_10 = np.load('./datasets/ft_10.npy')
+            ft_3 = np.load('./datasets/ft_3.npy').astype(np.uint8)
+            ft_5 = np.load('./datasets/ft_5.npy').astype(np.uint8)
+            ft_8 = np.load('./datasets/ft_8.npy').astype(np.uint8)
+            ft_10 = np.load('./datasets/ft_10.npy').astype(np.uint8)
+            print(f"MAX VALUE in ft_3: {np.amax(ft_3)}")
+            print(f"MAX VALUE in ft_5: {np.amax(ft_5)}")
+            print(f"MAX VALUE in ft_8: {np.amax(ft_8)}")
+            print(f"MAX VALUE in ft_10: {np.amax(ft_10)}")
 
-            ft_3_test = np.load('./datasets/ft_3_test.npy')
-            ft_5_test = np.load('./datasets/ft_5_test.npy')
-            ft_8_test = np.load('./datasets/ft_8_test.npy')
-            ft_10_test = np.load('./datasets/ft_10_test.npy')
+            ft_3_test = np.load('./datasets/ft_3_test.npy').astype(np.uint8)
+            ft_5_test = np.load('./datasets/ft_5_test.npy').astype(np.uint8)
+            ft_8_test = np.load('./datasets/ft_8_test.npy').astype(np.uint8)
+            ft_10_test = np.load('./datasets/ft_10_test.npy').astype(np.uint8)
 
         except FileNotFoundError:
-            print("Creating k-mer feature table for NB3 (expect <1 minute)...")
+            print("Creating k-mer feature table for k-mer=3 (expect <1 minute)...")
             ft_3 = utils.create_feature_table(X_train, 3)
-            print("Creating k-mer feature table for NB5 (expect <1 minute)...")
+            print("Creating k-mer feature table for k-mer=5 (expect <1 minute)...")
             ft_5 = utils.create_feature_table(X_train, 5)
-            print("Creating k-mer feature table for NB8 (expect ~1 minute)...")
+            print("Creating k-mer feature table for k-mer=8 (expect ~1 minute)...")
             ft_8 = utils.create_feature_table(X_train, 8)
             # takes ~1 min. 65536        
-            print("Creating k-mer feature table for NB10 (expect ~30 mins)...")
+            print("Creating k-mer feature table for k-mer=10 (expect ~30 mins)...")
             ft_10 = utils.create_feature_table(X_train, 10)
             # takes ~17 mins. 1048576
             
@@ -1183,74 +1206,565 @@ if __name__ == '__main__':
 
         # Create and train the baseline models
 
+        # KNN models follow the format: knn_<k-mer length>
+        try:
+            print("Searching for pretrained KNN models...")
+            # knnraw_1 = load('./datasets/knnraw_1.joblib')
+            # knnraw_3 = load('./datasets/knnraw_3.joblib')
+            # knnraw_5 = load('./datasets/knnraw_5.joblib')
+            # knnraw_7 = load('./datasets/knnraw_7.joblib')
+            # knnraw_9 = load('./datasets/knnraw_9.joblib')
+            knn3_1 = load('./datasets/knn3_1.joblib')
+            knn3_3 = load('./datasets/knn3_3.joblib')
+            knn3_5 = load('./datasets/knn3_5.joblib')
+            knn3_7 = load('./datasets/knn3_7.joblib')
+            knn3_9 = load('./datasets/knn3_9.joblib')
+            knn5_1 = load('./datasets/knn5_1.joblib')
+            knn5_3 = load('./datasets/knn5_3.joblib')
+            knn5_5 = load('./datasets/knn5_5.joblib')
+            knn5_7 = load('./datasets/knn5_7.joblib')
+            knn5_9 = load('./datasets/knn5_9.joblib')
+            knn8_1 = load('./datasets/knn8_1.joblib')
+            knn8_3 = load('./datasets/knn8_3.joblib')
+            knn8_5 = load('./datasets/knn8_5.joblib')
+            knn8_7 = load('./datasets/knn8_7.joblib')
+            knn8_9 = load('./datasets/knn8_9.joblib')
+            knn10_1 = load('./datasets/knn10_1.joblib')
+            knn10_3 = load('./datasets/knn10_3.joblib')
+            knn10_5 = load('./datasets/knn10_5.joblib')
+            knn10_7 = load('./datasets/knn10_7.joblib')
+            knn10_9 = load('./datasets/knn10_9.joblib')
+
+        except FileNotFoundError:
+            print("Training KNN models. (expect ~? mins)")
+            # Note: since there are 25 models and writing it out would take
+            # 75 lines, this only trains then saves the models. You have to
+            # run this again in order to test them, so that they can be loaded
+            # into variables in the try: section above.
+
+            kmer_lengths = [3, 5, 8, 10]
+            neighbors = [1, 3, 5, 7, 9]
+            
+            # In order to use raw data you would have to flatten it, which
+            # would make it difficult for KNN since there would be 0s in the 
+            # padding.
+            # print(X_train_vectorized.shape)
+            # print(X_train_vectorized[0]) # a 2D array, must be 1D
+            # print(y_train.shape)
+            # for n in neighbors:
+            #     knn = KNeighborsClassifier(n_neighbors=n)
+            #     knn.fit(X_train_vectorized, y_train)
+            #     dump(knn, f'./datasets/knnraw_{n}.joblib')
+
+            for kmer in kmer_lengths:
+                for n in neighbors:
+                    knn = KNeighborsClassifier(n_neighbors=n)
+                    knn.fit(locals()[f'ft_{kmer}'], y_train)
+                    dump(knn, f'./datasets/knn{kmer}_{n}.joblib')
+
+        # Naive Bayes names follow the format: nb_<k-mer length>
         try:
             print("Searching for pretrained naive bayes models...")
-            NB_3 = load('./datasets/nb3.joblib')
-            NB_5 = load('./datasets/nb5.joblib')
-            NB_8 = load('./datasets/nb8.joblib')
-            NB_10 = load('./datasets/nb10.joblib')
-        except FileNotFoundError:
-            print("Training NB3 (expect <1 min)...")
-            # multinomial naive bayes
-            NB_3 = MultinomialNB()
-            NB_3.fit(ft_3, y_train)
-            dump(NB_3, './datasets/nb3.joblib')
-            print("Training NB5 (expect <1 min)...")
-            NB_5 = MultinomialNB()
-            NB_5.fit(ft_5, y_train)
-            dump(NB_5, './datasets/nb5.joblib')
-            print("Training NB8 (expect ~2 mins)...")
-            NB_8 = MultinomialNB()
-            NB_8.fit(ft_8, y_train)
-            dump(NB_8, './datasets/nb8.joblib')
-            NB_10 = MultinomialNB()
-            NB_10.fit(ft_10, y_train)
-            dump(NB_10, './datasets/nb10.joblib')
+            nb_3 = load('./datasets/nb3.joblib')
+            nb_5 = load('./datasets/nb5.joblib')
+            nb_8 = load('./datasets/nb8.joblib')
+            nb_10 = load('./datasets/nb10.joblib')
 
+        except FileNotFoundError:
+            print("Training multinomial naive bayes models. (expect ~30 mins)")
+
+            nb_3 = MultinomialNB()
+            nb_3.fit(ft_3, y_train)
+            dump(nb_3, './datasets/nb3.joblib')
+
+            nb_5 = MultinomialNB()
+            nb_5.fit(ft_5, y_train)
+            dump(nb_5, './datasets/nb5.joblib')
+
+            nb_8 = MultinomialNB()
+            nb_8.fit(ft_8, y_train)
+            dump(nb_8, './datasets/nb8.joblib')
+
+            nb_10 = MultinomialNB()
+            nb_10.fit(ft_10, y_train)
+            dump(nb_10, './datasets/nb10.joblib')
+
+        # Decision tree names follow the format: dt_<k-mer length>
+        try:
+            print("Searching for pretrained decision tree models...")
+            dt_3 = load('./datasets/dt3.joblib')
+            dt_5 = load('./datasets/dt5.joblib')
+            dt_8 = load('./datasets/dt8.joblib')
+            dt_10 = load('./datasets/dt10.joblib')
+
+        except FileNotFoundError:
+            print("Training decision tree models. (expect ~3 minutes)")
+            
+            dt_3 = tree.DecisionTreeClassifier(random_state=1327)
+            dt_3.fit(ft_3, y_train)
+            dump(dt_3, './datasets/dt3.joblib')
+
+            dt_5 = tree.DecisionTreeClassifier(random_state=1327)
+            dt_5.fit(ft_5, y_train)
+            dump(dt_5, './datasets/dt5.joblib')
+
+            dt_8 = tree.DecisionTreeClassifier(random_state=1327)
+            dt_8.fit(ft_8, y_train)
+            dump(dt_8, './datasets/dt8.joblib')
+
+            dt_10 = tree.DecisionTreeClassifier(random_state=1327)
+            dt_10.fit(ft_10, y_train)
+            dump(dt_10, './datasets/dt10.joblib')
+
+        # Multiclass SVM names follow the format: svm_<k-mer length>
+        try:
+            print("Searching for pretrained support vector machine models...")
+            svm_3 = load('./datasets/svm3.joblib')
+            svm_5 = load('./datasets/svm5.joblib')
+            svm_8 = load('./datasets/svm8.joblib')
+            svm_10 = load('./datasets/svm10.joblib')
+
+        except FileNotFoundError:
+            print("Training support vector machine models. (expect ~25 mins)")
+            
+            svm_3 = svm.SVC(kernel='linear', decision_function_shape='ovo')
+            svm_3.fit(ft_3, y_train)
+            dump(svm_3, './datasets/svm3.joblib')
+
+            svm_5 = svm.SVC(kernel='linear', decision_function_shape='ovo')
+            svm_5.fit(ft_5, y_train)
+            dump(svm_5, './datasets/svm5.joblib')
+
+            svm_8 = svm.SVC(kernel='linear', decision_function_shape='ovo')
+            svm_8.fit(ft_8, y_train)
+            dump(svm_8, './datasets/svm8.joblib')
+
+            svm_10 = svm.SVC(kernel='linear', decision_function_shape='ovo')
+            svm_10.fit(ft_10, y_train)
+            dump(svm_10, './datasets/svm10.joblib')
+
+        # Multiclass Logistic Regression models follow the format: lr_<k-mer length>
+        try:
+            print("Searching for pretrained logistic regression models...")
+            lr_3 = load('./datasets/lr3.joblib')
+            lr_5 = load('./datasets/lr5.joblib')
+            lr_8 = load('./datasets/lr8.joblib')
+            # lr_10 = load('./datasets/lr10.joblib')
+
+        except FileNotFoundError:
+            print("Training logistic regression models. (expect ~? mins)")
+            
+            lr_3 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
+            lr_3.fit(ft_3, y_train)
+            dump(lr_3, './datasets/lr3.joblib')
+
+            lr_5 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
+            lr_5.fit(ft_5, y_train)
+            dump(lr_5, './datasets/lr5.joblib')
+
+            lr_8 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
+            lr_8.fit(ft_8, y_train)
+            dump(lr_8, './datasets/lr8.joblib')
+
+            # numpy.core._exceptions._ArrayMemoryError: Unable to allocate 30.5 GiB for an array with shape (4089451480,) and data type float64
+            # I tried comverting to uint8, but it seems sklearn automatically translates it to float to deal with probabilities.
+            # lr_10 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
+            # lr_10.fit(ft_10, y_train)
+            # dump(lr_10, './datasets/lr10.joblib')
+
+        # Random forest names follow the format: rf<k-mer length>_<n_estimators>
         try:
             print("Searching for pretrained random forest models...")
-            # rf_15 = load('./datasets/rf15.joblib')
-            rf_30 = load('./datasets/rf30.joblib')
-            # rf_45 = load('./datasets/rf45.joblib')
-        except FileNotFoundError:
-            rf_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
-            rf_15.fit(X_train, y_train)
-            dump(rf_15, './datasets/rf15.joblib')
+            rf3_15 = load('./datasets/rf3_15.joblib')
+            rf3_30 = load('./datasets/rf3_30.joblib')
+            rf3_45 = load('./datasets/rf3_45.joblib')
+            rf5_15 = load('./datasets/rf5_15.joblib')
+            rf5_30 = load('./datasets/rf5_30.joblib')
+            rf5_45 = load('./datasets/rf5_45.joblib')
+            rf8_15 = load('./datasets/rf8_15.joblib')
+            rf8_30 = load('./datasets/rf8_30.joblib')
+            rf8_45 = load('./datasets/rf8_45.joblib')
+            rf10_15 = load('./datasets/rf10_15.joblib')
+            rf10_30 = load('./datasets/rf10_30.joblib')
+            rf10_45 = load('./datasets/rf10_45.joblib')
 
+        except FileNotFoundError:
+            print("Training random forest classifiers. (expect ~3 mins)")
+
+            # For feature set 3
+            rf3_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
+            rf3_15.fit(ft_3, y_train)
+            dump(rf3_15, './datasets/rf3_15.joblib')
+
+            rf3_30 = RandomForestClassifier(n_estimators=30, random_state=1327)
+            rf3_30.fit(ft_3, y_train)
+            dump(rf3_30, './datasets/rf3_30.joblib')
+
+            rf3_45 = RandomForestClassifier(n_estimators=45, random_state=1327)
+            rf3_45.fit(ft_3, y_train)
+            dump(rf3_45, './datasets/rf3_45.joblib')
+
+            # For feature set 5
+            rf5_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
+            rf5_15.fit(ft_5, y_train)
+            dump(rf5_15, './datasets/rf5_15.joblib')
+
+            rf5_30 = RandomForestClassifier(n_estimators=30, random_state=1327)
+            rf5_30.fit(ft_5, y_train)
+            dump(rf5_30, './datasets/rf5_30.joblib')
+
+            rf5_45 = RandomForestClassifier(n_estimators=45, random_state=1327)
+            rf5_45.fit(ft_5, y_train)
+            dump(rf5_45, './datasets/rf5_45.joblib')
+
+            # For feature set 8
+            rf8_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
+            rf8_15.fit(ft_8, y_train)
+            dump(rf8_15, './datasets/rf8_15.joblib')
+
+            rf8_30 = RandomForestClassifier(n_estimators=30, random_state=1327)
+            rf8_30.fit(ft_8, y_train)
+            dump(rf8_30, './datasets/rf8_30.joblib')
+
+            rf8_45 = RandomForestClassifier(n_estimators=45, random_state=1327)
+            rf8_45.fit(ft_8, y_train)
+            dump(rf8_45, './datasets/rf8_45.joblib')
+
+            # For feature set 10
+            rf10_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
+            rf10_15.fit(ft_10, y_train)
+            dump(rf10_15, './datasets/rf10_15.joblib')
+
+            rf10_30 = RandomForestClassifier(n_estimators=30, random_state=1327)
+            rf10_30.fit(ft_10, y_train)
+            dump(rf10_30, './datasets/rf10_30.joblib')
+
+            rf10_45 = RandomForestClassifier(n_estimators=45, random_state=1327)
+            rf10_45.fit(ft_10, y_train)
+            dump(rf10_45, './datasets/rf10_45.joblib')
+
+        # AdaBoosted Decision Trees models follow the format: abdt_<k-mer length>
+        try:
+            print("Searching for pretrained AdaBoosted Decision Trees models...")
+            abdt3_15_3 = load('./datasets/abdt3_15_3.joblib')
+            abdt3_30_3 = load('./datasets/abdt3_30_3.joblib')
+            abdt3_45_3 = load('./datasets/abdt3_45_3.joblib')
+            abdt5_15_3 = load('./datasets/abdt5_15_3.joblib')
+            abdt5_30_3 = load('./datasets/abdt5_30_3.joblib')
+            abdt5_45_3 = load('./datasets/abdt5_45_3.joblib')
+            abdt8_15_3 = load('./datasets/abdt8_15_3.joblib')
+            abdt8_30_3 = load('./datasets/abdt8_30_3.joblib')
+            abdt8_45_3 = load('./datasets/abdt8_45_3.joblib')
+            abdt10_15_3 = load('./datasets/abdt10_15_3.joblib')
+            abdt10_30_3 = load('./datasets/abdt10_30_3.joblib')
+            abdt10_45_3 = load('./datasets/abdt10_45_3.joblib')
+            
+            abdt3_15_8 = load('./datasets/abdt3_15_8.joblib')
+            abdt3_30_8 = load('./datasets/abdt3_30_8.joblib')
+            abdt3_45_8 = load('./datasets/abdt3_45_8.joblib')
+            abdt5_15_8 = load('./datasets/abdt5_15_8.joblib')
+            abdt5_30_8 = load('./datasets/abdt5_30_8.joblib')
+            abdt5_45_8 = load('./datasets/abdt5_45_8.joblib')
+            abdt8_15_8 = load('./datasets/abdt8_15_8.joblib')
+            abdt8_30_8 = load('./datasets/abdt8_30_8.joblib')
+            abdt8_45_8 = load('./datasets/abdt8_45_8.joblib')
+            abdt10_15_8 = load('./datasets/abdt10_15_8.joblib')
+            abdt10_30_8 = load('./datasets/abdt10_30_8.joblib')
+            abdt10_45_8 = load('./datasets/abdt10_45_8.joblib')
+
+            abdt3_15_18 = load('./datasets/abdt3_15_18.joblib')
+            abdt3_30_18 = load('./datasets/abdt3_30_18.joblib')
+            abdt3_45_18 = load('./datasets/abdt3_45_18.joblib')
+            abdt5_15_18 = load('./datasets/abdt5_15_18.joblib')
+            abdt5_30_18 = load('./datasets/abdt5_30_18.joblib')
+            abdt5_45_18 = load('./datasets/abdt5_45_18.joblib')
+            abdt8_15_18 = load('./datasets/abdt8_15_18.joblib')
+            abdt8_30_18 = load('./datasets/abdt8_30_18.joblib')
+            abdt8_45_18 = load('./datasets/abdt8_45_18.joblib')
+            abdt10_15_18 = load('./datasets/abdt10_15_18.joblib')
+            abdt10_30_18 = load('./datasets/abdt10_30_18.joblib')
+            abdt10_45_18 = load('./datasets/abdt10_45_18.joblib')
+
+
+        except FileNotFoundError:
+            print("Training AdaBoosted Decision Trees models. (expect ~3.5 hours)")
+            # Note: since there are 36 models and writing it out would take
+            # many lines, this only trains then saves the models. You have to
+            # run this again in order to test them, so that they can be loaded
+            # into variables in the try: section above.
+
+            # ft_3_scaled = ft_3_test
+            # ft_5_scaled = ft_5
+            # ft_8_scaled = ft_8
+            # ft_10_scaled = ft_10
+            # scaler = MinMaxScaler()
+            # scaler.fit(ft_3_scaled) 
+            # scaler.fit(ft_5_scaled) 
+            # scaler.fit(ft_8_scaled) 
+            # scaler.fit(ft_10_scaled) 
+
+            print("Training feature set 3")
+            for n_estimators in [15, 30, 45]:
+                for max_depth in [3, 8, 18]:
+                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
+                    model.fit(ft_3, y_train)
+                    dump(model, f'./datasets/abdt3_{n_estimators}_{max_depth}.joblib')
+
+            # For feature set 5
+            print("Training feature set 5")
+            for n_estimators in [15, 30, 45]:
+                for max_depth in [3, 8, 18]:
+                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
+                    model.fit(ft_5, y_train)
+                    dump(model, f'./datasets/abdt5_{n_estimators}_{max_depth}.joblib')
+
+            # For feature set 8
+            print("Training feature set 8")
+            for n_estimators in [15, 30, 45]:
+                for max_depth in [3, 8, 18]:
+                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
+                    model.fit(ft_8, y_train)
+                    dump(model, f'./datasets/abdt8_{n_estimators}_{max_depth}.joblib')
+
+            # For feature set 10
+            print("Training feature set 10")
+            for n_estimators in [15, 30, 45]:
+                for max_depth in [3, 8, 18]:
+                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
+                    model.fit(ft_10, y_train)
+                    dump(model, f'./datasets/abdt10_{n_estimators}_{max_depth}.joblib')
+            
+            # abdt_3 = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=15, random_state=1327)
+            # abdt_3.fit(ft_3, y_train)
+            # dump(abdt_3, './datasets/abdt3.joblib')
+
+            # abdt_5 = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=15, random_state=1327)
+            # abdt_5.fit(ft_5, y_train)
+            # dump(abdt_5, './datasets/abdt5.joblib')
+
+            # abdt_8 = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=15, random_state=1327)
+            # abdt_8.fit(ft_8, y_train)
+            # dump(abdt_8, './datasets/abdt8.joblib')
+
+            # abdt_10 = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=15, random_state=1327)
+            # abdt_10.fit(ft_10, y_train)
+            # dump(abdt_10, './datasets/abdt10.joblib')
+                    
+        # Multiclass XGBoost models follow the format: xgb_<k-mer length>
+        try:
+            print("Searching for pretrained XGBoost models...")
+            xgb_3 = load('./datasets/xgb3.joblib')
+            xgb_5 = load('./datasets/xgb5.joblib')
+            xgb_8 = load('./datasets/xgb8.joblib')
+            # xgb_10 = load('./datasets/xgb10.joblib')
+
+        except FileNotFoundError:
+            print("Training XGBoost models. (expect ~? mins)")
+            
+            xgb_3 = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+            xgb_3.fit(ft_3, y_train)
+            dump(xgb_3, './datasets/xgb3.joblib')
+
+            xgb_5 = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+            xgb_5.fit(ft_5, y_train)
+            dump(xgb_5, './datasets/xgb5.joblib')
+
+            xgb_8 = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+            xgb_8.fit(ft_8, y_train)
+            dump(xgb_8, './datasets/xgb8.joblib')
+
+            # I got several errors when I tried to run this, including "hard
+            # stop" and making my IDE freeze.
+            # xgb_10 = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+            # xgb_10.fit(ft_10, y_train)
+            # dump(xgb_10, './datasets/xgb10.joblib')
+
+        from sklearn.metrics import accuracy_score, f1_score, balanced_accuracy_score, precision_score, recall_score, roc_auc_score
+
+        def evaluate_baseline(model, name, X_test, y_test, X_train, y_train):
+            # Predictions for test set
+            test_predictions = model.predict(X_test)
+            
+            # Metrics for test set
+            test_accuracy = accuracy_score(y_test, test_predictions)
+            test_macro_f1 = f1_score(y_test, test_predictions, average="macro", zero_division=1)
+            test_bal_acc = balanced_accuracy_score(y_test, test_predictions)
+            test_macro_precision = precision_score(y_test, test_predictions, average="macro", zero_division=1)
+            test_macro_recall = recall_score(y_test, test_predictions, average="macro", zero_division=1)
+            test_weighted_precision = precision_score(y_test, test_predictions, average="weighted", zero_division=1)
+            test_weighted_recall = recall_score(y_test, test_predictions, average="weighted", zero_division=1)
+            test_weighted_f1 = f1_score(y_test, test_predictions, average="weighted", zero_division=1)
+            try:
+                test_roc_auc = roc_auc_score(y_test, model.predict_proba(X_test), multi_class="ovr", average="macro")
+            except:
+                test_roc_auc = -1
+            
+            # Predictions for train set
+            train_predictions = model.predict(X_train)
+            
+            # Metrics for train set
+            train_accuracy = accuracy_score(y_train, train_predictions)
+            train_macro_f1 = f1_score(y_train, train_predictions, average="macro", zero_division=1)
+            train_bal_acc = balanced_accuracy_score(y_train, train_predictions)
+            train_macro_precision = precision_score(y_train, train_predictions, average="macro", zero_division=1)
+            train_macro_recall = recall_score(y_train, train_predictions, average="macro", zero_division=1)
+            train_weighted_precision = precision_score(y_train, train_predictions, average="weighted", zero_division=1)
+            train_weighted_recall = recall_score(y_train, train_predictions, average="weighted", zero_division=1)
+            train_weighted_f1 = f1_score(y_train, train_predictions, average="weighted", zero_division=1)
+            try:
+                train_roc_auc = roc_auc_score(y_train, model.predict_proba(X_train), multi_class="ovr", average="macro")
+            except:
+                train_roc_auc = -1
+
+            # Results
+            results = {
+                'name': name,
+
+                'train_macro_f1-score': train_macro_f1,
+                'train_macro_recall': train_macro_recall, 
+                'train_micro_accuracy': train_accuracy,
+                'train_macro_precision': train_macro_precision,
+                'train_weighted_precision': train_weighted_precision, 
+                'train_weighted_recall': train_weighted_recall,
+                'train_weighted_f1-score': train_weighted_f1,
+                'train_balanced_accuracy': train_bal_acc,
+                'train_macro_ovr_roc_auc_score': train_roc_auc,
+
+                'test_macro_f1-score': test_macro_f1,
+                'test_macro_recall': test_macro_recall,
+                'test_micro_accuracy': test_accuracy,
+                'test_macro_precision': test_macro_precision,
+                'test_weighted_precision': test_weighted_precision, 
+                'test_weighted_recall': test_weighted_recall,
+                'test_weighted_f1-score': test_weighted_f1,
+                'test_balanced_accuracy': test_bal_acc,
+                'test_macro_ovr_roc_auc_score': test_roc_auc,
+            }
+            
+            return results
 
 
         # Predict on test data and evaluate the baseline models
         # 0.00641025641 is random 1/156
-        print("Evaluating models...")
 
-        y_pred_nb3 = NB_3.predict(ft_3_test)
-        accuracy = accuracy_score(y_test, y_pred_nb3)
-        print(f"NB3 Accuracy: {accuracy}")
-        print("NB3 Classification Report:")
-        print(classification_report(y_test, y_pred_nb3, zero_division=1))
-        print(f"NB3 Test accuracy: {NB_3.score(ft_3_test, y_test)}")
-        print(f"NB3 Train accuracy: {NB_3.score(ft_3, y_train)}")
+        # Each element should be a tuple:
+        # (trained_model, name, X_test, y_test, X_train, y_train)
+        models_to_evaluate = [
+            # (knnraw_1,"knnraw_1",X_test_vectorized,y_test,X_train_vectorized,y_train)
+            # ,(knnraw_3,"knnraw_3",X_test_vectorized,y_test,X_train_vectorized,y_train)
+            # ,(knnraw_5,"knnraw_5",X_test_vectorized,y_test,X_train_vectorized,y_train)
+            # ,(knnraw_7,"knnraw_7",X_test_vectorized,y_test,X_train_vectorized,y_train)
+            # ,(knnraw_9,"knnraw_9",X_test_vectorized,y_test,X_train_vectorized,y_train)
+            (knn3_1,"knn3_1",ft_3_test,y_test,ft_3,y_train)
+            ,(knn3_3,"knn3_3",ft_3_test,y_test,ft_3,y_train)
+            ,(knn3_5,"knn3_5",ft_3_test,y_test,ft_3,y_train)
+            ,(knn3_7,"knn3_7",ft_3_test,y_test,ft_3,y_train)
+            ,(knn3_9,"knn3_9",ft_3_test,y_test,ft_3,y_train)
+            ,(knn5_1,"knn5_1",ft_5_test,y_test,ft_5,y_train)
+            ,(knn5_3,"knn5_3",ft_5_test,y_test,ft_5,y_train)
+            ,(knn5_5,"knn5_5",ft_5_test,y_test,ft_5,y_train)
+            ,(knn5_7,"knn5_7",ft_5_test,y_test,ft_5,y_train)
+            ,(knn5_9,"knn5_9",ft_5_test,y_test,ft_5,y_train)
+            ,(knn8_1,"knn8_1",ft_8_test,y_test,ft_8,y_train)
+            ,(knn8_3,"knn8_3",ft_8_test,y_test,ft_8,y_train)
+            ,(knn8_5,"knn8_5",ft_8_test,y_test,ft_8,y_train)
+            ,(knn8_7,"knn8_7",ft_8_test,y_test,ft_8,y_train)
+            ,(knn8_9,"knn8_9",ft_8_test,y_test,ft_8,y_train)
+            ,(knn10_1,"knn10_1",ft_10_test,y_test,ft_10,y_train)
+            ,(knn10_3,"knn10_3",ft_10_test,y_test,ft_10,y_train)
+            ,(knn10_5,"knn10_5",ft_10_test,y_test,ft_10,y_train)
+            ,(knn10_7,"knn10_7",ft_10_test,y_test,ft_10,y_train)
+            ,(knn10_9,"knn10_9",ft_10_test,y_test,ft_10,y_train)
 
-        y_pred_nb5 = NB_5.predict(ft_5_test)
-        accuracy = accuracy_score(y_test, y_pred_nb5)
-        print(f"NB5 Accuracy: {accuracy}")
-        print("NB5 Classification Report:")
-        print(classification_report(y_test, y_pred_nb5, zero_division=1))
-        print(f"NB5 Test accuracy: {NB_5.score(ft_5_test, y_test)}")
-        print(f"NB5 Train accuracy: {NB_5.score(ft_5, y_train)}")
+            ,(nb_3, "nb_3", ft_3_test, y_test, ft_3, y_train)
+            ,(nb_5, "nb_5", ft_5_test, y_test, ft_5, y_train)
+            ,(nb_8, "nb_8", ft_8_test, y_test, ft_8, y_train)
+            ,(nb_10, "nb_10", ft_10_test, y_test, ft_10, y_train)
 
-        y_pred_nb8 = NB_8.predict(ft_8_test)
-        accuracy = accuracy_score(y_test, y_pred_nb8)
-        print(f"NB8 Accuracy: {accuracy}")
-        print("NB8 Classification Report:")
-        print(classification_report(y_test, y_pred_nb8, zero_division=1))
-        print(f"NB8 Test accuracy: {NB_8.score(ft_8_test, y_test)}")
-        print(f"NB8 Train accuracy: {NB_8.score(ft_8, y_train)}")
+            ,(rf3_15, "rf3_15", ft_3_test, y_test, ft_3, y_train)
+            ,(rf3_30, "rf3_30", ft_3_test, y_test, ft_3, y_train)
+            ,(rf3_45, "rf3_45", ft_3_test, y_test, ft_3, y_train)
+            ,(rf5_15, "rf5_15", ft_5_test, y_test, ft_5, y_train)
+            ,(rf5_30, "rf5_30", ft_5_test, y_test, ft_5, y_train)
+            ,(rf5_45, "rf5_45", ft_5_test, y_test, ft_5, y_train)
+            ,(rf8_15, "rf8_15", ft_8_test, y_test, ft_8, y_train)
+            ,(rf8_30, "rf8_30", ft_8_test, y_test, ft_8, y_train)
+            ,(rf8_45, "rf8_45", ft_8_test, y_test, ft_8, y_train)
+            ,(rf10_15, "rf10_15", ft_10_test, y_test, ft_10, y_train)
+            ,(rf10_30, "rf10_30", ft_10_test, y_test, ft_10, y_train)
+            ,(rf10_45, "rf10_45", ft_10_test, y_test, ft_10, y_train)
 
-        y_pred_nb10 = NB_10.predict(ft_10_test)
-        accuracy = accuracy_score(y_test, y_pred_nb10)
-        print(f"NB10 Accuracy: {accuracy}")
-        print("NB10 Classification Report:")
-        print(classification_report(y_test, y_pred_nb10, zero_division=1))
-        print(f"NB10 Test accuracy: {NB_10.score(ft_10_test, y_test)}")
-        print(f"NB10 Train accuracy: {NB_10.score(ft_10, y_train)}")
+            ,(dt_3, "dt_3", ft_3_test, y_test, ft_3, y_train)
+            ,(dt_5, "dt_5", ft_5_test, y_test, ft_5, y_train)
+            ,(dt_8, "dt_8", ft_8_test, y_test, ft_8, y_train)
+            ,(dt_10, "dt_10", ft_10_test, y_test, ft_10, y_train)
+
+            ,(svm_3, "svm_3", ft_3_test, y_test, ft_3, y_train)
+            ,(svm_5, "svm_5", ft_5_test, y_test, ft_5, y_train)
+            ,(svm_8, "svm_8", ft_8_test, y_test, ft_8, y_train)
+            ,(svm_10, "svm_10", ft_10_test, y_test, ft_10, y_train)
+
+            ,(lr_3, "lr_3", ft_3_test, y_test, ft_3, y_train)
+            ,(lr_5, "lr_5", ft_5_test, y_test, ft_5, y_train)
+            ,(lr_8, "lr_8", ft_8_test, y_test, ft_8, y_train)
+            # ,(lr_10, "lr_10", ft_10_test, y_test, ft_10, y_train)
+
+            ,(xgb_3, "xgb_3", ft_3_test, y_test, ft_3, y_train)
+            ,(xgb_5, "xgb_5", ft_5_test, y_test, ft_5, y_train)
+            ,(xgb_8, "xgb_8", ft_8_test, y_test, ft_8, y_train)
+            # ,(xgb_10, "xgb_10", ft_10_test, y_test, ft_10, y_train)
+
+            ,(abdt3_15_3, "abdt3_15_3", ft_3_test, y_test, ft_3, y_train)
+            ,(abdt3_30_3, "abdt3_30_3", ft_3_test, y_test, ft_3, y_train)
+            ,(abdt3_45_3, "abdt3_45_3", ft_3_test, y_test, ft_3, y_train)
+            ,(abdt5_15_3, "abdt5_15_3", ft_5_test, y_test, ft_5, y_train)
+            ,(abdt5_30_3, "abdt5_30_3", ft_5_test, y_test, ft_5, y_train)
+            ,(abdt5_45_3, "abdt5_45_3", ft_5_test, y_test, ft_5, y_train)
+            ,(abdt8_15_3, "abdt8_15_3", ft_8_test, y_test, ft_8, y_train)
+            ,(abdt8_30_3, "abdt8_30_3", ft_8_test, y_test, ft_8, y_train)
+            ,(abdt8_45_3, "abdt8_45_3", ft_8_test, y_test, ft_8, y_train)
+            ,(abdt10_15_3, "abdt10_15_3", ft_10_test, y_test, ft_10, y_train)
+            ,(abdt10_30_3, "abdt10_30_3", ft_10_test, y_test, ft_10, y_train)
+            ,(abdt10_45_3, "abdt10_45_3", ft_10_test, y_test, ft_10, y_train)
+        
+            ,(abdt3_15_8, "abdt3_15_8", ft_3_test, y_test, ft_3, y_train)
+            ,(abdt3_30_8, "abdt3_30_8", ft_3_test, y_test, ft_3, y_train)
+            ,(abdt3_45_8, "abdt3_45_8", ft_3_test, y_test, ft_3, y_train)
+            ,(abdt5_15_8, "abdt5_15_8", ft_5_test, y_test, ft_5, y_train)
+            ,(abdt5_30_8, "abdt5_30_8", ft_5_test, y_test, ft_5, y_train)
+            ,(abdt5_45_8, "abdt5_45_8", ft_5_test, y_test, ft_5, y_train)
+            ,(abdt8_15_8, "abdt8_15_8", ft_8_test, y_test, ft_8, y_train)
+            ,(abdt8_30_8, "abdt8_30_8", ft_8_test, y_test, ft_8, y_train)
+            ,(abdt8_45_8, "abdt8_45_8", ft_8_test, y_test, ft_8, y_train)
+            ,(abdt10_15_8, "abdt10_15_8", ft_10_test, y_test, ft_10, y_train)
+            ,(abdt10_30_8, "abdt10_30_8", ft_10_test, y_test, ft_10, y_train)
+            ,(abdt10_45_8, "abdt10_45_8", ft_10_test, y_test, ft_10, y_train)
+
+            ,(abdt3_15_18, "abdt3_15_18", ft_3_test, y_test, ft_3, y_train)
+            ,(abdt3_30_18, "abdt3_30_18", ft_3_test, y_test, ft_3, y_train)
+            ,(abdt3_45_18, "abdt3_45_18", ft_3_test, y_test, ft_3, y_train)
+            ,(abdt5_15_18, "abdt5_15_18", ft_5_test, y_test, ft_5, y_train)
+            ,(abdt5_30_18, "abdt5_30_18", ft_5_test, y_test, ft_5, y_train)
+            ,(abdt5_45_18, "abdt5_45_18", ft_5_test, y_test, ft_5, y_train)
+            ,(abdt8_15_18, "abdt8_15_18", ft_8_test, y_test, ft_8, y_train)
+            ,(abdt8_30_18, "abdt8_30_18", ft_8_test, y_test, ft_8, y_train)
+            ,(abdt8_45_18, "abdt8_45_18", ft_8_test, y_test, ft_8, y_train)
+            ,(abdt10_15_18, "abdt10_15_18", ft_10_test, y_test, ft_10, y_train)
+            ,(abdt10_30_18, "abdt10_30_18", ft_10_test, y_test, ft_10, y_train)
+            ,(abdt10_45_18, "abdt10_45_18", ft_10_test, y_test, ft_10, y_train)
+        ]
+        names = [ele[1] for ele in models_to_evaluate]
+        print(f"Evaluating models: {names}")
+
+        results_df = pd.DataFrame()
+
+        for ele in tqdm(models_to_evaluate):
+            print(f"\nRunning {ele[1]}")
+            result = evaluate_baseline(*ele)
+            warnings.filterwarnings('ignore', category=FutureWarning)
+            results_df = results_df.append(pd.Series(result), ignore_index=True)
+            warnings.filterwarnings('default', category=FutureWarning)
+
+        results_df.to_csv('baseline_results.csv', index=False)
+        print(f"Baselines took {(baseline_start_time - time.time())/60} "
+              f"minutes to run.")

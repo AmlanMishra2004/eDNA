@@ -717,29 +717,35 @@ def update_results(results, model,
 
     # Check if the model and hyperparameters have been tried before
     found_match = False
-    # For each row...
     for index, row in df.iterrows():
         matches = True
         for col in unique_columns:
+            # If both are empty, then they match. Move to check next column
             if compare_none_and_nan(results[col], row[col]):
                 continue
+            # If they are not equal, then the row does not match. Stop
+            # comparing columns and move to check the next row.
             elif str(results[col]) != str(row[col]):
                 matches = False
                 break
         if matches:
             found_match = True
-            print("Found a match!")
             # If the new val_macro_f1-score is higher, replace the old row
             if results['val_macro_f1-score'] > row['val_macro_f1-score']:
-                print("Improved a model with the same hyperparams by chance.")
+                print("Improved a model with the same hyperparameters.")
                 df.loc[index] = pd.Series(results)
+            else:
+                print("Unsuccessfully tried to improve the same model and "
+                      "hyperparameter combination.")
+            df.loc[index, 'trials'] += 1
             break
     if not found_match:
-        print("Didnt find a match.")
         # If the model and hyperparameters haven't been tried before, add a new row
         warnings.filterwarnings('ignore', category=FutureWarning)
+        results['trials'] = 1
         df = df.append(pd.Series(results), ignore_index=True)
         warnings.filterwarnings('default', category=FutureWarning)
+        print("Logged a new row for unique model/hyperparameter combination.")
 
     # Save the updated results
     df_sorted = df.sort_values(by='val_macro_f1-score', ascending=False)
@@ -986,8 +992,8 @@ def create_feature_table(sequences,k):
     """
     feature_table=[]
     for seq in sequences:
-        cv = CountVectorizer(vocabulary=(get_all_kmers(k))) #lists counts of all words
-        #representing sequences as sentences with words that are kmers i.e all kmers separated by space
+        cv = CountVectorizer(vocabulary=(get_all_kmers(k))) # lists counts of all words
+        # representing sequences as sentences with words that are kmers i.e all kmers separated by space
         features=np.asarray(cv.fit_transform([(" ".join(list_kmers(seq,k)))]).toarray())  
         features=features.flatten().tolist()
         feature_table.append(features)
