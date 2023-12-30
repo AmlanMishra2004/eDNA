@@ -140,7 +140,7 @@ def oversample_underrepresented_species(df, species_col, verbose=False):
     duplicating a sequence.
 
     Args:
-        df (pandas.DataFrame): The DataFrame to oversample.
+        df (pandas.DataFrame OR pandas.Series): The data to oversample.
         species_col (str): The string name of the column in the DataFrame that
             contains the species.
         verbose (bool, optional): If True, prints the shape of the oversampled
@@ -152,10 +152,6 @@ def oversample_underrepresented_species(df, species_col, verbose=False):
     Raises:
         KeyError: If species_col is not in df.
     """
-    value_counts = df[species_col].value_counts()
-    seq_counts = value_counts.to_dict()
-    max_count = max(value_counts)
-    new_indexes = []
 
     # For each unique species, make a list of all of the indexes in the
     # data that belong to this species. Find out how many sequences need to
@@ -164,16 +160,39 @@ def oversample_underrepresented_species(df, species_col, verbose=False):
     # indexes for the current species, adding to a list of indexes for all of
     # the species' sequences that will be included at the end.
 
-    for val in seq_counts.keys():
-        species_indexes = [i for i, j in enumerate(df[species_col])if j == val]
-        new_indexes.extend(species_indexes)
-        k = round(max_count - seq_counts[val])
-        new_indexes.extend(random.choices(species_indexes, k=k))
+    if isinstance(df, pd.DataFrame):
+        value_counts = df[species_col].value_counts()
+        seq_counts = value_counts.to_dict()
+        max_count = max(value_counts)
+        new_indexes = []
 
-    oversample = df.iloc[new_indexes]
-    if verbose:
-        print(f"Oversampled shape: {df.shape}")
-    return oversample
+        for val in seq_counts.keys():
+            species_indexes = [i for i, j in enumerate(df[species_col])if j == val]
+            new_indexes.extend(species_indexes)
+            k = round(max_count - seq_counts[val])
+            new_indexes.extend(random.choices(species_indexes, k=k))
+
+        oversample = df.iloc[new_indexes]
+        if verbose:
+            print(f"Oversampled shape: {df.shape}")
+        return oversample
+    
+    elif isinstance(df, pd.Series):
+        value_counts = df.value_counts()
+        seq_counts = value_counts.to_dict()
+        max_count = max(value_counts)
+        new_indexes = []
+
+        for val in seq_counts.keys():
+            species_indexes = [i for i, j in enumerate(df) if j == val]
+            new_indexes.extend(species_indexes)
+            k = round(max_count - seq_counts[val])
+            new_indexes.extend(random.choices(species_indexes, k=k))
+
+        oversample = df.iloc[new_indexes]
+        if verbose:
+            print(f"Oversampled shape: {df.shape}")
+        return oversample
 
 def stratified_split(data, species_col, ratio):
     """

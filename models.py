@@ -18,6 +18,9 @@ same_padding = lambda stride, in_width, out_width, filter_size: (
     )
 )
 
+def conv1d_output_size(input_length, kernel_size, padding, stride):
+    return (input_length - kernel_size + 2 * padding) // stride + 1
+
 class Zurich(nn.Module):
     def __init__(self, stride=1, in_width=60, num_classes=156):
         super(Zurich, self).__init__()
@@ -122,6 +125,41 @@ class Jon_CNN(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
     
+# unfinished 12/30/23
+class VariableCNN(nn.Module):
+    def __init__(self, in_channels, out_channels, kernel_size, stride, padding,
+                 dropout_channels, activation, input_length, num_classes):
+        self.name = "VariableCNN"
+        super(VariableCNN, self).__init__()
+        self.conv_layers = nn.ModuleList()
+        for i in range(len(in_channels)):
+            self.conv_layers.append(
+                nn.Conv1d(in_channels[i], out_channels[i], kernel_size[i], stride[i], padding[i])
+            )
+            self.conv_layers.append(
+                activation()
+            )
+            self.conv_layers.append(
+                nn.Dropout(dropout_channels[i])
+            )
+        # Calculate required number of input nodes in dense layer
+        for i in range(len(out_channels)):
+            input_length = conv1d_output_size(input_length, kernel_size[i], padding[i], stride[i])
+        num_nodes = input_length * out_channels[-1]
+        self.linear_layer = nn.Linear(num_nodes, num_classes)
+
+    def forward(self, x):
+        for layer in self.conv_layers:
+            x = layer(x)
+        x = x.view(x.size(0), -1)
+        x = self.linear_layer(x)
+        return x
+    
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
 class CNN1(nn.Module):
     def __init__(self, num_classes):
         super(CNN1, self).__init__()
