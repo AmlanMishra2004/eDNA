@@ -40,7 +40,6 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 from tabulate import tabulate
 from tqdm import tqdm
-from varname import nameof
 from xgboost import XGBClassifier
 
 from dataset import Sequence_Data
@@ -909,7 +908,7 @@ if __name__ == '__main__':
 
         activations = ["relu", "sigmoid", "leakyrelu"] # not used, only leakyrelu
 
-        num_explorations = 5
+        num_explorations = 4320
         for iteration in range(num_explorations):
             print(f"\n\nIteration {iteration+1}/{num_explorations}\n\n")
 
