@@ -758,7 +758,7 @@ if __name__ == '__main__':
         train = pd.read_csv(config['train_path'], sep=',')
         test = pd.read_csv(config['test_path'], sep=',')
 
-    if arch_search:
+    if run_arch_search:
         
         # If you want to see the format of the data will be fed into the model,
         # uncomment the code below.
