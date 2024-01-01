@@ -34,6 +34,7 @@ import math
 import pandas as pd
 import tensorflow as tf
 import torch
+import time
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import auc, precision_recall_curve, roc_curve
 from sklearn.metrics import classification_report, roc_auc_score
@@ -700,30 +701,40 @@ def add_metrics_to_dict(labels, predicted, epoch, val_acc, fold_val_metrics):
     fold_val_metrics['epochs_taken'].append(epoch)
     return fold_val_metrics
 
-# TODO: instead of checking and only saving if it is original, prevent it from 
+# instead of checking and only saving if it is original, prevent it from 
 # training in the first place if the hyperparameters and model have already been explored
-def check_hyperparam_originality():
-    pass
+# returns the index (or -1) if a matching row exists
 
-# results: a dict
-# be careful when comparing existing cells since they contain arrays (and must use .all()) as well as empty cells which are translated as NaN, and NaN != NaN.
-def update_results(results, model,
-                   filename='results.csv', model_dir='saved_models'):
-    
-    now = datetime.now()
-    timestamp = now.strftime("%Y%m%d_%H%M%S")
-    results['datetime'] = timestamp
-    
+# returns -1 if no match, else returns the index of the match
+def check_hyperparam_originality(results, filename='results.csv'):
+    st = time.time()
     # Define the columns that distinguish unique rows
     unique_columns = ['model_name', 'k_folds', 'k_iters', 
                       'confidence_threshold', 'seq_count_threshold', 'seq_len',
-                      'test_insertions',
-                      'test_deletions', 'test_mutation_rate', 'tag_and_primer',
+                      'test_insertions', 'test_deletions',
+                      'test_mutation_rate', 'tag_and_primer',
                       'reverse_complements', 'encoding_mode', 'test_split',
                       'load_existing_train_test']
-
+    # find the number of layers
+    num_layer_keys = len([key for key in results.keys() if key.startswith('layer')])
+    num_layers = num_layer_keys//7
+    if (num_layer_keys % 7) != 0:
+        raise ValueError("Unable to correctly determine number of layers used"
+                 " in a model. Please check that there are 7 entries for each "
+                 " layer.")
+    for layer in range(1, num_layers+1):
+        unique_columns.append(f'layer{layer}_input_channels')
+        unique_columns.append(f'layer{layer}_output_channels')
+        unique_columns.append(f'layer{layer}_conv_kernel')
+        unique_columns.append(f'layer{layer}_stride')
+        unique_columns.append(f'layer{layer}_padding')
+        unique_columns.append(f'layer{layer}_dropout')
+        unique_columns.append(f'layer{layer}_pool_kernel')
+    
     # Load existing results if file exists
     if os.path.isfile(filename):
+        # If this raises an error "No columns to parse from file", copy in the 
+        # column headers of the old results file.
         df = pd.read_csv(filename)
     else:
         df = pd.DataFrame(columns=list(results.keys()))
@@ -733,14 +744,21 @@ def update_results(results, model,
 
     def compare_none_and_nan(val1, val2):
         return is_none_or_nan(val1) and is_none_or_nan(val2)
-
-    # Check if the model and hyperparameters have been tried before
-    found_match = False
+    
+    def compare_numbers(num1, num2):
+        try:
+            if float(num1) == float(num2):
+                return True
+        except:
+            return False
+    
     for index, row in df.iterrows():
         matches = True
         for col in unique_columns:
             # If both are empty, then they match. Move to check next column
             if compare_none_and_nan(results[col], row[col]):
+                continue
+            elif compare_numbers(results[col], row[col]):
                 continue
             # If they are not equal, then the row does not match. Stop
             # comparing columns and move to check the next row.
@@ -748,36 +766,80 @@ def update_results(results, model,
                 matches = False
                 break
         if matches:
-            found_match = True
-            # If the new val_macro_f1-score is higher, replace the old row
-            if results['val_macro_f1-score'] > row['val_macro_f1-score']:
-                print("Improved a model with the same hyperparameters.")
-                df.loc[index] = pd.Series(results)
-            else:
-                print("Unsuccessfully tried to improve the same model and "
-                      "hyperparameter combination.")
-            df.loc[index, 'trials'] += 1
-            break
-    if not found_match:
-        # If the model and hyperparameters haven't been tried before, add a new row
-        warnings.filterwarnings('ignore', category=FutureWarning)
+            print(f"Time taken to search combination: {time.time() - st} seconds")
+            return index
+    print(f"Time taken to search combination: {time.time() - st} seconds")
+    return -1
+
+# results: a dict
+# be careful when comparing existing cells since they contain arrays (and must use .all()) as well as empty cells which are translated as NaN, and NaN != NaN.
+def update_results(results, model,
+                   filename='results.csv', model_dir='saved_models'):
+    
+    now = datetime.now()
+    timestamp = now.strftime("%Y%m%d_%H%M%S")
+    results['datetime'] = timestamp
+
+    # Load existing results if file exists
+    if os.path.isfile(filename):
+        df = pd.read_csv(filename)
+    else:
+        df = pd.DataFrame(columns=list(results.keys()))
+
+    idx = check_hyperparam_originality(results, filename)
+
+    # If the model and hyperparameters haven't been tried before, add a new row
+    if idx == -1:
         results['trials'] = 1
+        warnings.filterwarnings('ignore', category=FutureWarning)
         df = df.append(pd.Series(results), ignore_index=True)
         warnings.filterwarnings('default', category=FutureWarning)
         print("Logged a new row for unique model/hyperparameter combination.")
+
+    # If the combination has been tried before, if the performance is better
+    # then replace it and save the model parameters.
+    else:
+        row = df.loc[idx]
+        if results['val_macro_f1-score'] == row['val_macro_f1-score']:
+            keys_to_average = ['val_macro_f1-score', 'val_macro_recall',
+                                'val_micro_accuracy', 'val_macro_precision',
+                                'val_weighted_precision',
+                                'val_weighted_recall', 
+                                'val_weighted_f1-score',
+                                'val_balanced_accuracy']
+            existing_values = [row[key] for key in keys_to_average]
+            new_values = [results[key] for key in keys_to_average]
+            new_average_metric = sum(new_values) / len(new_values)
+            existing_average_metric = sum(existing_values) / len(existing_values)
+            if new_average_metric > existing_average_metric:
+                print("Improved a model with the same hyperparameters.")
+                df.loc[idx] = pd.Series(results)
+            else:
+                print("Matched f-1 score of a model with the same "
+                        "hyperparameters, but avg. of metrics was lower.")
+        # If the new val_macro_f1-score is higher, replace the old row
+        elif results['val_macro_f1-score'] > row['val_macro_f1-score']:
+            print("Improved a model with the same hyperparameters.")
+            df.loc[idx] = pd.Series(results)
+        else:
+            print("Unsuccessfully tried to improve the same model and "
+                    "hyperparameter combination.")
+        df.loc[idx, 'trials'] += 1
 
     # Save the updated results
     df_sorted = df.sort_values(by='val_macro_f1-score', ascending=False)
     df_sorted.to_csv(filename, index=False)
 
     # If the val_macro_f1-score is the best, save the model parameters
-    if results['val_macro_f1-score'] >= df_sorted['val_macro_f1-score'].max():
+    if results['val_macro_f1-score'] >= df_sorted.iloc[0]['val_macro_f1-score']:
         print("Found a new best model!")
         torch.save(model.state_dict(),
-                   os.path.join(model_dir, f'best_model_{timestamp}.pt'))
+                os.path.join(model_dir, f'best_model_{timestamp}.pt'))
     
-    print("Saved Model/Hyperparameter Results")
+    print("Saved Results")
 
+def conv1d_output_size(input_length, kernel_size, padding, stride):
+    return (input_length - kernel_size + 2 * padding) // stride + 1
 
 def make_compatible_for_plotting(data):
     """Converts given data into a format compatible for plotting with

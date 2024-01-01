@@ -21,6 +21,7 @@ import sys
 import time
 import warnings
 
+import itertools
 from joblib import dump, load
 import numpy as np
 import pandas as pd
@@ -47,12 +48,12 @@ import models
 from torch.utils.data import DataLoader
 import utils
 
-random.seed(1327)
+# random.seed(1327)
 
-def evaluate(model, X_train, y_train, X_test, y_test, k_folds, k_iters, epochs,
+def evaluate(model, train, test, k_folds, k_iters, epochs, oversample, 
              optimizer, loss_function, early_stopper, batch_size,
              confidence_threshold, config, track_fold_epochs,
-             track_test_epochs):
+             track_test_epochs, num_classes):
     """Trains and evaluates a given model, then displays results.
 
     Trains the model using k-fold cross validation,recording the validation
@@ -96,10 +97,10 @@ def evaluate(model, X_train, y_train, X_test, y_test, k_folds, k_iters, epochs,
             If None, it will not enforce a threshold. Example: 0.7.
         config (dict): A dictionary containing many hyperparameters. For a full
             list, refer to the correct usage in __main__().
-NEW        track_fold_epochs (bool): Whether or not to evaluate on the validation
+        track_fold_epochs (bool): Whether or not to evaluate on the validation
             set after each epoch during training on a given fold in order to
             graph train vs. test learning curves.
-NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
+        track_test_epochs (bool): Whether or not to evaluate on the test set
             after each epoch during final evaluation (after cross-validation)
             in order to graph train vs. test learning curves.
     Returns:
@@ -148,38 +149,39 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
         learn_fold_val_losses = [[] for _ in range(k_iters)]
 
     np.set_printoptions(threshold=sys.maxsize)
+    warnings.filterwarnings("ignore", "y_pred contains classes not in y_true")
 
     # K-FOLD STRATIFIED CV
 
     skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=1327)
     for fold, (train_indexes, val_indexes) in enumerate(
-        skf.split(X_train, y_train)
+        skf.split(train[config['seq_col']], train[config['species_col']])
     ):
         if fold >= k_iters:
             break
 
-        print(f"Starting fold {fold + 1} ------------------------------------")
+        print(f"Starting fold {fold + 1}")
 
-        # # oversample the train data for the fold
-        # X_train_fold = X_train.iloc[train_indexes]
+        train_fold = train.iloc[train_indexes]
+        val_fold = train.iloc[val_indexes]
 
-        # X_train_fold = utils.oversample_underrepresented_species(
-        #     X_train_fold,
-        #     config['species_col'],
-        #     config['verbose']
-        # )
+        if oversample:
+            train_fold = utils.oversample_underrepresented_species(
+                train_fold,
+                config['species_col'],
+                config['verbose']
+            )
         train_dataset = Sequence_Data(
-            # X=X_train_fold,
-            X=X_train.iloc[train_indexes],
-            y=y_train.iloc[train_indexes],
+            X=train_fold[config['seq_col']],
+            y=train_fold[config['species_col']],
             insertions=config['trainRandomInsertions'],
             deletions=config['trainRandomDeletions'],
             mutation_rate=config['trainMutationRate'],
             encoding_mode=config['encoding_mode'],
             seq_len=config['seq_target_length'])
         val_dataset = Sequence_Data(
-            X=X_train.iloc[val_indexes],
-            y=y_train.iloc[val_indexes],
+            X=val_fold[config['seq_col']],
+            y=val_fold[config['species_col']],
             insertions=config['testRandomInsertions'],
             deletions=config['testRandomDeletions'],
             mutation_rate=config['testMutationRate'],
@@ -198,7 +200,7 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
         if early_stopper:
             early_stopper.reset()
 
-        for epoch in tqdm(range(epochs)):
+        for epoch in range(epochs):
             
             # TRAINING
             model.train()  # Sets the model to training mode.
@@ -213,8 +215,7 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
                 try:
                     outputs = model(inputs)  # Runs the inputs through the model.
                 except:
-                    # in case the model is incorrectly set up, ex. with not enough nodes in the linear layer
-                    print(f"Unable to run example through model.")
+                    print(f"Error: Unable to run example through model.")
                     return
                 loss = loss_function(outputs, labels)  # Computes the loss.
                 loss.backward()  # Performs backward pass, updating weights.
@@ -279,9 +280,10 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
             if early_stopper:
                 early_stopper(val_acc)
                 if early_stopper.stop:
-                    print(f"Early stopping\n")
+                    if config['verbose']:
+                        print(f"Early stopping\n")
                     print(f"Fold {fold+1}, Epoch {epoch+1}/{epochs}, "
-                          f"Validation Accuracy: {val_acc*100}%\n")
+                          f"Validation Accuracy: {val_acc*100}%")
                     if confidence_threshold:
                         fold_val_metrics = utils.add_metrics_to_dict(
                             confident_labels,
@@ -332,25 +334,24 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
             
     # First, retrain on the entire train dataset.
         
-    # # oversample the train data for the fold
-    # X_train_full = X_train.iloc[train_indexes]
-    # X_train_full = utils.oversample_underrepresented_species(
-    #     X_train_full,
-    #     config['species_col'],
-    #     config['verbose']
-    # )
+    X_train_full = train.copy()
+    if oversample:
+        X_train_full = utils.oversample_underrepresented_species(
+            X_train_full,
+            config['species_col'],
+            config['verbose']
+        )
     train_dataset = Sequence_Data(
-        # X=X_train_full,
-        X=X_train,
-        y=y_train,
+        X=X_train_full[config['seq_col']],
+        y=X_train_full[config['species_col']],
         insertions=config['trainRandomInsertions'],
         deletions=config['trainRandomDeletions'],
         mutation_rate=config['trainMutationRate'],
         encoding_mode=config['encoding_mode'],
         seq_len=config['seq_target_length'])
     test_dataset = Sequence_Data(
-        X=X_test,
-        y=y_test, 
+        X=test[config['seq_col']],
+        y=test[config['species_col']], 
         insertions=config['testRandomInsertions'],
         deletions=config['testRandomDeletions'],
         mutation_rate=config['testMutationRate'],
@@ -447,7 +448,8 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
             all_test_targets.extend(targets.view(-1).tolist())
             all_test_predictions.extend(predicted.view(-1).tolist())
             all_test_outputs.extend(outputs.tolist())
-    print(f"Test execution time: {time.time() - start_time} seconds")
+    test_time = time.time() - start_time
+    print(f"Test execution time: {test_time} seconds")
 
     '''
     print training accuracy, other metrics
@@ -491,7 +493,7 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
                                            all_test_predictions)
     all_targets_one_hot = label_binarize(
         all_test_targets,
-        classes=list(range(156))
+        classes=list(range(num_classes))
     )
     roc_auc = roc_auc_score(
         all_targets_one_hot,
@@ -500,7 +502,7 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
         average='macro'
     )
 
-    if k_iters > 1:
+    if k_iters >= 1:
         avg_val_acc = sum(fold_val_metrics['acc']) / k_iters
         avg_val_m_precision = sum(x[0] for x in fold_val_metrics['precision']) / k_iters
         avg_val_w_precision = sum(x[1] for x in fold_val_metrics['precision']) / k_iters
@@ -552,6 +554,7 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
         'test_weighted_f1-score': test_w_f1,
         'test_balanced_accuracy': test_bal_acc,
         'test_macro_ovr_roc_auc_score': roc_auc,
+        'test_time': test_time,
 
         # hyperparameters
         'learning_rate': optimizer.param_groups[0]['lr'],
@@ -568,6 +571,7 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
 
         # preprocessing steps. differentiates rows.
         'model_name': model.name,
+        'oversample': oversample,
         'confidence_threshold': confidence_threshold,
         'seq_count_threshold': config['seq_count_thresh'],
         'seq_len': config['seq_target_length'],
@@ -582,8 +586,19 @@ NEW        track_test_epochs (bool): Whether or not to evaluate on the test set
         'test_split': config['test_split'],
         'load_existing_train_test': config['load_existing_train_test']
     }
-    # These results are for a single model with a single set of hyperparameters
-    # and a single trial.
+
+    # add the variable number of layers to the results
+    for layer in range(1, len(input_channels)+1):
+        results[f'layer{layer}_input_channels'] = input_channels[layer-1]
+        results[f'layer{layer}_output_channels'] = output_channels[layer-1]
+        results[f'layer{layer}_conv_kernel'] = conv_kernels[layer-1]
+        results[f'layer{layer}_stride'] = strides[layer-1]
+        results[f'layer{layer}_padding'] = paddings[layer-1]
+        results[f'layer{layer}_dropout'] = dropouts[layer-1]
+        results[f'layer{layer}_pool_kernel'] = pool_kernels[layer-1]
+
+    # These results are for a single model architecture with a single set of
+    # hyperparameters and a single trial.
     utils.update_results(results, model)
     
     # # Graph results. NOTE: After reworking evaluate() on 12/26, I did not
@@ -662,13 +677,14 @@ if __name__ == '__main__':
         'trainRandomInsertions': [0,2],   # ex. between 0 and 2 per sequence
         'trainRandomDeletions': [0,2],    # ex. between 0 and 2 per sequence
         'trainMutationRate': 0.05,        # n*100% chance for a base to flip
+        'oversample': True,              # whether or not to oversample train
         'encoding_mode': 'probability',   # 'probability' or 'random'
         # Whether or not applying on raw unlabeled data or "clean" ref db data.
         'applying_on_raw_data': False,
         # Whether or not to augment the test set.
         'augment_test_data': True,
         'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files
-        'verbose': True
+        'verbose': False
     }
     if config['applying_on_raw_data']:
         config['seq_target_length'] = 150
@@ -842,98 +858,185 @@ if __name__ == '__main__':
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
         num_trials = 1
-        learning_rates = [0.001]
+        # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
+        learning_rates = [0.0005, 0.007, 0.001, 0.002]
         # learning_rates = [0.0005, 0.001, 0.003, 0.005]
         # learning_rates = [0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
         # learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 
         #                   0.01, 0.05]
-        batch_size = 32
+
+        # batch_sizes = [32]
+        batch_sizes = [16, 32, 64]
         epochs = 10_000
         # Zurich called the confidence_threshold 'binzarization threshold', and
         # used 0.9 for some of their evaluations. I do not compare my results
         # to those evaluations.
         confidence_threshold = None
         early_stopper = utils.EarlyStopping(
-            patience=10,
-            min_pct_improvement=0.5 # previously 20 epochs, 0.1%
+            patience=5,
+            min_pct_improvement=1, # previously 20 epochs, 0.1%
+            verbose=False
         )
         k_folds = 5
-        k_iters = 3 # Should be int [0 - k_folds]. Set to 0 to skip validation.
+        k_iters = 5 # Should be int [0 - k_folds]. Set to 0 to skip validation.
+
+        oversample = False # currently manually overridden in grid search 
 
         # Grid search: Evaluates each model with a combination of
         # hyperparameters for a certain number of trials.
+
         # num_cnn_layers = [1, 2, 3, 4, 5]
-        # num_channels = [4, 8, 16, 24, 32, 40, 48, ...]
-        # kernel_sizes = [3, 5, 7, 9, 11, 13, 15, 17]
-        # strides = [1, 2, 3]
-        # paddings = [1, 2, 3, 4, ...]
-        # dropout_rates = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9]
-        # activations = ["relu", "sigmoid", ...]
+
+        # num_channels = [4, 16, 32, 48, 64, 102, 128, 156, 206, 254, 355, 407]
+        # conv_kernel_sizes = [3, 5, 7, 9, 11, 13, 15, 17]
+        # stride_lengths = [1, 2, 3]
+        # padding_lengths = [1, 2, 3, 4]
+        # dropout_rates = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6]
+        # pool_kernel_sizes = [0, 2, 3, 4, 5]
+
+        # activations = ["relu", "sigmoid", "leakyrelu"]
 
 
-        # for cnn_layers in num_cnn_layers:
-        #     for dropout_layer in [(True, False)*num_cnn_layers]:
-        #         model = utils.VariableCNN(in_channels, out_channels, kernel_size, stride, padding,
-        #          dropout_channels, activation, num_classes)
-        #         for latent_layers in num_latent_layers:
+        num_cnn_layers = [1, 2, 3, 4]
 
+        num_channels = [16, 32, 64, 128, 256]
+        conv_kernel_sizes = [3, 5, 7, 9, 11]
+        stride_lengths = [1, 2]
+        padding_lengths = [0, 1, 2]
+        dropout_rates = [0, 0.2, 0.4, 0.6]
+        pool_kernel_sizes = [0, 2, 3]
 
-        #     for 
-        #         model = utils.VariableCNN(in_channels, out_channels, kernel_size, stride, padding,
-        #          dropout_channels, activation, num_classes)
-        #         model = utils.VariableCNN([])
-        model_list = [1]
-        for model in model_list:
-            for idx, lr in enumerate(learning_rates):
-                for trial in range(num_trials):
-                                            #  [layer1, layer2, layer3]
-                    model = models.VariableCNN([4, 64, 128],    # input channels
-                                              [64, 128, 256],   # output channels
-                                              [3, 3, 3],        # kernel size
-                                              [1, 1, 1],        # stride
-                                              [1, 1, 1],        # padding
-                                              [0.1, 0.2, 0.3],  # dropout rate
-                                              nn.ReLU,          # activation function
-                                              input_length = config['seq_target_length'],
-                                              num_classes = 156
-                                              ) # this is really good!
-                    model.to('cuda')
+        activations = ["relu", "sigmoid", "leakyrelu"] # not used, only leakyrelu
 
-                    print(f"\n\nTraining Model {model.name}, Trial {trial+1}")
+        num_explorations = 5
+        for iteration in range(num_explorations):
+            print(f"\n\nIteration {iteration+1}/{num_explorations}\n\n")
 
-                    # To try to get the first batch to prove it is the same as Zurich
-                    # first_batch = next(iter(trainloader))
-                    # data,labels = first_batch
-                    # data_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_data.npy"
-                    # labels_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_labels.npy"
-                    # np.save(data_path, data.numpy())
-                    # np.save(labels_path, labels.numpy())
+            # randomly select the model archictecture
+            batch_size = random.sample(batch_sizes, 1)[0]
+            lr = random.sample(learning_rates, 1)[0]
+            oversample = random.choices([True, False], k=1)[0]
 
-                    evaluate(
-                        model,
-                        X_train = train[config['seq_col']],
-                        y_train = train[config['species_col']],
-                        X_test = test[config['seq_col']],
-                        y_test = test[config['species_col']],
-                        k_folds = k_folds,
-                        k_iters = k_iters,
-                        epochs = epochs,
-                        optimizer = torch.optim.Adam(model.parameters(),
-                                                     lr=lr,
-                                                     betas=(0.9, 0.999),
-                                                     eps=1e-07,
-                                                     weight_decay=0.0,
-                                                     amsgrad=False),
-                        loss_function = nn.CrossEntropyLoss(),
-                        early_stopper = early_stopper,
-                        batch_size = batch_size,
-                        confidence_threshold = confidence_threshold,
-                        config = config,
-                        track_fold_epochs = False,
-                        track_test_epochs = False)
-                    
-                    print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
+            num_convs = random.sample(num_cnn_layers, 1)[0]
+            channels = random.choices(num_channels, k=num_convs)
+            conv_kernels = random.choices(conv_kernel_sizes, k=num_convs)
+            strides = random.choices(stride_lengths, k=num_convs)
+            paddings = random.choices(padding_lengths, k=num_convs)
+            dropouts = random.choices(dropout_rates, k=num_convs)
+            pool_kernels = random.choices(pool_kernel_sizes, k=num_convs)
+            input_channels = [4, *channels[:-1]]
+            output_channels = [*channels]
+
+            print(f"----Model architecture: ----------")
+            print(f"Input channels: {input_channels}")
+            print(f"Output channels: {output_channels}")
+            print(f"Convolution kernels: {conv_kernels}")
+            print(f"Strides: {strides}")
+            print(f"Paddings: {paddings}")
+            print(f"Dropouts: {dropouts}")
+            print(f"Pooling kernels: {pool_kernels}")
+            print("-----Hyperparameters: -------------")
+            print(f"Oversample: {oversample}")
+            print(f"Batch size: {batch_size}")
+            print(f"Learning rate: {lr}")
+            print(f"(fixed) K-folds: {k_folds}")
+            print(f"(fixed) K-iters: {k_iters}")
+            print(f"------------------------------------")
+
+            # Create a dictionary representing the current fields that
+            # differentiate rows, then check if a matching row exists.
+
+            combination = {
+                    'model_name': 'VariableCNN',
+                    'k_folds': k_folds,
+                    'k_iters': k_iters,
+                    'confidence_threshold': confidence_threshold,
+                    'seq_count_threshold': config['seq_count_thresh'],
+                    'seq_len': config['seq_target_length'],
+                    'test_insertions': config['testRandomInsertions'],
+                    'test_deletions': config['testRandomDeletions'],
+                    'test_mutation_rate': config['testMutationRate'],
+                    'tag_and_primer': config['addTagAndPrimer'],
+                    'reverse_complements': config['addRevComplements'],
+                    'encoding_mode': config['encoding_mode'],
+                    'test_split': config['test_split'],
+                    'load_existing_train_test': config['load_existing_train_test']
+            }
+            for layer in range(1, len(input_channels)+1):
+                combination[f'layer{layer}_input_channels'] = input_channels[layer-1]
+                combination[f'layer{layer}_output_channels'] = output_channels[layer-1]
+                combination[f'layer{layer}_conv_kernel'] = conv_kernels[layer-1]
+                combination[f'layer{layer}_stride'] = strides[layer-1]
+                combination[f'layer{layer}_padding'] = paddings[layer-1]
+                combination[f'layer{layer}_dropout'] = dropouts[layer-1]
+                combination[f'layer{layer}_pool_kernel'] = pool_kernels[layer-1]
+
+            # if you want to allow searching identical architecture/
+            # hyperparameter combinations, then uncomment this function call
+            if utils.check_hyperparam_originality(combination) != -1:
+                print(f"Model architecture has already been explored. "
+                      f"Exploring next random hyperparameter combination.")
+                continue
+
+            # Create the model. If the model parameters are incompatible,
+            # skip to the next combination.
+            try:
+                model = models.VariableCNN(
+                    input_channels,
+                    output_channels,
+                    conv_kernels,
+                    strides,
+                    paddings,
+                    dropouts,
+                    pool_kernels,
+                    nn.LeakyReLU, # could include this in search
+                    input_length = config['seq_target_length'],
+                    num_classes = num_classes
+                )
+            except:
+                print("Model parameters are incompatible. Exploring next "
+                      "random hyperparameter combination.")
+                continue
+            model.to('cuda')
+
+            for trial in range(num_trials):
+                print(f"\nTraining {model.name}, Trial {trial+1}")
+
+                # To try to get the first batch to prove it is the same as Zurich
+                # first_batch = next(iter(trainloader))
+                # data,labels = first_batch
+                # data_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_data.npy"
+                # labels_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_labels.npy"
+                # np.save(data_path, data.numpy())
+                # np.save(labels_path, labels.numpy())
+
+                evaluate(
+                    model,
+                    train = train,
+                    test = test,
+                    k_folds = k_folds,
+                    k_iters = k_iters,
+                    epochs = epochs,
+                    oversample = oversample,
+                    optimizer = torch.optim.Adam(
+                        model.parameters(),
+                        lr=lr,
+                        betas=(0.9, 0.999),
+                        eps=1e-07,
+                        weight_decay=0.0,
+                        amsgrad=False),
+                    loss_function = nn.CrossEntropyLoss(),
+                    early_stopper = early_stopper,
+                    batch_size = batch_size,
+                    confidence_threshold = confidence_threshold,
+                    config = config,
+                    track_fold_epochs = False,
+                    track_test_epochs = False,
+                    num_classes = num_classes
+                )
+                
+                print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
     
     if run_autokeras:
 
@@ -1091,7 +1194,6 @@ if __name__ == '__main__':
         # exception of KNN, with which I use both a feature table and the raw
         # data itself, which is truncated to 60 bp.
 
-        from itertools import product
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.feature_extraction.text import CountVectorizer
         from sklearn.neighbors import KNeighborsClassifier
@@ -1825,3 +1927,42 @@ if __name__ == '__main__':
         results_df.to_csv('baseline_results.csv', index=False)
         print(f"Baselines took {(baseline_start_time - time.time())/60} "
               f"minutes to run.")
+
+
+
+# OLD CODE THAT CREATED A GRID FOR ARCHITECTURE SEARCH
+"""
+try:
+            arch_grid = load('./datasets/full_arch_grid.joblib')
+        except:
+            print(f"Creating possible hyperparameters for grid search."
+                  f"Expect ~30 minutes")
+            num_cnn_layers = [1, 2, 3, 4]
+            num_channels = [16, 32, 64, 128, 256]
+            kernel_sizes = [3, 5, 7, 9, 11]
+            strides = [1, 2]
+            paddings = [1, 2]
+            dropout_rates = [0, 0.2, 0.4, 0.6]
+            # activations = ["relu", "sigmoid"]
+
+            lists = [num_channels, kernel_sizes, strides, paddings, dropout_rates]
+
+            arch_grid = []
+            for length in num_cnn_layers:  # length is the length of the permutations
+                print(f"Length: {length}")
+                combinations = []
+                for lst in lists:
+                    print(f"List: {lst}")
+                    list_permutation = list(itertools.product(lst, repeat=length))
+                    combinations.append(list_permutation)
+                print("Computing product of permutations of lists")
+                combo = [list(combination) for combination in itertools.product(*combinations)]
+                for combination in combo:
+                    arch_grid.append(combination)
+            print(len(arch_grid))
+            dump(arch_grid, f'./datasets/full_arch_grid.joblib')
+
+        print(f"Number of models to explore: {len(arch_grid)}")
+
+        random.shuffle(arch_grid)
+"""
