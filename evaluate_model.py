@@ -40,7 +40,6 @@ from sklearn.ensemble import AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 from tabulate import tabulate
 from tqdm import tqdm
-from varname import nameof
 from xgboost import XGBClassifier
 
 from dataset import Sequence_Data
@@ -652,6 +651,7 @@ if __name__ == '__main__':
     # and test csv (that are presumably already processed). For my train and 
     # test file, all semutations have been added, so no need for online augmentation.Whether set or not, it still must be truncated/padded and turned intovectors.
     run_my_model = True
+    run_arch_search = False     # search through architectures, in addition to lr, b
     run_autokeras = False
     run_baselines = False
     
@@ -758,7 +758,7 @@ if __name__ == '__main__':
         train = pd.read_csv(config['train_path'], sep=',')
         test = pd.read_csv(config['test_path'], sep=',')
 
-    if run_my_model:
+    if arch_search:
         
         # If you want to see the format of the data will be fed into the model,
         # uncomment the code below.
@@ -775,83 +775,6 @@ if __name__ == '__main__':
         # print("Shape of labels: ", ex_labels.shape)
 
         start_time = time.time()
-
-        cnn1 = models.CNN1(num_classes=num_classes)
-        smallcnn2 = models.SmallCNN2(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        linear1 = models.Linear1(
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        linear2 = models.Linear2(
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        zurich = models.Zurich(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn1_1 = models.SmallCNN1_1(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn1_2 = models.SmallCNN1_2(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn2_1 = models.SmallCNN2_1(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn2_2 = models.SmallCNN2_2(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn2_3 = models.SmallCNN2_3(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn2_4 = models.SmallCNN2_4(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn2_6 = models.SmallCNN2_6(
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn3 = models.SmallCNN3(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn3_1 = models.SmallCNN3_1(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-
-        # models = ["VariableCNN"]
-
-        # This list holds all of the models that will be trained and evaluated.
-        # models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
-        #           smallcnn2_2, smallcnn2_3, smallcnn2_4, smallcnn2_6, smallcnn3,
-        #           smallcnn3_1]
-
-        # for model in models:
-        #     model.to('cuda')
-
-        # print(f"Evaluation for Personal Model(s):\n"
-        #       f"{[f'{model.name}' for model in models]}")
         
         # The lines below set up the parameters for grid search.
 
@@ -909,7 +832,8 @@ if __name__ == '__main__':
 
         activations = ["relu", "sigmoid", "leakyrelu"] # not used, only leakyrelu
 
-        num_explorations = 5
+        # 15.5 hrs = 930 minutes for 4320 architectures = ~0.215 minutes per model
+        num_explorations = 4320
         for iteration in range(num_explorations):
             print(f"\n\nIteration {iteration+1}/{num_explorations}\n\n")
 
@@ -976,7 +900,7 @@ if __name__ == '__main__':
             # hyperparameter combinations, then uncomment this function call
             if utils.check_hyperparam_originality(combination) != -1:
                 print(f"Model architecture has already been explored. "
-                      f"Exploring next random hyperparameter combination.")
+                    f"Exploring next random hyperparameter combination.")
                 continue
 
             # Create the model. If the model parameters are incompatible,
@@ -996,7 +920,7 @@ if __name__ == '__main__':
                 )
             except:
                 print("Model parameters are incompatible. Exploring next "
-                      "random hyperparameter combination.")
+                    "random hyperparameter combination.")
                 continue
             model.to('cuda')
 
@@ -1037,7 +961,153 @@ if __name__ == '__main__':
                 )
                 
                 print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
-    
+
+    if run_my_model:
+        cnn1 = models.CNN1(num_classes=num_classes)
+        smallcnn2 = models.SmallCNN2(
+            stride=1,
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        linear1 = models.Linear1(
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        linear2 = models.Linear2(
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        zurich = models.Zurich(
+            stride=1,
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        smallcnn1_1 = models.SmallCNN1_1(
+            stride=1,
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        smallcnn1_2 = models.SmallCNN1_2(
+            stride=1,
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        smallcnn2_1 = models.SmallCNN2_1(
+            stride=1,
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        smallcnn2_2 = models.SmallCNN2_2(
+            stride=1,
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        smallcnn2_3 = models.SmallCNN2_3(
+            stride=1,
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        smallcnn2_4 = models.SmallCNN2_4(
+            stride=1,
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        smallcnn2_6 = models.SmallCNN2_6(
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        smallcnn3 = models.SmallCNN3(
+            stride=1,
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+        smallcnn3_1 = models.SmallCNN3_1(
+            stride=1,
+            in_width=config['seq_target_length'],
+            num_classes=num_classes
+        )
+
+        start_time = time.time()
+        
+        # num_trials sets the number of times each model with each set of
+        # hyperparameters is run. Results are stored in a 2d list and averaged.
+        num_trials = 1
+        # learning_rates = [0.001]
+        # learning_rates = [0.0005, 0.001]
+        learning_rates = [0.0005, 0.007, 0.001, 0.002]
+        # learning_rates = [0.0005, 0.001, 0.003, 0.005]
+        # learning_rates = [0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
+        # learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 
+        #                   0.01, 0.05]
+
+        batch_sizes = [32]
+        # batch_sizes = [16, 32, 64]
+
+        early_stopper = utils.EarlyStopping(
+            patience=20,
+            min_pct_improvement=.1, # previously 20 epochs, 0.1%
+            verbose=False
+        )
+        k_folds = 5
+        k_iters = 5 # Should be int [0 - k_folds]. Set to 0 to skip validation.
+
+        oversample_options = [True, False]
+
+        # This list holds all of the models that will be trained and evaluated.
+        # models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
+        #           smallcnn2_2, smallcnn2_3, smallcnn2_4, smallcnn2_6, smallcnn3,
+        #           smallcnn3_1]
+        models = [smallcnn2_4]
+
+        for model in models:
+            model.to('cuda')
+
+        print(f"Evaluation for Personal Model(s):\n"
+                f"{[f'{model.name}' for model in models]}")
+
+        start_time = time.time()
+
+        for model in models:
+            for lr in learning_rates:
+                for batch_size in batch_sizes:
+                    for trial in range(num_trials):
+                        for oversample in oversample_options:
+                            print(f"\nTraining {model.name}, Trial {trial+1}")
+
+                            # To try to get the first batch to prove it is the same as Zurich
+                            # first_batch = next(iter(trainloader))
+                            # data,labels = first_batch
+                            # data_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_data.npy"
+                            # labels_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_labels.npy"
+                            # np.save(data_path, data.numpy())
+                            # np.save(labels_path, labels.numpy())
+
+                            evaluate(
+                                model,
+                                train = train,
+                                test = test,
+                                k_folds = 5,
+                                k_iters = 5,
+                                epochs = 10_000,
+                                oversample = oversample,
+                                optimizer = torch.optim.Adam(
+                                    model.parameters(),
+                                    lr=lr,
+                                    betas=(0.9, 0.999),
+                                    eps=1e-07,
+                                    weight_decay=0.0,
+                                    amsgrad=False),
+                                loss_function = nn.CrossEntropyLoss(),
+                                early_stopper = early_stopper,
+                                batch_size = batch_size,
+                                confidence_threshold = None,
+                                config = config,
+                                track_fold_epochs = False,
+                                track_test_epochs = False,
+                                num_classes = num_classes
+                            )
+                            
+                            print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
     if run_autokeras:
 
         # Import statements are included here because 1) Printing "Using
