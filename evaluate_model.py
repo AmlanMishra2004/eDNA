@@ -21,26 +21,18 @@ import sys
 import time
 import warnings
 
-import itertools
 from joblib import dump, load
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
-from sklearn.linear_model import SGDClassifier
 from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.metrics import precision_score, recall_score, f1_score
-from sklearn.model_selection import KFold, StratifiedKFold
-from sklearn.naive_bayes import GaussianNB
-from sklearn.preprocessing import LabelEncoder, label_binarize, MinMaxScaler
-from sklearn import tree, svm
-from sklearn.linear_model import LogisticRegression
-from sklearn.ensemble import AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import LabelEncoder, label_binarize
 from tabulate import tabulate
 from tqdm import tqdm
-from xgboost import XGBClassifier
 
 from dataset import Sequence_Data
 import models
@@ -650,8 +642,8 @@ if __name__ == '__main__':
     # If set, this will skip the preprocessing and read in an existing train
     # and test csv (that are presumably already processed). For my train and 
     # test file, all semutations have been added, so no need for online augmentation.Whether set or not, it still must be truncated/padded and turned intovectors.
-    run_my_model = True
-    run_arch_search = False     # search through architectures, in addition to lr, b
+    run_my_model = False
+    run_arch_search = True     # search through architectures, in addition to lr, batch size
     run_autokeras = False
     run_baselines = False
     
@@ -781,16 +773,21 @@ if __name__ == '__main__':
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
         num_trials = 1
-        # learning_rates = [0.001]
-        # learning_rates = [0.0005, 0.001]
-        learning_rates = [0.0005, 0.007, 0.001, 0.002]
-        # learning_rates = [0.0005, 0.001, 0.003, 0.005]
-        # learning_rates = [0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
+
         # learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 
         #                   0.01, 0.05]
+        # SEARCH 1: 12/31/23
+        learning_rates = [0.0005, 0.007, 0.001, 0.002]
+        # SEARCH 2: 1/3/24
+        learning_rates = [0.0008, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008] # expanded both ends
 
-        # batch_sizes = [32]
+
+        
+        # SEARCH 1: 12/31/23
         batch_sizes = [16, 32, 64]
+        # SEARCH 2: 1/3/24
+        batch_sizes = [10, 16, 32, 48, 64]
+
         epochs = 10_000
         # Zurich called the confidence_threshold 'binzarization threshold', and
         # used 0.9 for some of their evaluations. I do not compare my results
@@ -820,7 +817,7 @@ if __name__ == '__main__':
 
         # activations = ["relu", "sigmoid", "leakyrelu"]
 
-
+        # SEARCH 1: Dec. 31, 2023
         num_cnn_layers = [1, 2, 3, 4]
 
         num_channels = [16, 32, 64, 128, 256]
@@ -830,10 +827,18 @@ if __name__ == '__main__':
         dropout_rates = [0, 0.2, 0.4, 0.6]
         pool_kernel_sizes = [0, 2, 3]
 
-        activations = ["relu", "sigmoid", "leakyrelu"] # not used, only leakyrelu
+        # SEARCH 2: Jan. 3, 2024
+        num_cnn_layers = [1, 2]
 
-        # 15.5 hrs = 930 minutes for 4320 architectures = ~0.215 minutes per model
-        num_explorations = 4320
+        num_channels = [64, 128, 196, 256, 342, 512, 612] # shifted up
+        conv_kernel_sizes = [5, 6, 7, 8, 9] # middle taken
+        stride_lengths = [1, 2]
+        padding_lengths = [0, 1, 2]
+        dropout_rates = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # expanded
+        pool_kernel_sizes = [0, 2, 3]
+
+        # 15.5 hrs = 930 minutes for 4320 architectures = ~0.215 minutes per model. actual number of models explored: 2427
+        num_explorations = 10_000
         for iteration in range(num_explorations):
             print(f"\n\nIteration {iteration+1}/{num_explorations}\n\n")
 
@@ -1265,10 +1270,14 @@ if __name__ == '__main__':
         # data itself, which is truncated to 60 bp.
 
         from sklearn.ensemble import RandomForestClassifier
-        from sklearn.feature_extraction.text import CountVectorizer
         from sklearn.neighbors import KNeighborsClassifier
         from sklearn.naive_bayes import MultinomialNB
         from sklearn.preprocessing import LabelEncoder
+        from sklearn import tree, svm
+        from sklearn.linear_model import LogisticRegression
+        from sklearn.ensemble import AdaBoostClassifier
+        from sklearn.tree import DecisionTreeClassifier
+        from xgboost import XGBClassifier
 
         np.set_printoptions(threshold=sys.maxsize)
         baseline_start_time = time.time()
