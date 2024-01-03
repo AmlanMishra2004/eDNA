@@ -826,8 +826,10 @@ def update_results(results, model,
                     "hyperparameter combination.")
         df.loc[idx, 'trials'] += 1
 
+    # =MATCH(MAX(C:C), C:C, 0) returns the index of the highest micro accuracy
     # Save the updated results
-    df_sorted = df.sort_values(by='val_macro_f1-score', ascending=False)
+    df_sorted = df.sort_values(by='val_micro_accuracy', kind='mergesort',
+                                ascending=False)
     df_sorted.to_csv(filename, index=False)
 
     # If the val_macro_f1-score is the best, save the model parameters
