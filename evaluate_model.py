@@ -134,7 +134,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     if track_fold_epochs:
         # old approach: np.empty((epochs, k_iters)), and 
         # learn_fold_train_accuracies[epoch, fold] = train_acc
-        learn_fold_train_accuracies = [[] for _ in range(k_iters)] 
+        learn_fold_train_accuracies = [[] for _ in range(k_iters)]
         learn_fold_val_accuracies = [[] for _ in range(k_iters)]
         learn_fold_train_losses = [[] for _ in range(k_iters)]
         learn_fold_val_losses = [[] for _ in range(k_iters)]
@@ -519,6 +519,9 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     print("\nTest Metrics")
     print(tabulate(test_metrics, headers='keys', tablefmt='pretty'))
 
+    # NOTE: as of 1/3, this will raise an error if you are not running this in
+    # the arch search setting. This is fine, as you wouldn't want to save these
+    # results anyway.
     results = {
         # For validation data, these metrics are the average over the k_iters
         # folds that were evaluated, where for each fold, the metric was likely
@@ -669,7 +672,7 @@ if __name__ == '__main__':
         'trainRandomInsertions': [0,2],   # ex. between 0 and 2 per sequence
         'trainRandomDeletions': [0,2],    # ex. between 0 and 2 per sequence
         'trainMutationRate': 0.05,        # n*100% chance for a base to flip
-        'oversample': True,              # whether or not to oversample train
+        'oversample': True,              # whether or not to oversample train # OVERRIDDEN IN ARCH SEARCH
         'encoding_mode': 'probability',   # 'probability' or 'random'
         # Whether or not applying on raw unlabeled data or "clean" ref db data.
         'applying_on_raw_data': False,
@@ -679,11 +682,11 @@ if __name__ == '__main__':
         'verbose': False
     }
     if config['applying_on_raw_data']:
-        config['seq_target_length'] = 150
+        config['seq_target_length'] = 150 # POSSIBLY OVERRIDDEN IN ARCH SEARCH
         config['addTagAndPrimer'] = True 
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
-        config['seq_target_length'] = 60
+        config['seq_target_length'] = 64 # 60 # POSSIBLY OVERRIDDEN IN ARCH SEARCH
         config['addTagAndPrimer'] = False
         config['addRevComplements'] = False
     if config['augment_test_data']:
@@ -968,6 +971,7 @@ if __name__ == '__main__':
                 print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
 
     if run_my_model:
+
         cnn1 = models.CNN1(num_classes=num_classes)
         smallcnn2 = models.SmallCNN2(
             stride=1,
@@ -1031,21 +1035,26 @@ if __name__ == '__main__':
             in_width=config['seq_target_length'],
             num_classes=num_classes
         )
+        # best_12_31 = models.Best_12_31()
+        model_path = "saved_models/best_model_20240101_035108.pt"
+        best_12_31 = models.Best_12_31()
+        best_12_31.load_state_dict(torch.load(model_path))
 
         start_time = time.time()
         
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
         num_trials = 1
+        learning_rates = [0.002]
         # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
-        learning_rates = [0.0005, 0.007, 0.001, 0.002]
+        # learning_rates = [0.0005, 0.007, 0.001, 0.002]
         # learning_rates = [0.0005, 0.001, 0.003, 0.005]
         # learning_rates = [0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05]
         # learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 
         #                   0.01, 0.05]
 
-        batch_sizes = [32]
+        batch_sizes = [16]
         # batch_sizes = [16, 32, 64]
 
         early_stopper = utils.EarlyStopping(
@@ -1056,13 +1065,14 @@ if __name__ == '__main__':
         k_folds = 5
         k_iters = 5 # Should be int [0 - k_folds]. Set to 0 to skip validation.
 
-        oversample_options = [True, False]
+        oversample_options = [False]
+        # oversample_options = [True, False]
 
         # This list holds all of the models that will be trained and evaluated.
         # models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
         #           smallcnn2_2, smallcnn2_3, smallcnn2_4, smallcnn2_6, smallcnn3,
         #           smallcnn3_1]
-        models = [smallcnn2_4]
+        models = [best_12_31]
 
         for model in models:
             model.to('cuda')
@@ -1091,9 +1101,9 @@ if __name__ == '__main__':
                                 model,
                                 train = train,
                                 test = test,
-                                k_folds = 5,
-                                k_iters = 5,
-                                epochs = 10_000,
+                                k_folds = k_folds,
+                                k_iters = k_iters,
+                                epochs = 10_000, #14,
                                 oversample = oversample,
                                 optimizer = torch.optim.Adam(
                                     model.parameters(),
