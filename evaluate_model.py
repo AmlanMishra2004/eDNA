@@ -593,7 +593,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
 
     # These results are for a single model architecture with a single set of
     # hyperparameters and a single trial.
-    utils.update_results(results, model)
+    utils.update_results(results, model, filename='results_71.csv')
     
     # # Graph results. NOTE: After reworking evaluate() on 12/26, I did not
     # # verify that this worked, since I haven't been needing it.
@@ -686,7 +686,7 @@ if __name__ == '__main__':
         config['addTagAndPrimer'] = True 
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
-        config['seq_target_length'] = 64 # 60 # POSSIBLY OVERRIDDEN IN ARCH SEARCH
+        config['seq_target_length'] = 71 # 60 # POSSIBLY OVERRIDDEN IN ARCH SEARCH
         config['addTagAndPrimer'] = False
         config['addRevComplements'] = False
     if config['augment_test_data']:
