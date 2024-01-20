@@ -12,7 +12,6 @@ second route is performing grid search on one or more models from models.py.
 After grid search is run, for each model, results are printed to the terminal
 and optionally saved to a file.
 """
-
 from collections import defaultdict
 import datetime
 import os
@@ -38,6 +37,7 @@ from dataset import Sequence_Data
 import models
 from torch.utils.data import DataLoader
 import utils
+
 
 # random.seed(1327)
 
