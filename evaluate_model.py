@@ -12,7 +12,6 @@ second route is performing grid search on one or more models from models.py.
 After grid search is run, for each model, results are printed to the terminal
 and optionally saved to a file.
 """
-
 from collections import defaultdict
 import datetime
 import os
@@ -38,6 +37,7 @@ from dataset import Sequence_Data
 import models
 from torch.utils.data import DataLoader
 import utils
+
 
 # random.seed(1327)
 
@@ -686,7 +686,7 @@ if __name__ == '__main__':
         config['addTagAndPrimer'] = True 
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
-        config['seq_target_length'] = 64 # 60 # POSSIBLY OVERRIDDEN IN ARCH SEARCH
+        config['seq_target_length'] = 71 # 60 # POSSIBLY OVERRIDDEN IN ARCH SEARCH
         config['addTagAndPrimer'] = False
         config['addRevComplements'] = False
     if config['augment_test_data']:
