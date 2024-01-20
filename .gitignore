@@ -6,6 +6,8 @@
 /.vscode
 /datasets
 /image_classifier
+/saved_models
+/old_best_saved_models
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

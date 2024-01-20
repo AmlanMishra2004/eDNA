@@ -593,7 +593,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
 
     # These results are for a single model architecture with a single set of
     # hyperparameters and a single trial.
-    utils.update_results(results, model)
+    utils.update_results(results, model, filename='results_71.csv')
     
     # # Graph results. NOTE: After reworking evaluate() on 12/26, I did not
     # # verify that this worked, since I haven't been needing it.
