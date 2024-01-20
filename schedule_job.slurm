@@ -7,7 +7,7 @@
 #SBATCH --partition=grtx		# Select partition
 #SBATCH --mem=15gb			# Job memory request
 #SBATCH --time=72:00:00		# Time limit, hrs:min:sec
-#SBATCH --gres=gpu:4			# Request 1 gpu            
+#SBATCH --gres=gpu:3			# Request 1 gpu            
 #SBATCH --output=out.%j.log		# Standard output and error log
 
 # Load versions of modules
