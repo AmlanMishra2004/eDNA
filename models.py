@@ -218,6 +218,47 @@ class Best_12_31(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
+# use seq_len=60
+class Best_Overall(nn.Module):
+    def __init__(self):
+        super(Best_Overall, self).__init__()
+        self.name = "Best_Overall"
+        self.conv_layers = nn.ModuleList()
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=4, out_channels=612, kernel_size=5,
+                            stride=1, padding=2),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(nn.MaxPool1d(2))
+        self.conv_layers.append(nn.Dropout(0.4))
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=256, out_channels=256, kernel_size=11,
+                            stride=1, padding=2),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(nn.MaxPool1d(3))
+        self.conv_layers.append(nn.Dropout(0.6))
+
+        self.linear_layer = nn.Linear(2048, 156) # works for 64 and 60
+        # self.linear_layer = nn.Linear(2304, 156) # for 71
+
+        self.leakyrelu = nn.LeakyReLU()
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        for layer in self.conv_layers:
+            x = layer(x)
+        x = x.view(x.size(0), -1)
+        x = self.linear_layer(x)
+        # x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
+        # x = self.softmax(self.linear_layer(x))
+        return x
+    
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
 # optimized for in_width=60, num_classes=156
 # only the architecture, different names from the saved model.
 class Best_12_31_Uninitialized_Weights(nn.Module):
@@ -232,6 +273,7 @@ class Best_12_31_Uninitialized_Weights(nn.Module):
                                kernel_size=11, stride=1, padding=2)
         self.dropout2 = nn.Dropout(0.6)
         self.pool2 = nn.MaxPool1d(3)
+        
         self.fc1 = nn.Linear(2048, 156)
 
         self.leakyrelu = nn.LeakyReLU()
@@ -697,6 +739,33 @@ class Linear2(nn.Module):
         for layer in self.children():
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ###############################################################################
 # End of viable models
