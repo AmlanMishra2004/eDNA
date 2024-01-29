@@ -218,29 +218,27 @@ class Best_12_31(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
-# use seq_len=60
-class Best_Overall(nn.Module):
+# seq_len=60, batch=64, lr=0.005, epochs=15, oversample=True
+class Large_Best(nn.Module):
     def __init__(self):
-        super(Best_Overall, self).__init__()
-        self.name = "Best_Overall"
+        super(Large_Best, self).__init__()
+        self.name = "Large_Best"
         self.conv_layers = nn.ModuleList()
         self.conv_layers.append(
-            nn.Conv1d(in_channels=4, out_channels=612, kernel_size=5,
-                            stride=1, padding=2),
+            nn.Conv1d(in_channels=4, out_channels=612, kernel_size=6,
+                            stride=1, padding=2), # used to be padding=0
         )
         self.conv_layers.append(nn.LeakyReLU())
-        self.conv_layers.append(nn.MaxPool1d(2))
-        self.conv_layers.append(nn.Dropout(0.4))
+        self.conv_layers.append(nn.Dropout(0.2))
         self.conv_layers.append(
-            nn.Conv1d(in_channels=256, out_channels=256, kernel_size=11,
-                            stride=1, padding=2),
+            nn.Conv1d(in_channels=612, out_channels=512, kernel_size=6,
+                            stride=1, padding=3), # used to be padding=0
         )
         self.conv_layers.append(nn.LeakyReLU())
-        self.conv_layers.append(nn.MaxPool1d(3))
-        self.conv_layers.append(nn.Dropout(0.6))
+        self.conv_layers.append(nn.MaxPool1d(kernel_size=2, stride=2)) # used to be k=3, s=1. but now it has to halve the length
+        self.conv_layers.append(nn.Dropout(0.1))
 
-        self.linear_layer = nn.Linear(2048, 156) # works for 64 and 60
-        # self.linear_layer = nn.Linear(2304, 156) # for 71
+        self.linear_layer = nn.Linear(8192, 156) # original: 8192 modified: 16384
 
         self.leakyrelu = nn.LeakyReLU()
         self.softmax = nn.Softmax(dim=1)
@@ -248,10 +246,11 @@ class Best_Overall(nn.Module):
     def forward(self, x):
         for layer in self.conv_layers:
             x = layer(x)
-        x = x.view(x.size(0), -1)
+        # UNCOMMENT this line for evaluate_model.py, and
+        # COMMENT this line for main.py!
+        # x = x.view(x.size(0), -1)
         x = self.linear_layer(x)
-        # x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
-        # x = self.softmax(self.linear_layer(x))
+
         return x
     
     def reset_params(self):
@@ -259,35 +258,37 @@ class Best_Overall(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
-# optimized for in_width=60, num_classes=156
-# only the architecture, different names from the saved model.
-class Best_12_31_Uninitialized_Weights(nn.Module):
+# seq_len=71, batch=64, lr=0.002, epochs=18, oversample=True
+class Small_Best(nn.Module):
     def __init__(self):
-        super(Best_12_31, self).__init__()
-        self.name = "Best_12_21"
-        self.conv1 = nn.Conv1d(in_channels=4, out_channels=256, kernel_size=5,
-                               stride=1, padding=2)
-        self.dropout1 = nn.Dropout(0.4)
-        self.pool1 = nn.MaxPool1d(2)
-        self.conv2 = nn.Conv1d(in_channels=256, out_channels=256,
-                               kernel_size=11, stride=1, padding=2)
-        self.dropout2 = nn.Dropout(0.6)
-        self.pool2 = nn.MaxPool1d(3)
-        
-        self.fc1 = nn.Linear(2048, 156)
+        super(Small_Best, self).__init__()
+        self.name = "Small_Best"
+        self.conv_layers = nn.ModuleList()
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=4, out_channels=512, kernel_size=8,
+                            stride=1, padding=0),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(nn.Dropout(0.5))
+        self.conv_layers.append(nn.MaxPool1d(kernel_size=2, stride=2)) # has to halve the length
+        # self.conv_layers.append(nn.MaxPool1d(3))
+
+        self.linear_layer = nn.Linear(16384, 156) # 10752 for kernel of 3
 
         self.leakyrelu = nn.LeakyReLU()
         self.softmax = nn.Softmax(dim=1)
+        # also divide by normalization in the latent space (don't change the input vector)
 
     def forward(self, x):
-        x = self.leakyrelu(self.conv1(x))
-        x = self.dropout1(x)
-        x = self.pool1(x)
-        x = self.leakyrelu(self.conv2(x))
-        x = self.dropout2(x)
-        x = self.pool2(x)
-        x = torch.flatten(x, start_dim=1) # flatten all dims except for batch
-        x = self.softmax(self.fc1(x))
+        for layer in self.conv_layers:
+            x = layer(x)
+        # print(f"INTERMEDIATE SHAPE: {x.shape}")
+        # UNCOMMENT this line for evaluate_model.py, and
+        # COMMENT this line for main.py!
+        x = x.view(x.size(0), -1)
+        # print(f"FLATTENED SHAPE: {x.shape}")
+        x = self.linear_layer(x)
+
         return x
     
     def reset_params(self):

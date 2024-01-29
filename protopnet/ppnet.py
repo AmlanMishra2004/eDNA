@@ -182,17 +182,30 @@ class PPNet(nn.Module):
 
         return distances
     
+    # normalizes along each channel then returns the summed dot product
+    # for each prototype
     def cosine_similarity(self, x, prototypes):
-        x_norm = torch.norm(x, p=2, dim=(1))
-        print(f"SHAPE OF X_NORM: {x_norm.shape}")
-        print(f"SHAPE OF X_NORM[0]: {x_norm[0].shape}")
-        x_reshape = x_norm.view(x.shape[0], 1, x.shape[-1])
-        x_normalized = (x / (self.epsilon + x_reshape)) / (prototypes.shape[-1])**0.5
+        # print("Inputs to cosine_similarity():")
+        # Shape of X: torch.Size([64, 512, 30])
+        # 64 examples (in one batch), each with 512 channels and 30 sequence length
+        # Shape of prototypes: torch.Size([1560, 512, 5])
+        # 1560 prototypes (10 for each class), each with 512 channels and 5 sequence length
+        # print(f"\tShape of X: {x.shape}")
+        # print(f"\tShape of prototypes: {prototypes.shape}")
+        # x_normalized will have the same shape as x, but each 30-element
+        # vector along the last dimension will be a unit vector. This means
+        # that the Euclidean norm (or length) of each of these vectors will
+        # be 1. The same for p_normalized.
 
-        p_norm = torch.norm(prototypes, p=2, dim=(1))
-        p_reshape = p_norm.view(prototypes.shape[0], 1, prototypes.shape[-1])
-        p_normalized = (prototypes / (self.epsilon + p_reshape)) / (prototypes.shape[-1])**0.5
+        x_norm = torch.norm(x, p=2, dim=-1, keepdim=True)
+        x_normalized = x / (self.epsilon + x_norm)
 
+        p_norm = torch.norm(prototypes, p=2, dim=-1, keepdim=True)
+        p_normalized = prototypes / (self.epsilon + p_norm)
+
+        # print(f"\tShape of x_normalized: {x_normalized.shape}")
+        # print(f"\tShape of p_normalized: {p_normalized.shape}")
+        
         similarities = F.conv1d(input=x_normalized, weight=p_normalized)
         return similarities
 
@@ -201,8 +214,10 @@ class PPNet(nn.Module):
         x is the raw input
         should be (batch=64, channels=4, width=60,64,71) or (64, 4, 1, 71)
         '''
-        print(f"Shape of raw input x in prototype_distances() : {x.shape}")
+        # print(f"Shape of raw input x in prototype_distances() : {x.shape}")
+        # Run the input through the convolutional layers.
         conv_features = self.conv_features(x)
+        # print(f"Shape of raw input x after conv_features() : {conv_features.shape}")
         avg_pooled_x = F.avg_pool1d(x, 2, stride=2)
         latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors[:, :-4])
         input_distances = self.cosine_similarity(avg_pooled_x, self.prototype_vectors[:, -4:])
@@ -217,7 +232,7 @@ class PPNet(nn.Module):
             return self.prototype_activation_function(distances)
 
     def forward(self, x):
-        print("Starting forward()!")
+        # print("Starting forward()!")
         distances = self.prototype_distances(x)
         '''
         we cannot refactor the lines below for similarity scores

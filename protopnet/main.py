@@ -9,6 +9,7 @@ import torchvision.datasets as datasets
 
 import argparse
 import re
+import random
 import pandas as pd
 import torch.nn as nn
 
@@ -79,16 +80,17 @@ config = {
     'augment_test_data': True,
     'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files
     'verbose': False,
-    'batch_size': 64,
+    'train_batch_size': 156, # prev. 64. 1,2,3,4,5,6,10,12,13,15,20,26,30,39,52,60,65,78,130,156,195,260,390,=780
+    'test_batch_size': 35, # 1,5,7,25,35,175
     'num_classes': 156,
-    'num_train_epochs': 17,
+    'num_train_epochs': 18,
 
     # Interpretability settings
     'num_warm_epochs': 1,
     'push_start': 5,
-    'last_layer_optimizer_lr': 2e-2,
+    'last_layer_optimizer_lr': 0.01, # jon: 2e-2, sam's model : 0.002
     'latent_weight': 0.8,
-    'push_epochs_gap': 50, # ?
+    'push_epochs_gap': 5, # 50
     'coefs' : {
         'crs_ent': 1,
         'clst': 1*12*-0.8,
@@ -99,7 +101,16 @@ config = {
     # 'experiment_run': 'thresh_4_684_protos', # to delete
     'prototype_activation_function': 'log',
     'add_on_layers_type': 'identity',
-    'prototype_shape': (156*10, 512 + 4, 5),
+    # (num_prototypes, (num_latent_channels + num_piped_features), prototype_width)
+    # reshape to
+    # (num_prototypes, (num_latent_channels + num_piped_features) * prototype_width)
+    'prototype_shape': (156*30, 512+4, 30), # (156[classes]*10[patches per class], 512 + 4, 5[by 5 prototype]), jon: (89 classes * 10, 512 + 4, 5) 
+    # 156*3, 512+4, 30 got 7% acc
+    # 156*10, 512+4, 30 got 10% acc
+    # (156*10, 512+4, 20) 4.5% acc
+    # (156*10, 512+4, 10) 2.7% acc
+    # (156*30, 512+4, 30) 6.5-10.2% acc
+
     'joint_optimizer_lrs': {
         'features': 3*1e-3,
         'add_on_layers': 3*3e-3,
@@ -116,7 +127,7 @@ if config['applying_on_raw_data']:
     config['addTagAndPrimer'] = True 
     config['addRevComplements'] = True
 elif not config['applying_on_raw_data']:
-    config['seq_target_length'] = 71        # or 60 or 64
+    config['seq_target_length'] = 60        # 71 or 60 or 64
     config['addTagAndPrimer'] = False
     config['addRevComplements'] = False
 if config['augment_test_data']:
@@ -150,12 +161,12 @@ print(os.environ['CUDA_VISIBLE_DEVICES'])
 # log, logclose = create_logger(log_filename=os.path.join(model_dir, 'train.log'))
 # seq_dir = os.path.join(model_dir, 'seq')
 # makedir(seq_dir)
-weight_matrix_filename = 'outputL_weights'
-prototype_seq_filename_prefix = 'prototype-seq'
-prototype_self_act_filename_prefix = 'prototype-self-act'
+# weight_matrix_filename = 'output_weights'
+# prototype_seq_filename_prefix = 'prototype-seq'
+# prototype_self_act_filename_prefix = 'prototype-self-act'
 # proto_bound_boxes_filename_prefix = 'bb'
 
-normalize = transforms.Normalize(mean=mean, std=std)
+normalize = transforms.Normalize(mean=mean, std=std) # not used in this file or any other?
 
 # split data into train, validation, and test
 train = pd.read_csv(config['train_path'], sep=',')
@@ -204,17 +215,17 @@ test_dataset = Sequence_Data(
 )
 trainloader = DataLoader(
     train_dataset, 
-    batch_size=config['batch_size'],
+    batch_size=config['train_batch_size'],
     shuffle=True
 )
 valloader = DataLoader(
     val_dataset,
-    batch_size=config['batch_size'],
+    batch_size=config['test_batch_size'],
     shuffle=False
 )
 testloader = DataLoader(
     test_dataset,
-    batch_size=config['batch_size'],
+    batch_size=config['test_batch_size'],
     shuffle=False
 )
 # Push data should be raw data. This is raw data except that sequences for
@@ -230,7 +241,7 @@ push_dataset = Sequence_Data(
 )
 pushloader = DataLoader(
     push_dataset,
-    batch_size=config['batch_size'],
+    batch_size=config['train_batch_size'],
     shuffle=False
 )
 
@@ -238,119 +249,128 @@ pushloader = DataLoader(
 print('training set size: {0}'.format(len(trainloader.dataset)))
 print('push set size: {0}'.format(len(pushloader.dataset)))
 print('test set size: {0}'.format(len(testloader.dataset)))
-print('batch size: {0}'.format(config['batch_size']))
-print(f"prototype_shape: {config['prototype_shape']}")
-print("Latent weight: {}".format(config['latent_weight']))
+print('train batch size: {0}'.format(config['train_batch_size']))
+print('test batch size: {0}'.format(config['test_batch_size']))
 
-# construct the model
-model_path = "../saved_models/best_model_20240101_035108.pt"
-best_12_31 = models.Best_12_31()
-best_12_31.load_state_dict(torch.load(model_path))
-backbone = best_12_31
-backbone.linear_layer = nn.Identity() # remove the linear layer
-ppnet = ppn.construct_PPNet(
-    features=backbone, # Sam's CHANGE: should have pre-loaded weights
-    pretrained=True,
-    sequence_length=config['seq_target_length'],
-    prototype_shape=config['prototype_shape'],
-    num_classes=config['num_classes'],
-    prototype_activation_function=config['prototype_activation_function'],
-    add_on_layers_type=config['add_on_layers_type'],
-    latent_weight=config['latent_weight']
-)
-#if prototype_activation_function == 'linear':
-#    ppnet.set_last_layer_incorrect_connection(incorrect_strength=0)
-ppnet = ppnet.cuda()
-# ppnet_multi = torch.nn.DataParallel(ppnet)
-ppnet_multi = ppnet
-class_specific = True
+# begin random hyperparameter search
+for trial in range(3):
+    gamma = random.random
 
-# define optimizer
-joint_optimizer_specs = \
-[{'params': ppnet.features.parameters(), 'lr': config['joint_optimizer_lrs']['features'], 'weight_decay': 1e-3}, # bias are now also being regularized
- {'params': ppnet.add_on_layers.parameters(), 'lr': config['joint_optimizer_lrs']['add_on_layers'], 'weight_decay': 1e-3},
- {'params': ppnet.prototype_vectors, 'lr': config['joint_optimizer_lrs']['prototype_vectors']},
-]
-gamma = 0.3
-joint_optimizer = torch.optim.Adam(joint_optimizer_specs)
-joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=config['joint_lr_step_size'], gamma=gamma)
+    print('prototype_shape: {0}'.format(config['prototype_shape']))
+    print('Latent weight: {0}'.format(config['latent_weight']))
 
-print("Trying gamma {}".format(gamma))
-print(f"joint_lr_step_size: \n {config['joint_lr_step_size']}")
-print(f"joint_optimizer_lrs: \n {config['joint_optimizer_lrs']}")
+    # construct the model
+    model_path = "../best_model_20240103_210217.pt" # updated large best
+    # model_path = "../best_model_20240111_060457.pt" # small best with pool=3, stride=1
+    # model_path = "../best_model_20240126_120130.pt" # small best with pool=2,stride=2
+    large_best = models.Large_Best()
+    large_best.load_state_dict(torch.load(model_path))
+    backbone = large_best
+    backbone.linear_layer = nn.Identity() # remove the linear layer
 
-# optimize the weights for the linear layer i think?
-warm_optimizer_specs = \
-[{'params': ppnet.add_on_layers.parameters(), 'lr': config['warm_optimizer_lrs']['add_on_layers'], 'weight_decay': 1e-3},
- {'params': ppnet.prototype_vectors, 'lr': config['warm_optimizer_lrs']['prototype_vectors']},
-]
-warm_optimizer = torch.optim.Adam(warm_optimizer_specs)
-print(f"warm_optimizer_lrs: \n {config['warm_optimizer_lrs']}")
+    ppnet = ppn.construct_PPNet(
+        features=backbone,
+        pretrained=True,
+        sequence_length=config['seq_target_length'],
+        prototype_shape=config['prototype_shape'],
+        num_classes=config['num_classes'],
+        prototype_activation_function=config['prototype_activation_function'],
+        add_on_layers_type=config['add_on_layers_type'],
+        latent_weight=config['latent_weight']
+    )
+    #if prototype_activation_function == 'linear':
+    #    ppnet.set_last_layer_incorrect_connection(incorrect_strength=0)
+    ppnet = ppnet.cuda()
+    # ppnet_multi = torch.nn.DataParallel(ppnet)
+    ppnet_multi = ppnet
+    class_specific = True
 
-last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(),
-                               'lr': config['last_layer_optimizer_lr']}]
-last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
+    # define optimizer
+    # weight decay is how much to penalize large weights in the network, 0-0.1
+    joint_optimizer_specs = \
+    [{'params': ppnet.features.parameters(), 'lr': config['joint_optimizer_lrs']['features'], 'weight_decay': 1e-3}, # bias are now also being regularized
+    {'params': ppnet.add_on_layers.parameters(), 'lr': config['joint_optimizer_lrs']['add_on_layers'], 'weight_decay': 1e-3},
+    {'params': ppnet.prototype_vectors, 'lr': config['joint_optimizer_lrs']['prototype_vectors']},
+    ]
+    gamma = 0.3
+    joint_optimizer = torch.optim.Adam(joint_optimizer_specs)
+    # after step-size epochs, the lr is multiplied by gamma
+    joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=config['joint_lr_step_size'], gamma=gamma)
 
-# weighting of different training losses
-print("coefs: ", config['coefs'])
+    print("Trying gamma {}".format(gamma))
+    print(f"joint_lr_step_size: \n {config['joint_lr_step_size']}")
+    print(f"joint_optimizer_lrs: \n {config['joint_optimizer_lrs']}")
 
-# number of training epochs, number of warm epochs, push start epoch, push epochs
+    warm_optimizer_specs = \
+    [{'params': ppnet.add_on_layers.parameters(), 'lr': config['warm_optimizer_lrs']['add_on_layers'], 'weight_decay': 1e-3},
+    {'params': ppnet.prototype_vectors, 'lr': config['warm_optimizer_lrs']['prototype_vectors']},
+    ]
+    warm_optimizer = torch.optim.Adam(warm_optimizer_specs)
+    print(f"warm_optimizer_lrs: \n {config['warm_optimizer_lrs']}")
 
-# train the model. based on which epoch
-# log('start training')
-max_accu = 0
-import copy
-log = print
-for epoch in range(config['num_train_epochs']):
-    print('epoch: \t{0}'.format(epoch))
+    last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(),
+                                'lr': config['last_layer_optimizer_lr']}]
+    last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
-    if epoch < config['num_warm_epochs']:
-        tnt.warm_only(model=ppnet_multi, log=log)
-        _, _ = tnt.train(model=ppnet_multi, dataloader=trainloader, optimizer=warm_optimizer,
-                      class_specific=class_specific, coefs=config['coefs'], log=log)
-    else:
-        tnt.joint(model=ppnet_multi, log=log)
-        _, _ = tnt.train(model=ppnet_multi, dataloader=trainloader, optimizer=joint_optimizer,
-                      class_specific=class_specific, coefs=config['coefs'], log=log)
-        joint_lr_scheduler.step()
+    # weighting of different training losses
+    print("coefs: ", config['coefs'])
 
-    accu, cm = tnt.test(model=ppnet_multi, dataloader=testloader,
-                    class_specific=class_specific, log=log)
-    if accu > max_accu:
-        max_accu = accu
-        log('new max accuracy: \t{0}%'.format(max_accu * 100))
-    #, cm
-    #save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'nopush', accu=accu,
-    #                            target_accu=0.82, log=log)
+    # number of training epochs, number of warm epochs, push start epoch, push epochs
 
-    push_epochs = [i for i in range(config['num_train_epochs']) if \
-                   i % config['push_epochs_gap'] == 0]
-    if epoch >= config['push_start'] and epoch in push_epochs:
-        push_prototypes(
-            pushloader, # pytorch dataloader (must be unnormalized in [0,1])
-            prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
-            preprocess_input_function=None, # normalize if needed
-            root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
-            epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
-            log=log)
+    # train the model. based on which epoch
+    # log('start training')
+    max_accu = 0
+    import copy
+    log = print
+    for epoch in range(config['num_train_epochs']):
+        print('epoch: \t{0}'.format(epoch))
+
+        if epoch < config['num_warm_epochs']:
+            tnt.warm_only(model=ppnet_multi, log=log)
+            _, _ = tnt.train(model=ppnet_multi, dataloader=trainloader, optimizer=warm_optimizer,
+                        class_specific=class_specific, coefs=config['coefs'], log=log)
+        else:
+            tnt.joint(model=ppnet_multi, log=log)
+            _, _ = tnt.train(model=ppnet_multi, dataloader=trainloader, optimizer=joint_optimizer,
+                        class_specific=class_specific, coefs=config['coefs'], log=log)
+            joint_lr_scheduler.step()
         accu, cm = tnt.test(model=ppnet_multi, dataloader=testloader,
                         class_specific=class_specific, log=log)
-        # save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=accu,
-                                    #  target_accu=0.70, log=log)
+        if accu > max_accu:
+            max_accu = accu
+            log('new max accuracy: \t{0}%'.format(max_accu * 100))
+        #, cm
+        #save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'nopush', accu=accu,
+        #                            target_accu=0.82, log=log)
 
-        if config['prototype_activation_function'] != 'linear':
-            tnt.last_only(model=ppnet_multi, log=log)
-            for i in range(20):
-                log('iteration: \t{0}'.format(i))
-                _, _ = tnt.train(model=ppnet_multi, dataloader=trainloader, optimizer=last_layer_optimizer,
-                              class_specific=class_specific, coefs=config['coefs'], log=log)
-                accu, cm = tnt.test(model=ppnet_multi, dataloader=testloader,
-                                class_specific=class_specific, log=log)
-                # save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu,
-                #                            target_accu=0.70, log=log)
+        push_epochs = [i for i in range(config['num_train_epochs']) if \
+                    i % config['push_epochs_gap'] == 0]
+        if epoch >= config['push_start'] and epoch in push_epochs:
+            push_prototypes(
+                pushloader, # pytorch dataloader (must be unnormalized in [0,1])
+                prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
+                preprocess_input_function=None, # normalize if needed
+                root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
+                epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
+                log=log)
+            accu, cm = tnt.test(model=ppnet_multi, dataloader=testloader,
+                            class_specific=class_specific, log=log)
+            # save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=accu,
+                                        #  target_accu=0.70, log=log)
 
-    # if epoch>config['num_train_epochs']-50:
-    #     log('\tconfusion matrix: \t\t\n{0}'.format(cm))
+            if config['prototype_activation_function'] != 'linear':
+                tnt.last_only(model=ppnet_multi, log=log)
+                for i in range(20):
+                    log('iteration: \t{0}'.format(i))
+                    _, _ = tnt.train(model=ppnet_multi, dataloader=trainloader, optimizer=last_layer_optimizer,
+                                class_specific=class_specific, coefs=config['coefs'], log=log)
+                    accu, cm = tnt.test(model=ppnet_multi, dataloader=testloader,
+                                    class_specific=class_specific, log=log)
+                    # save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu,
+                    #                            target_accu=0.70, log=log)
 
-  
-# logclose()
+        # if epoch>config['num_train_epochs']-50:
+        #     log('\tconfusion matrix: \t\t\n{0}'.format(cm))
+
+    
+    # logclose()
