@@ -488,6 +488,9 @@ def add_random_insertions(seq, insertions):
     Returns:
         str: The sequence after applying the random insertions.
     """
+    # print(f"Insertions in the utils function: {insertions}")
+    if type(insertions[0]) is list and len(insertions) == 1:
+        insertions = insertions[0]
     insertions = random.randint(insertions[0],insertions[1])
     for i in range(insertions):
         pos = random.sample(range(len(seq) + 1), 1)[0]

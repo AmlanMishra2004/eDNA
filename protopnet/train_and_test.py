@@ -27,6 +27,9 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
     actual=[]
     prediction=[]
     for i, (sequence, label) in enumerate(dataloader):
+        # print(f"i: {i}")
+        # print(f"sequence: {sequence}")
+        # print(f"label: {label}")
         input = sequence.cuda()
         target = label.cuda()
         actual.append(label.cpu().detach().numpy())
@@ -113,6 +116,14 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
 
     end = time.time()
     
+    # print(f"Prediction and type: {prediction}, {type(prediction)}")
+    # for arr in prediction:
+    #     print(len(arr))
+    # # prediction = prediction[:-1]
+    # print(f"Actuals and type: {actual}, {type(actual)}")
+    # for ele in actual:
+    #     print(len(ele))
+    # # actual = actual[:-1]
     predictions=np.asarray(prediction)
     actuals=np.asarray(actual)
     predictions=predictions.flatten()
@@ -129,9 +140,10 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
     
     log('\tl1: \t\t{0}'.format(model.last_layer.weight.norm(p=1).item()))
     p = model.prototype_vectors.view(model.num_prototypes, -1).cpu()
-    with torch.no_grad():
-        p_avg_pair_dist = torch.mean(list_of_distances(p, p))
-    log('\tp dist pair: \t{0}'.format(p_avg_pair_dist.item()))
+    log('\t Calculating list_of_distances()')
+    # with torch.no_grad():
+    #     p_avg_pair_dist = torch.mean(list_of_distances(p, p))
+    # log('\tp dist pair: \t{0}'.format(p_avg_pair_dist.item()))
 
     #confusiton matrix
     confusion_mat = metrics.confusion_matrix(actuals, predictions)
@@ -145,6 +157,12 @@ def train(model, dataloader, optimizer, class_specific=False, coefs=None, log=pr
     assert(optimizer is not None)
     
     log('\ttrain')
+
+    # for batch in dataloader:
+        # print(f"First batch shape: {batch[0].shape}")
+        # print("First example in first batch:")
+        # print(batch[0][0])
+        # break
     model.train()
     return _train_or_test(model=model, dataloader=dataloader, optimizer=optimizer,
                           class_specific=class_specific, coefs=coefs, log=log)

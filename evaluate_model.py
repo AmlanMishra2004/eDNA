@@ -13,7 +13,7 @@ After grid search is run, for each model, results are printed to the terminal
 and optionally saved to a file.
 """
 from collections import defaultdict
-import datetime
+from datetime import datetime
 import os
 import random
 import sys
@@ -202,7 +202,9 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
                 inputs, labels = inputs.cuda(), labels.cuda()
 
                 optimizer.zero_grad()  # Zeros gradients for all the weights.
+                # print(f"INPUTS SHAPE: {inputs.shape}")
                 outputs = model(inputs)
+                # print(f"OUTPUTS SHAPE: {outputs.shape}")
                 try:
                     outputs = model(inputs)  # Runs the inputs through the model.
                 except:
@@ -581,6 +583,17 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         'load_existing_train_test': config['load_existing_train_test']
     }
 
+    # try:
+    #     input_channels = input_channels
+    # except:
+    #     raise (ValueError, "Ending execution since you are probably evaluating a model,"
+    #            "not performing a grid search. Skipping saving the model.")
+    
+    # TEMPORARILY
+    now = datetime.now()
+    timestamp = now.strftime("%Y%m%d_%H%M%S")
+    torch.save(model.state_dict(),f'best_model_{timestamp}.pt')
+
     # add the variable number of layers to the results
     for layer in range(1, len(input_channels)+1):
         results[f'layer{layer}_input_channels'] = input_channels[layer-1]
@@ -593,7 +606,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
 
     # These results are for a single model architecture with a single set of
     # hyperparameters and a single trial.
-    utils.update_results(results, model, filename='results_71.csv')
+    utils.update_results(results, model, filename='results.csv')
     
     # # Graph results. NOTE: After reworking evaluate() on 12/26, I did not
     # # verify that this worked, since I haven't been needing it.
@@ -645,8 +658,8 @@ if __name__ == '__main__':
     # If set, this will skip the preprocessing and read in an existing train
     # and test csv (that are presumably already processed). For my train and 
     # test file, all semutations have been added, so no need for online augmentation.Whether set or not, it still must be truncated/padded and turned intovectors.
-    run_my_model = False
-    run_arch_search = True     # search through architectures, in addition to lr, batch size
+    run_my_model = True
+    run_arch_search = False     # search through architectures, in addition to lr, batch size
     run_autokeras = False
     run_baselines = False
     
@@ -686,7 +699,7 @@ if __name__ == '__main__':
         config['addTagAndPrimer'] = True 
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
-        config['seq_target_length'] = 71 # 60 # POSSIBLY OVERRIDDEN IN ARCH SEARCH
+        config['seq_target_length'] = 64 # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
         config['addTagAndPrimer'] = False
         config['addRevComplements'] = False
     if config['augment_test_data']:
@@ -1035,17 +1048,48 @@ if __name__ == '__main__':
             in_width=config['seq_target_length'],
             num_classes=num_classes
         )
+
+        # Code for loading in all of the weights of a model:
         # best_12_31 = models.Best_12_31()
-        model_path = "saved_models/best_model_20240101_035108.pt"
-        best_12_31 = models.Best_12_31()
-        best_12_31.load_state_dict(torch.load(model_path))
+        # model_path = "saved_models/best_model_20240101_035108.pt"
+
+        large_best = models.Large_Best()
+        model_path = "best_model_20240103_210217.pt"
+
+        # small_best = models.Small_Best()
+        # model_path = "best_model_20240111_060457.pt"
+        
+        # small_best.load_state_dict(torch.load(model_path))
+
+
+        # Code for loading in all of the weights EXCEPT for
+        # the linear layer of a model, and training only the 
+        # linear layer. Did this because I had to change the
+        # pooling size on the last conv.
+        # small_best = models.Small_Best()
+        # model_path = "best_model_20240111_060457.pt"
+
+        # Load state dict, excluding the linear layer
+        state_dict = torch.load(model_path)
+        state_dict.pop('linear_layer.weight', None)
+        state_dict.pop('linear_layer.bias', None)
+
+        large_best.load_state_dict(state_dict, strict=False)
+
+        # Initialize the linear layer
+        large_best.linear_layer = torch.nn.Linear(large_best.linear_layer.in_features, large_best.linear_layer.out_features)
+
+        # Freeze all layers except the last one
+        for name, param in large_best.named_parameters():
+            if name != 'linear_layer.weight' and name != 'linear_layer.bias':
+                param.requires_grad = False
 
         start_time = time.time()
         
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
         num_trials = 1
-        learning_rates = [0.002]
+        learning_rates = [0.002] # 0.002 for 12-31 and small best, 0.005 for large best
         # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
         # learning_rates = [0.0005, 0.007, 0.001, 0.002]
@@ -1054,7 +1098,7 @@ if __name__ == '__main__':
         # learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 
         #                   0.01, 0.05]
 
-        batch_sizes = [16]
+        batch_sizes = [64] # 16 for 12-31, 64 for large and small best
         # batch_sizes = [16, 32, 64]
 
         early_stopper = utils.EarlyStopping(
@@ -1065,14 +1109,14 @@ if __name__ == '__main__':
         k_folds = 5
         k_iters = 5 # Should be int [0 - k_folds]. Set to 0 to skip validation.
 
-        oversample_options = [False]
+        oversample_options = [True]
         # oversample_options = [True, False]
 
         # This list holds all of the models that will be trained and evaluated.
         # models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
         #           smallcnn2_2, smallcnn2_3, smallcnn2_4, smallcnn2_6, smallcnn3,
         #           smallcnn3_1]
-        models = [best_12_31]
+        models = [large_best]
 
         for model in models:
             model.to('cuda')
@@ -1103,7 +1147,7 @@ if __name__ == '__main__':
                                 test = test,
                                 k_folds = k_folds,
                                 k_iters = k_iters,
-                                epochs = 10_000, #14,
+                                epochs = 18, #10_000, #14,
                                 oversample = oversample,
                                 optimizer = torch.optim.Adam(
                                     model.parameters(),
@@ -1198,7 +1242,7 @@ if __name__ == '__main__':
 
         # Export as a Keras model then save it.
         model = clf.export_model() 
-        now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        now = datetime.now().strftime("%Y%m%d_%H%M%S")
         try:
             model.save(f"saved_models/image_model_ak_{now}", save_format="tf")
         except Exception:
@@ -1247,7 +1291,7 @@ if __name__ == '__main__':
         # model = clf.export_model()
 
         # # Save the model
-        # now = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        # now = datetime.now().strftime("%Y%m%d_%H%M%S")
         # try:
         #     model.save(f"saved_models/sdc_model_ak_{now}", save_format="tf")
         # except Exception:
