@@ -1132,7 +1132,7 @@ if __name__ == '__main__':
         oversample_options = [True]
         # oversample_options = [True, False]
 
-        weight_decays = [0.01, 0.001, 0.0001]
+        weight_decays = [0.01, 0.001, 0.0001, 0]
 
         # This list holds all of the models that will be trained and evaluated.
         # models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
