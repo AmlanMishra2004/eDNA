@@ -44,7 +44,7 @@ import utils
 def evaluate(model, train, test, k_folds, k_iters, epochs, oversample, 
              optimizer, loss_function, early_stopper, batch_size,
              confidence_threshold, config, track_fold_epochs,
-             track_test_epochs, num_classes):
+             track_test_epochs, num_classes, results_file_name='results.csv'):
     """Trains and evaluates a given model, then displays results.
 
     Trains the model using k-fold cross validation,recording the validation
@@ -594,6 +594,8 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     torch.save(model.state_dict(),f'best_model_{timestamp}.pt')
 
+    return -1, -1
+
     # add the variable number of layers to the results
     for layer in range(1, len(input_channels)+1):
         results[f'layer{layer}_input_channels'] = input_channels[layer-1]
@@ -606,7 +608,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
 
     # These results are for a single model architecture with a single set of
     # hyperparameters and a single trial.
-    utils.update_results(results, model, filename='results.csv')
+    utils.update_results(results, model, filename=results_file_name)
     
     # # Graph results. NOTE: After reworking evaluate() on 12/26, I did not
     # # verify that this worked, since I haven't been needing it.
@@ -699,7 +701,7 @@ if __name__ == '__main__':
         config['addTagAndPrimer'] = True 
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
-        config['seq_target_length'] = 64 # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
+        config['seq_target_length'] = 70 # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
         config['addTagAndPrimer'] = False
         config['addRevComplements'] = False
     if config['augment_test_data']:
@@ -795,14 +797,14 @@ if __name__ == '__main__':
         # SEARCH 1: 12/31/23
         learning_rates = [0.0005, 0.007, 0.001, 0.002]
         # SEARCH 2: 1/3/24
-        learning_rates = [0.0008, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008] # expanded both ends
+        learning_rates = [0.0008, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008] # expanded both ends       
 
 
-        
         # SEARCH 1: 12/31/23
         batch_sizes = [16, 32, 64]
         # SEARCH 2: 1/3/24
         batch_sizes = [10, 16, 32, 48, 64]
+
 
         epochs = 10_000
         # Zurich called the confidence_threshold 'binzarization threshold', and
@@ -816,8 +818,6 @@ if __name__ == '__main__':
         )
         k_folds = 5
         k_iters = 5 # Should be int [0 - k_folds]. Set to 0 to skip validation.
-
-        oversample = False # currently manually overridden in grid search 
 
         # Grid search: Evaluates each model with a combination of
         # hyperparameters for a certain number of trials.
@@ -842,6 +842,7 @@ if __name__ == '__main__':
         padding_lengths = [0, 1, 2]
         dropout_rates = [0, 0.2, 0.4, 0.6]
         pool_kernel_sizes = [0, 2, 3]
+        
 
         # SEARCH 2: Jan. 3, 2024
         num_cnn_layers = [1, 2]
@@ -853,6 +854,17 @@ if __name__ == '__main__':
         dropout_rates = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # expanded
         pool_kernel_sizes = [0, 2, 3]
 
+        # 2/3/24
+        learning_rates = [0.002]
+        batch_sizes = [64]
+        num_cnn_layers = [1]
+        num_channels = [512]
+        conv_kernel_sizes = [7]
+        stride_lengths = [1]
+        padding_lengths = [3]
+        dropout_rates = [0.5]
+        pool_kernel_sizes = [-1] # ALWAYS kernel=2, stride=2
+
         # 15.5 hrs = 930 minutes for 4320 architectures = ~0.215 minutes per model. actual number of models explored: 2427
         num_explorations = 10_000
         for iteration in range(num_explorations):
@@ -861,7 +873,8 @@ if __name__ == '__main__':
             # randomly select the model archictecture
             batch_size = random.sample(batch_sizes, 1)[0]
             lr = random.sample(learning_rates, 1)[0]
-            oversample = random.choices([True, False], k=1)[0]
+            # oversample = random.choices([True, False], k=1)[0]
+            oversample = True
 
             num_convs = random.sample(num_cnn_layers, 1)[0]
             channels = random.choices(num_channels, k=num_convs)
@@ -872,6 +885,9 @@ if __name__ == '__main__':
             pool_kernels = random.choices(pool_kernel_sizes, k=num_convs)
             input_channels = [4, *channels[:-1]]
             output_channels = [*channels]
+
+            results_file_name = 'results.csv'
+            results_file_name = 'singlemodelresults.csv'
 
             print(f"----Model architecture: ----------")
             print(f"Input channels: {input_channels}")
@@ -919,7 +935,7 @@ if __name__ == '__main__':
 
             # if you want to allow searching identical architecture/
             # hyperparameter combinations, then uncomment this function call
-            if utils.check_hyperparam_originality(combination) != -1:
+            if utils.check_hyperparam_originality(combination, results_file_name) != -1:
                 print(f"Model architecture has already been explored. "
                     f"Exploring next random hyperparameter combination.")
                 continue
@@ -969,7 +985,7 @@ if __name__ == '__main__':
                         lr=lr,
                         betas=(0.9, 0.999),
                         eps=1e-07,
-                        weight_decay=0.0,
+                        weight_decay=0.01, # was 0, go smaller (to 0.0005) if performance is bad
                         amsgrad=False),
                     loss_function = nn.CrossEntropyLoss(),
                     early_stopper = early_stopper,
@@ -978,7 +994,8 @@ if __name__ == '__main__':
                     config = config,
                     track_fold_epochs = False,
                     track_test_epochs = False,
-                    num_classes = num_classes
+                    num_classes = num_classes,
+                    results_file_name=results_file_name
                 )
                 
                 print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
@@ -1053,11 +1070,14 @@ if __name__ == '__main__':
         # best_12_31 = models.Best_12_31()
         # model_path = "saved_models/best_model_20240101_035108.pt"
 
-        large_best = models.Large_Best()
-        model_path = "best_model_20240103_210217.pt"
+        # large_best = models.Large_Best()
+        # model_path = "best_model_20240103_210217.pt"
 
         # small_best = models.Small_Best()
         # model_path = "best_model_20240111_060457.pt"
+
+        small_best_updated = models.Small_Best_Updated()
+
         
         # small_best.load_state_dict(torch.load(model_path))
 
@@ -1070,26 +1090,26 @@ if __name__ == '__main__':
         # model_path = "best_model_20240111_060457.pt"
 
         # Load state dict, excluding the linear layer
-        state_dict = torch.load(model_path)
-        state_dict.pop('linear_layer.weight', None)
-        state_dict.pop('linear_layer.bias', None)
+        # state_dict = torch.load(model_path)
+        # state_dict.pop('linear_layer.weight', None)
+        # state_dict.pop('linear_layer.bias', None)
 
-        large_best.load_state_dict(state_dict, strict=False)
+        # large_best.load_state_dict(state_dict, strict=False)
 
-        # Initialize the linear layer
-        large_best.linear_layer = torch.nn.Linear(large_best.linear_layer.in_features, large_best.linear_layer.out_features)
+        # # Initialize the linear layer
+        # large_best.linear_layer = torch.nn.Linear(large_best.linear_layer.in_features, large_best.linear_layer.out_features)
 
         # Freeze all layers except the last one
-        for name, param in large_best.named_parameters():
-            if name != 'linear_layer.weight' and name != 'linear_layer.bias':
-                param.requires_grad = False
+        # for name, param in large_best.named_parameters():
+        #     if name != 'linear_layer.weight' and name != 'linear_layer.bias':
+        #         param.requires_grad = False
 
         start_time = time.time()
         
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
         num_trials = 1
-        learning_rates = [0.002] # 0.002 for 12-31 and small best, 0.005 for large best
+        learning_rates = [0.002, 0.001, 0.0001] # 0.002 for 12-31 and small best, 0.005 for large best
         # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
         # learning_rates = [0.0005, 0.007, 0.001, 0.002]
@@ -1112,11 +1132,13 @@ if __name__ == '__main__':
         oversample_options = [True]
         # oversample_options = [True, False]
 
+        weight_decays = [0.01, 0.001, 0.0001]
+
         # This list holds all of the models that will be trained and evaluated.
         # models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
         #           smallcnn2_2, smallcnn2_3, smallcnn2_4, smallcnn2_6, smallcnn3,
         #           smallcnn3_1]
-        models = [large_best]
+        models = [small_best_updated]
 
         for model in models:
             model.to('cuda')
@@ -1129,44 +1151,46 @@ if __name__ == '__main__':
         for model in models:
             for lr in learning_rates:
                 for batch_size in batch_sizes:
-                    for trial in range(num_trials):
-                        for oversample in oversample_options:
-                            print(f"\nTraining {model.name}, Trial {trial+1}")
+                    for weight_decay in weight_decays:
+                        for trial in range(num_trials):
+                            for oversample in oversample_options:
+                                print(f"\nTraining {model.name}, Trial {trial+1}")
 
-                            # To try to get the first batch to prove it is the same as Zurich
-                            # first_batch = next(iter(trainloader))
-                            # data,labels = first_batch
-                            # data_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_data.npy"
-                            # labels_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_labels.npy"
-                            # np.save(data_path, data.numpy())
-                            # np.save(labels_path, labels.numpy())
+                                # To try to get the first batch to prove it is the same as Zurich
+                                # first_batch = next(iter(trainloader))
+                                # data,labels = first_batch
+                                # data_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_data.npy"
+                                # labels_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_labels.npy"
+                                # np.save(data_path, data.numpy())
+                                # np.save(labels_path, labels.numpy())
 
-                            evaluate(
-                                model,
-                                train = train,
-                                test = test,
-                                k_folds = k_folds,
-                                k_iters = k_iters,
-                                epochs = 18, #10_000, #14,
-                                oversample = oversample,
-                                optimizer = torch.optim.Adam(
-                                    model.parameters(),
-                                    lr=lr,
-                                    betas=(0.9, 0.999),
-                                    eps=1e-07,
-                                    weight_decay=0.0,
-                                    amsgrad=False),
-                                loss_function = nn.CrossEntropyLoss(),
-                                early_stopper = early_stopper,
-                                batch_size = batch_size,
-                                confidence_threshold = None,
-                                config = config,
-                                track_fold_epochs = False,
-                                track_test_epochs = False,
-                                num_classes = num_classes
-                            )
-                            
-                            print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
+                                evaluate(
+                                    model,
+                                    train = train,
+                                    test = test,
+                                    k_folds = k_folds,
+                                    k_iters = k_iters,
+                                    epochs = 10_000, #14, # 18
+                                    oversample = oversample,
+                                    optimizer = torch.optim.Adam(
+                                        model.parameters(),
+                                        lr=lr,
+                                        betas=(0.9, 0.999),
+                                        eps=1e-07,
+                                        weight_decay=weight_decay,
+                                        amsgrad=False),
+                                    loss_function = nn.CrossEntropyLoss(),
+                                    early_stopper = early_stopper,
+                                    batch_size = batch_size,
+                                    confidence_threshold = None,
+                                    config = config,
+                                    track_fold_epochs = False,
+                                    track_test_epochs = False,
+                                    num_classes = num_classes,
+                                    results_file_name='smallbestresults.csv'
+                                )
+                                
+                                print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
     if run_autokeras:
 
         # Import statements are included here because 1) Printing "Using

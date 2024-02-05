@@ -190,21 +190,22 @@ class PPNet(nn.Module):
         # 64 examples (in one batch), each with 512 channels and 30 sequence length
         # Shape of prototypes: torch.Size([1560, 512, 5])
         # 1560 prototypes (10 for each class), each with 512 channels and 5 sequence length
-        # print(f"\tShape of X: {x.shape}")
-        # print(f"\tShape of prototypes: {prototypes.shape}")
+        print(f"\tShape of X: {x.shape}")
+        print(f"\tShape of prototypes: {prototypes.shape}")
+        # Normalize for each position in the sequence.
         # x_normalized will have the same shape as x, but each 30-element
         # vector along the last dimension will be a unit vector. This means
         # that the Euclidean norm (or length) of each of these vectors will
         # be 1. The same for p_normalized.
 
-        x_norm = torch.norm(x, p=2, dim=-1, keepdim=True)
+        x_norm = torch.norm(x, p=2, dim=1, keepdim=True)
         x_normalized = x / (self.epsilon + x_norm)
 
-        p_norm = torch.norm(prototypes, p=2, dim=-1, keepdim=True)
+        p_norm = torch.norm(prototypes, p=2, dim=1, keepdim=True)
         p_normalized = prototypes / (self.epsilon + p_norm)
 
-        # print(f"\tShape of x_normalized: {x_normalized.shape}")
-        # print(f"\tShape of p_normalized: {p_normalized.shape}")
+        print(f"\tShape of x_normalized: {x_normalized.shape}")
+        print(f"\tShape of p_normalized: {p_normalized.shape}")
         
         similarities = F.conv1d(input=x_normalized, weight=p_normalized)
         return similarities
@@ -214,13 +215,27 @@ class PPNet(nn.Module):
         x is the raw input
         should be (batch=64, channels=4, width=60,64,71) or (64, 4, 1, 71)
         '''
-        # print(f"Shape of raw input x in prototype_distances() : {x.shape}")
+        print(f"In prototype_distances, ")
+        print(f"\tShape of raw input x in prototype_distances() : {x.shape}")
         # Run the input through the convolutional layers.
         conv_features = self.conv_features(x)
+        print(f"\tShape of x after put through conv_features: {conv_features.shape}")
+        print(f"\tShape of prototypes: {self.prototype_vectors.shape}")
+        print(f"\tShape of prototypes: {self.prototype_vectors[:, :-4].shape}")
         # print(f"Shape of raw input x after conv_features() : {conv_features.shape}")
-        avg_pooled_x = F.avg_pool1d(x, 2, stride=2)
+        # avg_pooled_x = F.avg_pool1d(x, 2, stride=2)
+        # TODO: concatenate (stack) instead of average
+        X1_inds = [a*2 for a in range(int(x.shape[-1])/2)] # adjust 15
+        X2_inds = [a+1 for a in X1_inds]
+        x_stacked = torch.concat([
+            x[:, :, X1_inds],
+            x[:,:, X2_inds]
+        ], dim=1)
+
         latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors[:, :-4])
-        input_distances = self.cosine_similarity(avg_pooled_x, self.prototype_vectors[:, -4:])
+        input_distances = self.cosine_similarity(x_stacked, self.prototype_vectors[:, -4:])
+        # latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors)
+        # input_distances = self.cosine_similarity(avg_pooled_x, self.prototype_vectors[:, -4:])
         return self.latent_weight * latent_distances + (1 - self.latent_weight)  * input_distances
 
     def distance_2_similarity(self, distances):
@@ -333,7 +348,7 @@ class PPNet(nn.Module):
 # features: backbone with loaded weights
 # prototype_shape = (num prototypes, input channel, spatial dim, spatial dim)
 def construct_PPNet(features, pretrained=True, sequence_length=60,
-                    prototype_shape=(2*156, 256, 1), num_classes=156,
+                    prototype_shape=(2*156, 512, 1), num_classes=156,
                     prototype_activation_function='log',
                     add_on_layers_type='bottleneck', latent_weight=0.8):
     # features = base_architecture_to_features[base_architecture](pretrained=pretrained)
