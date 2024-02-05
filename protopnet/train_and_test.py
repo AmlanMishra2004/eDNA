@@ -11,9 +11,10 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
                    coefs=None, log=print):
     '''
     model: the multi-gpu model
-    dataloader:
+    dataloader: sam: an iter() of a dataloader
     optimizer: if None, will be test evaluation
     '''
+    print(f"_train_or_test for dataloader of length {len(dataloader)}")
     is_train = optimizer is not None
     start = time.time()
     n_examples = 0
@@ -116,14 +117,14 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
 
     end = time.time()
     
-    # print(f"Prediction and type: {prediction}, {type(prediction)}")
-    # for arr in prediction:
-    #     print(len(arr))
-    # # prediction = prediction[:-1]
-    # print(f"Actuals and type: {actual}, {type(actual)}")
-    # for ele in actual:
-    #     print(len(ele))
-    # # actual = actual[:-1]
+    print(f"Prediction and type: {len(prediction)}, {type(prediction)}")
+    for arr in prediction:
+        print(len(arr))
+    # prediction = prediction[:-1]
+    print(f"Actuals and type: {len(actual)}, {type(actual)}")
+    for ele in actual:
+        print(len(ele))
+    # actual = actual[:-1]
     predictions=np.asarray(prediction)
     actuals=np.asarray(actual)
     predictions=predictions.flatten()

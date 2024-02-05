@@ -136,16 +136,19 @@ class VariableCNN(nn.Module):
                           stride[i], padding[i])
             )
             self.conv_layers.append(activation())
-            if pool_kernel_size[i] > 0:
-                self.conv_layers.append(
-                    nn.MaxPool1d(pool_kernel_size[i])
-                )
+            # if pool_kernel_size[i] > 0:
+            #     self.conv_layers.append(
+            #         nn.MaxPool1d(pool_kernel_size[i])
+            #)
+            self.conv_layers.append(
+                nn.MaxPool1d(kernel_size=2, stride=2)
+            )
             self.conv_layers.append(
                 nn.Dropout(dropout_channels[i])
             )
         # Calculate required number of input nodes in dense layer
         for i in range(len(out_channels)):
-            input_length = utils.conv1d_output_size(input_length, conv_kernel_size[i], padding[i], stride[i])
+            input_length = utils.conv1d_output_size(input_length, conv_kernel_size[i], padding[i], stride[i]) / 2
             if input_length <= 0:
                 raise ValueError("The given combination of kernel sizes, paddings,"
                                 " and stride parameters do not result in a "
@@ -246,10 +249,10 @@ class Large_Best(nn.Module):
     def forward(self, x):
         for layer in self.conv_layers:
             x = layer(x)
-        # UNCOMMENT this line for evaluate_model.py, and
-        # COMMENT this line for main.py!
+        # UNCOMMENT these last two lines for evaluate_model.py, and
+        # COMMENT these last two lines for main.py!
         # x = x.view(x.size(0), -1)
-        x = self.linear_layer(x)
+        # x = self.linear_layer(x)
 
         return x
     
@@ -289,6 +292,40 @@ class Small_Best(nn.Module):
         # print(f"FLATTENED SHAPE: {x.shape}")
         x = self.linear_layer(x)
 
+        return x
+    
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+class Small_Best_Updated(nn.Module):
+    def __init__(self):
+        super(Small_Best_Updated, self).__init__()
+        self.name = "Small_Best_Updated"
+        self.conv_layers = nn.ModuleList()
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=4, out_channels=512, kernel_size=7,
+                            stride=1, padding=3),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(nn.Dropout(0.5))
+        self.conv_layers.append(nn.MaxPool1d(kernel_size=2, stride=2))
+
+        self.linear_layer = nn.Linear(17920, 156)
+
+        self.leakyrelu = nn.LeakyReLU()
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        for layer in self.conv_layers:
+            x = layer(x)
+        # print(f"INTERMEDIATE SHAPE: {x.shape}")
+        # UNCOMMENT this line for evaluate_model.py, and
+        # COMMENT this line for main.py!
+        x = x.view(x.size(0), -1)
+        # print(f"FLATTENED SHAPE: {x.shape}")
+        x = self.linear_layer(x)
         return x
     
     def reset_params(self):
