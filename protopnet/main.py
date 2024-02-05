@@ -87,10 +87,10 @@ config = {
 
     # Interpretability settings
     'num_warm_epochs': 1,
-    'push_start': 5,
+    'push_start': 500000000000,
     'last_layer_optimizer_lr': 0.01, # jon: 2e-2, sam's model : 0.002
     'latent_weight': 0.8,
-    'push_epochs_gap': 5, # 50
+    'push_epochs_gap': 2, # 50
     # 'coefs' : { # OVERRIDDEN
     #     'crs_ent': 1,
     #     'clst': 1*12*-0.8,
@@ -128,7 +128,7 @@ if config['applying_on_raw_data']:
     config['addTagAndPrimer'] = True 
     config['addRevComplements'] = True
 elif not config['applying_on_raw_data']:
-    config['seq_target_length'] = 60        # 71 or 60 or 64
+    config['seq_target_length'] = 70        # 70 (prev. 71) or 60 or 64
     config['addTagAndPrimer'] = False
     config['addRevComplements'] = False
 if config['augment_test_data']:
@@ -173,16 +173,16 @@ normalize = transforms.Normalize(mean=mean, std=std) # not used in this file or 
 
 early_stopper = utils.EarlyStopping(
     patience=5,
-    min_pct_improvement=1, # previously 20 epochs, 0.1%
+    min_pct_improvement=3, # previously 20 epochs, 0.1%
     verbose=False
 )
 
 log = print
-random.seed(420) # 42 error, 420 works until push
+random.seed(5) # 42 error, 420 works until push
 # np.random.seed(42)
 # begin random hyperparameter search
 for trial in range(3):
-    print(f"\n\n\n\n\nHEYYYYY BIG TRIAL {trial}\n")
+    print(f"\n\n\n\n\nHEYYYYY BIG TRIAL {trial+1}\n")
     early_stopper.reset()
 
     # split data into train, validation, and test
@@ -307,9 +307,9 @@ for trial in range(3):
         'prototype_vectors': random.uniform(0.0001, 0.001) # 4e-2
     }
     last_layer_optimizer_lr = random.uniform(0.0001, 0.001) # 0.02, sam's OG: 0.002
-    num_warm_epochs = random.randint(0, 10) # not set
-    push_epochs_gap = 5 # not set
-    push_start = random.randint(0, 10) # not set
+    num_warm_epochs = 10_000 # random.randint(0, 10) # not set
+    push_epochs_gap = 2 # not set
+    push_start = 2 #random.randint(0, 10) # not set
     # I forget where this comment originated, but it seems useful:
     # number of training epochs, number of warm epochs, push start epoch, push epochs
     print("################################################")
@@ -344,13 +344,14 @@ for trial in range(3):
     # print('Latent weight: {0}'.format(config['latent_weight']))
 
     # construct the model
-    model_path = "../best_model_20240103_210217.pt" # updated large best
+    # model_path = "../best_model_20240103_210217.pt" # updated large best
     # model_path = "../best_model_20240111_060457.pt" # small best with pool=3, stride=1
     # model_path = "../best_model_20240126_120130.pt" # small best with pool=2,stride=2
-    large_best = models.Large_Best()
-    large_best.load_state_dict(torch.load(model_path))
-    backbone = large_best
-    # backbone.linear_layer = nn.Identity() # remove the linear layer
+    model_path = "../small_best_updated_backbone.pt" # small best with pool=2,stride=2
+    # large_best = models.Large_Best()
+    backbone = models.Small_Best_Updated()
+    backbone.load_state_dict(torch.load(model_path))
+    backbone.linear_layer = nn.Identity() # remove the linear layer
 
     ppnet = ppn.construct_PPNet(
         features=backbone,
@@ -441,8 +442,8 @@ for trial in range(3):
         #     log('\tconfusion matrix: \t\t\n{0}'.format(cm))
         early_stopper(val_acc)
         if early_stopper.stop:
-            if config['verbose']:
-                print(f"HEY WE'RE EARLY STOPPING HOMIE\n")
+            # if config['verbose']:
+            print(f"HEY WE'RE EARLY STOPPING\n")
             print(f"Epoch {epoch+1}, "
                   f"Validation Accuracy: {val_acc*100}%")
             # utils.update_results(results, model, filename='ppnresults.csv')

@@ -117,14 +117,14 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
 
     end = time.time()
     
-    print(f"Prediction and type: {len(prediction)}, {type(prediction)}")
-    for arr in prediction:
-        print(len(arr))
-    # prediction = prediction[:-1]
-    print(f"Actuals and type: {len(actual)}, {type(actual)}")
-    for ele in actual:
-        print(len(ele))
-    # actual = actual[:-1]
+    # print(f"Prediction and type: {len(prediction)}, {type(prediction)}")
+    # for arr in prediction:
+    #     print(len(arr))
+    prediction = prediction[:-1]
+    # print(f"Actuals and type: {len(actual)}, {type(actual)}")
+    # for ele in actual:
+    #     print(len(ele))
+    actual = actual[:-1]
     predictions=np.asarray(prediction)
     actuals=np.asarray(actual)
     predictions=predictions.flatten()

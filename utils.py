@@ -41,7 +41,8 @@ from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.metrics import precision_score, recall_score, f1_score
 
-
+random.seed(42)
+np.random.seed(42)
 
 
 # PREPROCESSING ---------------------------------------------------------------
@@ -450,8 +451,9 @@ def sequence_to_array(sequence, mode):
                     output_array[2, i] = 1
                 else:
                     output_array[3, i] = 1
-            elif letter == 'N':
+            elif letter == 'N' or letter == 'Z':
                 # N indicates complete uncertainty
+                # Z indicates padding, that there was no base there
                 rand_num = np.random.rand()
                 if rand_num < 1/4:
                     output_array[0, i] = 1
