@@ -320,12 +320,11 @@ class Small_Best_Updated(nn.Module):
     def forward(self, x):
         for layer in self.conv_layers:
             x = layer(x)
-        # print(f"INTERMEDIATE SHAPE: {x.shape}")
-        # UNCOMMENT this line for evaluate_model.py, and
-        # COMMENT this line for main.py!
-        x = x.view(x.size(0), -1)
-        # print(f"FLATTENED SHAPE: {x.shape}")
-        x = self.linear_layer(x)
+        # print(f"Shape after conv layers: {x.shape}")
+        # UNCOMMENT these lines for evaluate_model.py, and
+        # COMMENT these lines for main.py!
+        # x = x.view(x.size(0), -1)
+        # x = self.linear_layer(x)
         return x
     
     def reset_params(self):

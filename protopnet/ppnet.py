@@ -185,13 +185,13 @@ class PPNet(nn.Module):
     # normalizes along each channel then returns the summed dot product
     # for each prototype
     def cosine_similarity(self, x, prototypes):
-        # print("Inputs to cosine_similarity():")
         # Shape of X: torch.Size([64, 512, 30])
         # 64 examples (in one batch), each with 512 channels and 30 sequence length
         # Shape of prototypes: torch.Size([1560, 512, 5])
         # 1560 prototypes (10 for each class), each with 512 channels and 5 sequence length
-        print(f"\tShape of X: {x.shape}")
-        print(f"\tShape of prototypes: {prototypes.shape}")
+        # print(f"In cosine_similarity()...")
+        # print(f"\tShape of X: {x.shape}")
+        # print(f"\tShape of prototypes: {prototypes.shape}")
         # Normalize for each position in the sequence.
         # x_normalized will have the same shape as x, but each 30-element
         # vector along the last dimension will be a unit vector. This means
@@ -204,8 +204,8 @@ class PPNet(nn.Module):
         p_norm = torch.norm(prototypes, p=2, dim=1, keepdim=True)
         p_normalized = prototypes / (self.epsilon + p_norm)
 
-        print(f"\tShape of x_normalized: {x_normalized.shape}")
-        print(f"\tShape of p_normalized: {p_normalized.shape}")
+        # print(f"\tShape of x_normalized: {x_normalized.shape}")
+        # print(f"\tShape of p_normalized: {p_normalized.shape}")
         
         similarities = F.conv1d(input=x_normalized, weight=p_normalized)
         return similarities
@@ -215,28 +215,29 @@ class PPNet(nn.Module):
         x is the raw input
         should be (batch=64, channels=4, width=60,64,71) or (64, 4, 1, 71)
         '''
-        print(f"In prototype_distances, ")
-        print(f"\tShape of raw input x in prototype_distances() : {x.shape}")
+        # print(f"In prototype_distances, ")
+        # print(f"\tShape of raw input x in prototype_distances() : {x.shape}")
         # Run the input through the convolutional layers.
         conv_features = self.conv_features(x)
-        print(f"\tShape of x after put through conv_features: {conv_features.shape}")
-        print(f"\tShape of prototypes: {self.prototype_vectors.shape}")
-        print(f"\tShape of prototypes: {self.prototype_vectors[:, :-4].shape}")
-        # print(f"Shape of raw input x after conv_features() : {conv_features.shape}")
         # avg_pooled_x = F.avg_pool1d(x, 2, stride=2)
-        # TODO: concatenate (stack) instead of average
-        X1_inds = [a*2 for a in range(int(x.shape[-1])/2)] # adjust 15
+        # CHANGED: concatenate (stack, below) instead of average (above)
+        X1_inds = [a*2 for a in range(int(x.shape[-1]/2))] # adjust 15 (?)
         X2_inds = [a+1 for a in X1_inds]
         x_stacked = torch.concat([
             x[:, :, X1_inds],
-            x[:,:, X2_inds]
+            x[:, :, X2_inds]
         ], dim=1)
-
-        latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors[:, :-4])
-        input_distances = self.cosine_similarity(x_stacked, self.prototype_vectors[:, -4:])
+        # print(f"\t\tShape of conv_features: {conv_features.shape}")
+        # print(f"\t\tShape of self.prototype_vectors: {self.prototype_vectors.shape}")
+        # print(f"\t\tShape of self.prototype_vectors[:, :-8]: {self.prototype_vectors[:, :-8].shape}")
+        # print(f"\t\tShape of x_stacked: {x_stacked.shape}")
+        # print(f"\t\tShape of self.prototype_vectors: {self.prototype_vectors.shape}")
+        # print(f"\t\tShape of self.prototype_vectors[:, -8:]: {self.prototype_vectors[:, -8:].shape}")
+        latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors[:, :-8])
+        input_distances = self.cosine_similarity(x_stacked, self.prototype_vectors[:, -8:])
         # latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors)
         # input_distances = self.cosine_similarity(avg_pooled_x, self.prototype_vectors[:, -4:])
-        return self.latent_weight * latent_distances + (1 - self.latent_weight)  * input_distances
+        return self.latent_weight * latent_distances + (1 - self.latent_weight) * input_distances
 
     def distance_2_similarity(self, distances):
         if self.prototype_activation_function == 'log':
@@ -264,8 +265,17 @@ class PPNet(nn.Module):
     def push_forward(self, x):
         '''this method is needed for the pushing operation'''
         conv_output = self.conv_features(x)
-        avg_pooled_x = F.avg_pool1d(x, 2, stride=2)
-        concat = torch.cat((conv_output, avg_pooled_x), dim=-2)
+        # avg_pooled_x = F.avg_pool1d(x, 2, stride=2)
+        X1_inds = [a*2 for a in range(int(x.shape[-1]/2))] # adjust 15 (?)
+        X2_inds = [a+1 for a in X1_inds]
+        x_stacked = torch.concat([
+            x[:, :, X1_inds],
+            x[:, :, X2_inds]
+        ], dim=1)
+        concat = torch.cat((conv_output, x_stacked), dim=-2)
+        # concat = torch.cat((conv_output, avg_pooled_x), dim=-2)
+        print(f"In push_forward: Shape of concat: {concat.shape}")
+        print(f"In push_forward: Shape of self.prototype_vectors: {self.prototype_vectors.shape}")
         similarities = self.cosine_similarity(concat, self.prototype_vectors)
         return concat, similarities
 

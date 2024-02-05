@@ -1132,7 +1132,8 @@ if __name__ == '__main__':
         oversample_options = [True]
         # oversample_options = [True, False]
 
-        weight_decays = [0.01, 0.001, 0.0001, 0]
+        weight_decays = [0.01, 0.001, 0.0001, 0] # 4: 0.002, 0: 97.8, 94.2
+        # I explored weight decays only for the top small_best model. found 0 to be best for 0.002 lr
 
         # This list holds all of the models that will be trained and evaluated.
         # models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
