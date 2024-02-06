@@ -253,8 +253,8 @@ for trial in range(3):
     # expected input[156, 512, 30] to have 508 channels, but got 512 channels instead
     prototype_shape = (config['num_classes']*num_ptypes_per_class, 512+8, ptype_length) # middle number+4 or 8? not set
     ptype_activation_fn = random.choice(['log', 'linear']) # log
-    add_on_layers_type = random.choice(['identity']) # identity?, 'bottleneck', 'neither?idk'
-    latent_weight = random.randint(1, 9)*0.1 # 0.8
+    add_on_layers_type = random.choice(['identity']) # 'identity', 'bottleneck', 'neither?idk'
+    latent_weight = random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 0.1]) # 0.8
     # Optimizer
     joint_optimizer_lrs = { # learning rates for the different stages
         'features': random.uniform(0.0001, 0.01), # 0.003
@@ -262,8 +262,7 @@ for trial in range(3):
         'prototype_vectors': random.uniform(0.0001, 0.01) # 0.003
     }
     weight_decay = random.uniform(0, 0.1) # 0.001, large number penalizes large weights
-    gamma = random.randint(2, 10)*0.1 # 0.3
-    num_train_epochs = random.randint(5, 30) # TODO: set up early stopping
+    gamma = random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
     joint_lr_step_size = random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
     coefs = { # weighting of different training losses
         'crs_ent': 1,
@@ -358,7 +357,7 @@ for trial in range(3):
                                 'lr': last_layer_optimizer_lr}]
     last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
-    for epoch in tqdm(range(10_000)):
+    for epoch in tqdm(range(30_000)):
         # log('epoch: \t{0}'.format(epoch))
 
         if epoch < num_warm_epochs:
