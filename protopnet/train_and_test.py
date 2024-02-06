@@ -14,7 +14,7 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
     dataloader: sam: an iter() of a dataloader
     optimizer: if None, will be test evaluation
     '''
-    print(f"_train_or_test for dataloader of length {len(dataloader)}")
+    # print(f"_train_or_test for dataloader of length {len(dataloader)}")
     is_train = optimizer is not None
     start = time.time()
     n_examples = 0
@@ -131,33 +131,33 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
     actuals=actuals.flatten()
     # print(prediction)
     # print(type(prediction))
-    log('\ttime: \t{0}'.format(end -  start))
-    log('\tcross ent: \t{0}'.format(total_cross_entropy / n_batches))
-    log('\tcluster: \t{0}'.format(total_cluster_cost / n_batches))
-    if class_specific:
-        log('\tseparation:\t{0}'.format(total_separation_cost / n_batches))
-        log('\tavg separation:\t{0}'.format(total_avg_separation_cost / n_batches))
-    log('\taccu: \t\t{0}%'.format(n_correct / n_examples * 100))
+    # log('\ttime: \t{0}'.format(end -  start))
+    # log('\tcross ent: \t{0}'.format(total_cross_entropy / n_batches))
+    # log('\tcluster: \t{0}'.format(total_cluster_cost / n_batches))
+    # if class_specific:
+    #     log('\tseparation:\t{0}'.format(total_separation_cost / n_batches))
+    #     log('\tavg separation:\t{0}'.format(total_avg_separation_cost / n_batches))
+    # log('\taccu: \t\t{0}%'.format(n_correct / n_examples * 100))
     
-    log('\tl1: \t\t{0}'.format(model.last_layer.weight.norm(p=1).item()))
-    p = model.prototype_vectors.view(model.num_prototypes, -1).cpu()
-    log('\t Calculating list_of_distances()')
+    # log('\tl1: \t\t{0}'.format(model.last_layer.weight.norm(p=1).item()))
+    # p = model.prototype_vectors.view(model.num_prototypes, -1).cpu()
+    # log('\t Calculating list_of_distances()')
     # with torch.no_grad():
     #     p_avg_pair_dist = torch.mean(list_of_distances(p, p))
     # log('\tp dist pair: \t{0}'.format(p_avg_pair_dist.item()))
 
     #confusiton matrix
-    confusion_mat = metrics.confusion_matrix(actuals, predictions)
+    # confusion_mat = metrics.confusion_matrix(actuals, predictions)
     # log('\tconfusion matrix: \t\t\n{0}'.format(confusion_mat))
     
-
-    return n_correct / n_examples, confusion_mat
+    return actuals, predictions
+    # return n_correct / n_examples, confusion_mat
 
 
 def train(model, dataloader, optimizer, class_specific=False, coefs=None, log=print):
     assert(optimizer is not None)
     
-    log('\ttrain')
+    # log('\ttrain')
 
     # for batch in dataloader:
         # print(f"First batch shape: {batch[0].shape}")
@@ -165,15 +165,30 @@ def train(model, dataloader, optimizer, class_specific=False, coefs=None, log=pr
         # print(batch[0][0])
         # break
     model.train()
-    return _train_or_test(model=model, dataloader=dataloader, optimizer=optimizer,
-                          class_specific=class_specific, coefs=coefs, log=log)
+    actual, predicted = _train_or_test(
+        model=model,
+        dataloader=dataloader,
+        optimizer=optimizer,
+        class_specific=class_specific,
+        coefs=coefs,
+        log=log
+    )
+    return actual, predicted
 
 
 def test(model, dataloader, class_specific=False, log=print):
-    log('\ttest')
+    # log('\ttest')
     model.eval()
-    return _train_or_test(model=model, dataloader=dataloader, optimizer=None,
-                          class_specific=class_specific, log=log)
+    start = time.time()
+    actual, predicted = _train_or_test(
+        model=model,
+        dataloader=dataloader,
+        optimizer=None,
+        class_specific=class_specific,
+        log=log
+    )
+    execution_time = start-time.time()
+    return actual, predicted, execution_time
 
 
 def last_only(model, log=print):
@@ -185,7 +200,7 @@ def last_only(model, log=print):
     for p in model.last_layer.parameters():
         p.requires_grad = True
     
-    log('\tlast layer')
+    # log('\tlast layer')
 
 
 def warm_only(model, log=print):
@@ -197,7 +212,7 @@ def warm_only(model, log=print):
     for p in model.last_layer.parameters():
         p.requires_grad = True
     
-    log('\twarm')
+    # log('\twarm')
 
 
 def joint(model, log=print):
@@ -209,4 +224,4 @@ def joint(model, log=print):
     for p in model.last_layer.parameters():
         p.requires_grad = True
     
-    log('\tjoint')
+    # log('\tjoint')

@@ -258,7 +258,6 @@ def update_prototypes_on_batch(search_batch_input,
     # max_act = prototype_shape[1] * prototype_shape[2]
 
     for j in range(n_prototypes):
-        #if n_prototypes_per_class != None:
         if class_specific:
             # target_class is the class of the class_specific prototype
             target_class = torch.argmax(prototype_network_parallel.prototype_class_identity[j]).item()
