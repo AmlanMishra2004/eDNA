@@ -711,30 +711,49 @@ def add_metrics_to_dict(labels, predicted, epoch, val_acc, fold_val_metrics):
 # returns the index (or -1) if a matching row exists
 
 # returns -1 if no match, else returns the index of the match
-def check_hyperparam_originality(results, filename='results.csv'):
+def check_hyperparam_originality(results, compare_cols, filename='results.csv'):
     st = time.time()
     # Define the columns that distinguish unique rows
-    unique_columns = ['model_name', 'k_folds', 'k_iters', 
-                      'confidence_threshold', 'seq_count_threshold', 'seq_len',
-                      'test_insertions', 'test_deletions',
-                      'test_mutation_rate', 'tag_and_primer',
-                      'reverse_complements', 'encoding_mode', 'test_split',
-                      'load_existing_train_test']
-    # find the number of layers
-    num_layer_keys = len([key for key in results.keys() if key.startswith('layer')])
-    num_layers = num_layer_keys//7
-    if (num_layer_keys % 7) != 0:
-        raise ValueError("Unable to correctly determine number of layers used"
-                 " in a model. Please check that there are 7 entries for each "
-                 " layer.")
-    for layer in range(1, num_layers+1):
-        unique_columns.append(f'layer{layer}_input_channels')
-        unique_columns.append(f'layer{layer}_output_channels')
-        unique_columns.append(f'layer{layer}_conv_kernel')
-        unique_columns.append(f'layer{layer}_stride')
-        unique_columns.append(f'layer{layer}_padding')
-        unique_columns.append(f'layer{layer}_dropout')
-        unique_columns.append(f'layer{layer}_pool_kernel')
+    if compare_cols == "backbone":
+        unique_columns = [
+            'model_name', 'k_folds', 'k_iters', 'confidence_threshold',
+            'seq_count_threshold', 'seq_len', 'test_insertions',
+            'test_deletions', 'test_mutation_rate', 'tag_and_primer',
+            'reverse_complements', 'encoding_mode', 'test_split',
+            'load_existing_train_test']
+        # find the number of layers
+        num_layer_keys = len([key for key in results.keys() if key.startswith('layer')])
+        num_layers = num_layer_keys//7
+        if (num_layer_keys % 7) != 0:
+            raise ValueError("Unable to correctly determine number of layers used"
+                    " in a model. Please check that there are 7 entries for each "
+                    " layer.")
+        for layer in range(1, num_layers+1):
+            unique_columns.append(f'layer{layer}_input_channels')
+            unique_columns.append(f'layer{layer}_output_channels')
+            unique_columns.append(f'layer{layer}_conv_kernel')
+            unique_columns.append(f'layer{layer}_stride')
+            unique_columns.append(f'layer{layer}_padding')
+            unique_columns.append(f'layer{layer}_dropout')
+            unique_columns.append(f'layer{layer}_pool_kernel')
+    elif compare_cols == "ppn":
+        unique_columns = [
+            'num_ptypes_per_class', 'ptype_length', 'prototype_shape',
+            'ptype_activation_fn', 'add_on_layers_type', 'latent_weight', 
+            'joint_features_lr', 'joint_add_on_layers_lr', 'joint_ptypes_lr',
+            'warm_add_on_layers_lr', 'warm_ptypes_lr',
+            'last_layer_optimizer_lr', 'weight_decay', 'joint_lr_step_size', 
+            'cross_entropy', 'cluster', 'separation', 'l1', 'num_warm_epochs',
+            'push_epochs_gap', 'push_start', 'seq_count_thresh', 
+            'trainRandomInsertions', 'trainRandomDeletions',
+            'trainMutationRate', 'oversample', 'encoding_mode',
+            'push_encoding_mode', 'applying_on_raw_data', 'augment_test_data',
+            'load_existing_train_test', 'train_batch_size', 'test_batch_size', 
+            'num_classes', 'seq_target_length', 'addTagAndPrimer', 
+            'addRevComplements', 'val_portion_of_train', 
+        ]
+    else:
+        raise ValueError("compare_cols should either be 'backbone' or 'ppn'")
     
     # Load existing results if file exists
     if os.path.isfile(filename):
@@ -777,9 +796,11 @@ def check_hyperparam_originality(results, filename='results.csv'):
     return -1
 
 # results: a dict
+# compare_cols: either "backbone" or "ppn", to know which columns
+#   dilineate unique results
 # be careful when comparing existing cells since they contain arrays (and must use .all()) as well as empty cells which are translated as NaN, and NaN != NaN.
-def update_results(results, model,
-                   filename='results.csv', model_dir='saved_models'):
+def update_results(results, compare_cols, model=None, filename='results.csv',
+                   save_model_dir='saved_models'):
     
     now = datetime.now()
     timestamp = now.strftime("%Y%m%d_%H%M%S")
@@ -791,7 +812,7 @@ def update_results(results, model,
     else:
         df = pd.DataFrame(columns=list(results.keys()))
 
-    idx = check_hyperparam_originality(results, filename)
+    idx = check_hyperparam_originality(results, compare_cols, filename)
 
     # If the model and hyperparameters haven't been tried before, add a new row
     if idx == -1:
@@ -833,16 +854,21 @@ def update_results(results, model,
 
     # =MATCH(MAX(C:C), C:C, 0) returns the index of the highest micro accuracy
     # Save the updated results
-    df_sorted = df.sort_values(by='val_micro_accuracy', kind='mergesort',
-                                ascending=False)
+    df_sorted = df.sort_values(
+        by='val_micro_accuracy',
+        kind='mergesort',
+        ascending=False
+    )
     df_sorted.to_csv(filename, index=False)
 
     # If the val_macro_f1-score is the best, save the model parameters
     if results['val_macro_f1-score'] >= df_sorted.iloc[0]['val_macro_f1-score']:
         print("Found a new best model!")
-        torch.save(model.state_dict(),
-                os.path.join(model_dir, f'best_model_{timestamp}.pt'))
-    
+        if model:
+            torch.save(
+                model.state_dict(),
+                os.path.join(save_model_dir, f'best_model_{timestamp}.pt')
+            )
     print("Saved Results")
 
 def conv1d_output_size(input_length, kernel_size, padding, stride):

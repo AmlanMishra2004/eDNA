@@ -6,6 +6,10 @@ import torch.utils.data
 # import torch.utils.data.distributed
 import torchvision.transforms as transforms
 import torchvision.datasets as datasets
+from tqdm import tqdm
+from sklearn import metrics
+import warnings
+
 
 import argparse
 import re
@@ -67,67 +71,31 @@ config = {
     'sep': ';',                       # separator character in the csv file
     'species_col': 'species_cat',     # name of column containing species
     'seq_col': 'seq',                 # name of column containing sequences
+
+    # Logged information (plus below):
+    'verbose': True,
     'seq_count_thresh': 2,            # ex. keep species with >1 sequences
-    'test_split': 0.3,                # ex. .3 means 30% test, 70% train
     'trainRandomInsertions': [0,2],   # ex. between 0 and 2 per sequence
     'trainRandomDeletions': [0,2],    # ex. between 0 and 2 per sequence
     'trainMutationRate': 0.05,        # n*100% chance for a base to flip
     'oversample': True,               # whether or not to oversample train # POSSIBLY OVERRIDDEN IN ARCH SEARCH
     'encoding_mode': 'probability',   # 'probability' or 'random'
+    'push_encoding_mode': 'probability',   # 'probability' or 'random'
     # Whether or not applying on raw unlabeled data or "clean" ref db data.
     'applying_on_raw_data': False,
     # Whether or not to augment the test set.
     'augment_test_data': True,
     'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files
-    'verbose': True,
     'train_batch_size': 156, # prev. 64. 1,2,3,4,5,6,10,12,13,15,20,26,30,39,52,60,65,78,130,156,195,260,390,=780
     'test_batch_size': 94, # 1, 2, 4, 47, 94, 188 NOT # 1,5,7,25,35,175
-    'num_classes': 156,
-    'num_train_epochs': 18,
-
-    # Interpretability settings
-    'num_warm_epochs': 1,
-    'push_start': 500000000000,
-    'last_layer_optimizer_lr': 0.01, # jon: 2e-2, sam's model : 0.002
-    'latent_weight': 0.8,
-    'push_epochs_gap': 2, # 50
-    # 'coefs' : { # OVERRIDDEN
-    #     'crs_ent': 1,
-    #     'clst': 1*12*-0.8,
-    #     'sep': 1*30*0.08,
-    #     'l1': 1e-3,
-    # },
-    # 'base_architecture': 'base_feature', # to delete
-    # 'experiment_run': 'thresh_4_684_protos', # to delete
-    # 'prototype_activation_function': 'log', # OVERRIDDEN
-    # 'add_on_layers_type': 'identity', # OVERRIDDEN
-    # (num_prototypes, (num_latent_channels + num_piped_features), prototype_width)
-    # reshape to
-    # (num_prototypes, (num_latent_channels + num_piped_features) * prototype_width)
-    # 'prototype_shape': (156*30, 512+4, 30), # (156[classes]*10[patches per class], 512 + 4, 5[by 5 prototype]), jon: (89 classes * 10, 512 + 4, 5) # OVERRIDDEN 
-    # 156*3, 512+4, 30 got 7% acc
-    # 156*10, 512+4, 30 got 10% acc
-    # (156*10, 512+4, 20) 4.5% acc
-    # (156*10, 512+4, 10) 2.7% acc
-    # (156*30, 512+4, 30) 6.5-10.2% acc
-
-    # THE REST OVERRIDDEN
-    # 'joint_optimizer_lrs': {
-    #     'features': 3*1e-3,
-    #     'add_on_layers': 3*3e-3,
-    #     'prototype_vectors': 3*3e-3
-    # },
-    # 'joint_lr_step_size': 50,
-    # 'warm_optimizer_lrs': {
-    #     'add_on_layers': 3e-3,
-    #     'prototype_vectors': 4e-2
-    # }
+    'num_classes': 156
 }
 if config['applying_on_raw_data']:
     config['seq_target_length'] = 150
     config['addTagAndPrimer'] = True 
     config['addRevComplements'] = True
 elif not config['applying_on_raw_data']:
+    # Logged data:
     config['seq_target_length'] = 70        # 70 (prev. 71) or 60 or 64
     config['addTagAndPrimer'] = False
     config['addRevComplements'] = False
@@ -182,16 +150,17 @@ random.seed(5) # 42 error, 420 works until push
 # np.random.seed(42)
 # begin random hyperparameter search
 for trial in range(3):
-    print(f"\n\n\n\n\nHEYYYYY BIG TRIAL {trial+1}\n")
+    print(f"\n\n\n\n\nTrial {trial+1}\n")
     early_stopper.reset()
 
     # split data into train, validation, and test
     train = pd.read_csv(config['train_path'], sep=',')
     test = pd.read_csv(config['test_path'], sep=',')
+    val_portion = 0.2
     X_train, X_val, y_train, y_val = train_test_split(
         train[config['seq_col']], # X
         train[config['species_col']], # y
-        test_size=0.2,
+        test_size=val_portion,
         random_state=42,
         stratify = train[config['species_col']]
     )
@@ -252,7 +221,7 @@ for trial in range(3):
         insertions=[0,0],
         deletions=[0,0],
         mutation_rate=0,
-        encoding_mode=config['encoding_mode'],
+        encoding_mode=config['push_encoding_mode'],
         seq_len=config['seq_target_length']
     )
     pushloader = DataLoader(
@@ -306,10 +275,10 @@ for trial in range(3):
         'add_on_layers': random.uniform(0.0001, 0.001), # 3e-3,
         'prototype_vectors': random.uniform(0.0001, 0.001) # 4e-2
     }
-    last_layer_optimizer_lr = random.uniform(0.0001, 0.001) # 0.02, sam's OG: 0.002
-    num_warm_epochs = 10_000 # random.randint(0, 10) # not set
-    push_epochs_gap = 2 # not set
-    push_start = 2 #random.randint(0, 10) # not set
+    last_layer_optimizer_lr = random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    num_warm_epochs = 1_000_000 # random.randint(0, 10) # not set
+    push_epochs_gap = 1_000_000 # not set
+    push_start = 1_000_000 #random.randint(0, 10) # not set
     # I forget where this comment originated, but it seems useful:
     # number of training epochs, number of warm epochs, push start epoch, push epochs
     print("################################################")
@@ -324,7 +293,6 @@ for trial in range(3):
     print(f"\tAdd-on layers: {joint_optimizer_lrs['add_on_layers']}")
     print(f"\tPrototype vectors: {joint_optimizer_lrs['prototype_vectors']}")
     print(f"Weight decay: {weight_decay}")
-    # print(f"Number of training epochs: {num_train_epochs}")
     print(f"Joint learning rate step size: {joint_lr_step_size}")
     print(f"Loss coefficients:")
     print(f"\tCross entropy: {coefs['crs_ent']}")
@@ -390,31 +358,48 @@ for trial in range(3):
                                 'lr': last_layer_optimizer_lr}]
     last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
-    log('start training')
-    max_acc = 0
-    for epoch in range(10_000):
-        log('epoch: \t{0}'.format(epoch))
+    for epoch in tqdm(range(10_000)):
+        # log('epoch: \t{0}'.format(epoch))
 
         if epoch < num_warm_epochs:
+            # train the prototypes without modifying the backbone
             tnt.warm_only(model=ppnet_multi, log=log)
-            _, _ = tnt.train(model=ppnet_multi, dataloader=trainloader, optimizer=warm_optimizer,
-                        class_specific=class_specific, coefs=coefs, log=log)
+            train_actual, train_predicted = tnt.train(
+                model=ppnet_multi,
+                dataloader=trainloader,
+                optimizer=warm_optimizer,
+                class_specific=class_specific,
+                coefs=coefs,
+                log=log
+            )
         else:
+            # train the prototypes and the backbone
             tnt.joint(model=ppnet_multi, log=log)
-            _, _ = tnt.train(model=ppnet_multi, dataloader=trainloader, optimizer=joint_optimizer,
-                        class_specific=class_specific, coefs=coefs, log=log)
+            train_actual, train_predicted = tnt.train(
+                model=ppnet_multi,
+                dataloader=trainloader,
+                optimizer=joint_optimizer,
+                class_specific=class_specific,
+                coefs=coefs,
+                log=log
+            )
             joint_lr_scheduler.step()
-        val_acc, cm = tnt.test(model=ppnet_multi, dataloader=valloader,
-                        class_specific=class_specific, log=log)
-        if val_acc > max_acc:
-            max_acc = val_acc
-            log('new max val accuracy: \t{0}%'.format(max_acc * 100))
-        #, cm
-        #save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'nopush', accu=accu,
-        #                            target_accu=0.82, log=log)
+
+        val_actual, val_predicted, _ = tnt.test(
+            model=ppnet_multi,
+            dataloader=valloader,
+            class_specific=class_specific,
+            log=log
+        )
+        test_actual, test_predicted, test_time = tnt.test(
+            model=ppnet_multi,
+            dataloader=testloader,
+            class_specific=class_specific,
+            log=log
+        )
 
         if epoch >= push_start and epoch % push_epochs_gap == 0:
-            log("Push Epoch")
+            # log("Push Epoch")
             push_prototypes(
                 pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                 prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
@@ -422,29 +407,134 @@ for trial in range(3):
                 root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
                 epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                 log=log)
-            val_acc, cm = tnt.test(model=ppnet_multi, dataloader=testloader,
-                            class_specific=class_specific, log=log)
-            # save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=accu,
-                                        #  target_accu=0.70, log=log)
+            
+            val_actual, val_predicted, _  = tnt.test(
+                model=ppnet_multi,
+                dataloader=valloader,
+                class_specific=class_specific,
+                log=log
+            )
 
             if ptype_activation_fn != 'linear':
                 tnt.last_only(model=ppnet_multi, log=log)
                 for i in range(20):
                     log('iteration: \t{0}'.format(i))
-                    _, _ = tnt.train(model=ppnet_multi, dataloader=trainloader, optimizer=last_layer_optimizer,
-                                class_specific=class_specific, coefs=coefs, log=log)
-                    val_acc, cm = tnt.test(model=ppnet_multi, dataloader=testloader,
-                                    class_specific=class_specific, log=log)
-                    # save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + '_' + str(i) + 'push', accu=accu,
-                    #                            target_accu=0.70, log=log)
+                    train_actual, train_predicted = tnt.train(
+                        model=ppnet_multi,
+                        dataloader=trainloader,
+                        optimizer=last_layer_optimizer,
+                        class_specific=class_specific,
+                        coefs=coefs,
+                        log=log
+                    )
+                    val_actual, val_predicted, _ = tnt.test(
+                        model=ppnet_multi,
+                        dataloader=valloader,
+                        class_specific=class_specific,
+                        log=log
+                    )
 
-        # if epoch>config['num_train_epochs']-50:
-        #     log('\tconfusion matrix: \t\t\n{0}'.format(cm))
+        warnings.filterwarnings("ignore")
+
+        # Compute metrics for validation set
+        val_m_f1 = metrics.f1_score(train_actual, train_predicted, average='macro')
+        val_m_recall = metrics.recall_score(train_actual, train_predicted, average='macro')
+        val_acc = metrics.accuracy_score(train_actual, train_predicted)
+        val_m_precision = metrics.precision_score(train_actual, train_predicted, average='macro')
+        val_w_precision = metrics.precision_score(train_actual, train_predicted, average='weighted')
+        val_w_recall = metrics.recall_score(train_actual, train_predicted, average='weighted')
+        val_w_f1 = metrics.f1_score(train_actual, train_predicted, average='weighted')
+        val_balanced_acc = metrics.balanced_accuracy_score(train_actual, train_predicted)
+
+        # Compute metrics for test set
+        test_m_f1 = metrics.f1_score(test_actual, test_predicted, average='macro')
+        test_m_recall = metrics.recall_score(test_actual, test_predicted, average='macro')
+        test_acc = metrics.accuracy_score(test_actual, test_predicted)
+        test_m_precision = metrics.precision_score(test_actual, test_predicted, average='macro')
+        test_w_precision = metrics.precision_score(test_actual, test_predicted, average='weighted')
+        test_w_recall = metrics.recall_score(test_actual, test_predicted, average='weighted')
+        test_w_f1 = metrics.f1_score(test_actual, test_predicted, average='weighted')
+        test_bal_acc = metrics.balanced_accuracy_score(test_actual, test_predicted)
+
+        warnings.filterwarnings("default")
+
         early_stopper(val_acc)
         if early_stopper.stop:
-            # if config['verbose']:
-            print(f"HEY WE'RE EARLY STOPPING\n")
+            # print(f"Early Stopping\n")
             print(f"Epoch {epoch+1}, "
                   f"Validation Accuracy: {val_acc*100}%")
-            # utils.update_results(results, model, filename='ppnresults.csv')
+                    
+            results = {
+                # Results
+                'val_macro_f1-score': val_m_f1,
+                'val_macro_recall': val_m_recall, 
+                'val_micro_accuracy': val_acc,
+                'val_macro_precision': val_m_precision,
+                'val_weighted_precision': val_w_precision, 
+                'val_weighted_recall': val_w_recall,
+                'val_weighted_f1-score': val_w_f1,
+                'val_balanced_accuracy': val_balanced_acc,
+                'test_macro_f1-score': test_m_f1,
+                'test_macro_recall': test_m_recall,
+                'test_micro_accuracy': test_acc,
+                'test_macro_precision': test_m_precision,
+                'test_weighted_precision': test_w_precision, 
+                'test_weighted_recall': test_w_recall,
+                'test_weighted_f1-score': test_w_f1,
+                'test_balanced_accuracy': test_bal_acc,
+                'test_time': test_time,
+
+                # Variable variables
+                'num_ptypes_per_class': num_ptypes_per_class,
+                'ptype_length': ptype_length,
+                'prototype_shape': prototype_shape,
+                'ptype_activation_fn': ptype_activation_fn,
+                'add_on_layers_type': add_on_layers_type,
+                'latent_weight': latent_weight,
+                # joint is not used currently
+                'joint_features_lr': joint_optimizer_lrs['features'],
+                'joint_add_on_layers_lr': joint_optimizer_lrs['add_on_layers'],
+                'joint_ptypes_lr': joint_optimizer_lrs['prototype_vectors'],
+                # only warm is used
+                'warm_add_on_layers_lr': warm_optimizer_lrs['add_on_layers'],
+                'warm_ptypes_lr': warm_optimizer_lrs['prototype_vectors'],
+                'last_layer_optimizer_lr': last_layer_optimizer_lr,
+                'weight_decay': weight_decay,
+                'joint_lr_step_size': joint_lr_step_size,
+                'cross_entropy': coefs['crs_ent'],
+                'cluster': coefs['clst'],
+                'separation': coefs['sep'],
+                'l1': coefs['l1'],
+                'num_warm_epochs': num_warm_epochs,
+                'push_epochs_gap': push_epochs_gap,
+                'push_start': push_start,
+
+                # Static Variables
+                'seq_count_thresh': config['seq_count_thresh'],           
+                'trainRandomInsertions': config['trainRandomInsertions'],  
+                'trainRandomDeletions': config['trainRandomDeletions'],  
+                'trainMutationRate': config['trainMutationRate'],      
+                'oversample': config['oversample'],               
+                'encoding_mode': config['encoding_mode'],    
+                'push_encoding_mode': config['push_encoding_mode'],  
+                'applying_on_raw_data': config['applying_on_raw_data'],
+                'augment_test_data': config['augment_test_data'],
+                'load_existing_train_test': config['load_existing_train_test'], 
+                'train_batch_size': config['train_batch_size'], 
+                'test_batch_size': config['test_batch_size'],
+                'num_classes': config['num_classes'],
+                'seq_target_length': config['seq_target_length'],   
+                'addTagAndPrimer': config['addTagAndPrimer'],
+                'addRevComplements': config['addRevComplements'],
+                'val_portion_of_train': val_portion,
+                'patience': early_stopper.patience,
+                'min_pc_improvement': early_stopper.min_pct_improvement,
+            }
+            utils.update_results(
+                results,
+                compare_cols='ppn',
+                model=None,
+                filename='ppnresults.csv',
+                save_model_dir='saved_ppn_models'
+            )
             break
