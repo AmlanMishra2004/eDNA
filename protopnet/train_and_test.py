@@ -133,24 +133,37 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
     # print(type(prediction))
     # log('\ttime: \t{0}'.format(end -  start))
     # log('\tcross ent: \t{0}'.format(total_cross_entropy / n_batches))
+    cross_ent = total_cross_entropy / n_batches
     # log('\tcluster: \t{0}'.format(total_cluster_cost / n_batches))
-    # if class_specific:
+    cluster = total_cluster_cost / n_batches
+    if class_specific:
+        separation = total_separation_cost / n_batches
+        avg_separation = total_avg_separation_cost / n_batches
     #     log('\tseparation:\t{0}'.format(total_separation_cost / n_batches))
     #     log('\tavg separation:\t{0}'.format(total_avg_separation_cost / n_batches))
     # log('\taccu: \t\t{0}%'.format(n_correct / n_examples * 100))
     
     # log('\tl1: \t\t{0}'.format(model.last_layer.weight.norm(p=1).item()))
-    # p = model.prototype_vectors.view(model.num_prototypes, -1).cpu()
     # log('\t Calculating list_of_distances()')
-    # with torch.no_grad():
-    #     p_avg_pair_dist = torch.mean(list_of_distances(p, p))
+    p = model.prototype_vectors.view(model.num_prototypes, -1).cpu()
+    with torch.no_grad():
+        p_avg_pair_dist = torch.mean(list_of_distances(p, p)).item()
     # log('\tp dist pair: \t{0}'.format(p_avg_pair_dist.item()))
 
     #confusiton matrix
     # confusion_mat = metrics.confusion_matrix(actuals, predictions)
     # log('\tconfusion matrix: \t\t\n{0}'.format(confusion_mat))
+        
+    ptype_results = {
+        'time': end - start,
+        'cross_ent': cross_ent,
+        'cluster': cluster,
+        'separation': separation,
+        'avg_separation': avg_separation,
+        'p_avg_pair_dist': p_avg_pair_dist
+    }
     
-    return actuals, predictions
+    return actuals, predictions, ptype_results
     # return n_correct / n_examples, confusion_mat
 
 
@@ -165,7 +178,7 @@ def train(model, dataloader, optimizer, class_specific=False, coefs=None, log=pr
         # print(batch[0][0])
         # break
     model.train()
-    actual, predicted = _train_or_test(
+    actual, predicted, ptype_results = _train_or_test(
         model=model,
         dataloader=dataloader,
         optimizer=optimizer,
@@ -173,22 +186,20 @@ def train(model, dataloader, optimizer, class_specific=False, coefs=None, log=pr
         coefs=coefs,
         log=log
     )
-    return actual, predicted
+    return actual, predicted, ptype_results
 
 
 def test(model, dataloader, class_specific=False, log=print):
     # log('\ttest')
     model.eval()
-    start = time.time()
-    actual, predicted = _train_or_test(
+    actual, predicted, ptype_results = _train_or_test(
         model=model,
         dataloader=dataloader,
         optimizer=None,
         class_specific=class_specific,
         log=log
     )
-    execution_time = start-time.time()
-    return actual, predicted, execution_time
+    return actual, predicted, ptype_results
 
 
 def last_only(model, log=print):

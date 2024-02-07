@@ -743,7 +743,8 @@ def check_hyperparam_originality(results, compare_cols, filename='results.csv'):
             'joint_features_lr', 'joint_add_on_layers_lr', 'joint_ptypes_lr',
             'warm_add_on_layers_lr', 'warm_ptypes_lr',
             'last_layer_optimizer_lr', 'weight_decay', 'joint_lr_step_size', 
-            'cross_entropy', 'cluster', 'separation', 'l1', 'num_warm_epochs',
+            'cross_entropy_weight', 'cluster_weight', 'separation_weight',
+            'l1_weight', 'num_warm_epochs',
             'push_epochs_gap', 'push_start', 'seq_count_thresh', 
             'trainRandomInsertions', 'trainRandomDeletions',
             'trainMutationRate', 'oversample', 'encoding_mode',
@@ -781,12 +782,15 @@ def check_hyperparam_originality(results, compare_cols, filename='results.csv'):
         for col in unique_columns:
             # If both are empty, then they match. Move to check next column
             if compare_none_and_nan(results[col], row[col]):
+                print(f"Value matches")
                 continue
             elif compare_numbers(results[col], row[col]):
+                print(f"Value matches")
                 continue
             # If they are not equal, then the row does not match. Stop
             # comparing columns and move to check the next row.
             elif str(results[col]) != str(row[col]):
+                # print("Found a column that doesn't match!")
                 matches = False
                 break
         if matches:
@@ -812,45 +816,49 @@ def update_results(results, compare_cols, model=None, filename='results.csv',
     else:
         df = pd.DataFrame(columns=list(results.keys()))
 
-    idx = check_hyperparam_originality(results, compare_cols, filename)
+    # delete these three lines and uncomment below if you want to exclude saving duplicate rows
+    warnings.filterwarnings('ignore', category=FutureWarning)
+    df = df.append(pd.Series(results), ignore_index=True) 
+    warnings.filterwarnings('default', category=FutureWarning)
+    # idx = check_hyperparam_originality(results, compare_cols, filename)
 
-    # If the model and hyperparameters haven't been tried before, add a new row
-    if idx == -1:
-        results['trials'] = 1
-        warnings.filterwarnings('ignore', category=FutureWarning)
-        df = df.append(pd.Series(results), ignore_index=True)
-        warnings.filterwarnings('default', category=FutureWarning)
-        print("Logged a new row for unique model/hyperparameter combination.")
+    # # If the model and hyperparameters haven't been tried before, add a new row
+    # if idx == -1:
+    #     results['trials'] = 1
+    #     warnings.filterwarnings('ignore', category=FutureWarning)
+    #     df = df.append(pd.Series(results), ignore_index=True)
+    #     warnings.filterwarnings('default', category=FutureWarning)
+    #     print("Logged a new row for unique model/hyperparameter combination.")
 
-    # If the combination has been tried before, if the performance is better
-    # then replace it and save the model parameters.
-    else:
-        row = df.loc[idx]
-        if results['val_macro_f1-score'] == row['val_macro_f1-score']:
-            keys_to_average = ['val_macro_f1-score', 'val_macro_recall',
-                                'val_micro_accuracy', 'val_macro_precision',
-                                'val_weighted_precision',
-                                'val_weighted_recall', 
-                                'val_weighted_f1-score',
-                                'val_balanced_accuracy']
-            existing_values = [row[key] for key in keys_to_average]
-            new_values = [results[key] for key in keys_to_average]
-            new_average_metric = sum(new_values) / len(new_values)
-            existing_average_metric = sum(existing_values) / len(existing_values)
-            if new_average_metric > existing_average_metric:
-                print("Improved a model with the same hyperparameters.")
-                df.loc[idx] = pd.Series(results)
-            else:
-                print("Matched f-1 score of a model with the same "
-                        "hyperparameters, but avg. of metrics was lower.")
-        # If the new val_macro_f1-score is higher, replace the old row
-        elif results['val_macro_f1-score'] > row['val_macro_f1-score']:
-            print("Improved a model with the same hyperparameters.")
-            df.loc[idx] = pd.Series(results)
-        else:
-            print("Unsuccessfully tried to improve the same model and "
-                    "hyperparameter combination.")
-        df.loc[idx, 'trials'] += 1
+    # # If the combination has been tried before, if the performance is better
+    # # then replace it and save the model parameters.
+    # else:
+    #     row = df.loc[idx]
+    #     if results['val_macro_f1-score'] == row['val_macro_f1-score']:
+    #         keys_to_average = ['val_macro_f1-score', 'val_macro_recall',
+    #                             'val_micro_accuracy', 'val_macro_precision',
+    #                             'val_weighted_precision',
+    #                             'val_weighted_recall', 
+    #                             'val_weighted_f1-score',
+    #                             'val_balanced_accuracy']
+    #         existing_values = [row[key] for key in keys_to_average]
+    #         new_values = [results[key] for key in keys_to_average]
+    #         new_average_metric = sum(new_values) / len(new_values)
+    #         existing_average_metric = sum(existing_values) / len(existing_values)
+    #         if new_average_metric > existing_average_metric:
+    #             print("Improved a model with the same hyperparameters.")
+    #             df.loc[idx] = pd.Series(results)
+    #         else:
+    #             print("Matched f-1 score of a model with the same "
+    #                     "hyperparameters, but avg. of metrics was lower.")
+    #     # If the new val_macro_f1-score is higher, replace the old row
+    #     elif results['val_macro_f1-score'] > row['val_macro_f1-score']:
+    #         print("Improved a model with the same hyperparameters.")
+    #         df.loc[idx] = pd.Series(results)
+    #     else:
+    #         print("Unsuccessfully tried to improve the same model and "
+    #                 "hyperparameter combination.")
+    #     df.loc[idx, 'trials'] += 1
 
     # =MATCH(MAX(C:C), C:C, 0) returns the index of the highest micro accuracy
     # Save the updated results

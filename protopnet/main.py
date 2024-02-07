@@ -141,7 +141,7 @@ normalize = transforms.Normalize(mean=mean, std=std) # not used in this file or 
 
 early_stopper = utils.EarlyStopping(
     patience=5,
-    min_pct_improvement=3, # previously 20 epochs, 0.1%
+    min_pct_improvement=10,#3, # previously 20 epochs, 0.1%
     verbose=False
 )
 
@@ -149,7 +149,7 @@ log = print
 random.seed(5) # 42 error, 420 works until push
 # np.random.seed(42)
 # begin random hyperparameter search
-for trial in range(3):
+for trial in range(30_000):
     print(f"\n\n\n\n\nTrial {trial+1}\n")
     early_stopper.reset()
 
@@ -247,14 +247,13 @@ for trial in range(3):
 
     # comments after the line indicate jon's original settings
     # if the settings were not applicable, I write "not set".
-    num_ptypes_per_class = random.randint(1, 50) # not set
-    ptype_length = random.randint(1, 30) # not set
+    num_ptypes_per_class = random.randint(1, 3) # not set
+    ptype_length = random.choice([i for i in range(5, 30, 2)]) # not set, must be ODD
     # RuntimeError: Given groups=1, weight of size [3900, 508, 10],
     # expected input[156, 512, 30] to have 508 channels, but got 512 channels instead
     prototype_shape = (config['num_classes']*num_ptypes_per_class, 512+8, ptype_length) # middle number+4 or 8? not set
     ptype_activation_fn = random.choice(['log', 'linear']) # log
-    add_on_layers_type = random.choice(['identity']) # 'identity', 'bottleneck', 'neither?idk'
-    latent_weight = random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 0.1]) # 0.8
+    latent_weight = random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
     # Optimizer
     joint_optimizer_lrs = { # learning rates for the different stages
         'features': random.uniform(0.0001, 0.01), # 0.003
@@ -276,8 +275,8 @@ for trial in range(3):
     }
     last_layer_optimizer_lr = random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
     num_warm_epochs = 1_000_000 # random.randint(0, 10) # not set
-    push_epochs_gap = 1_000_000 # not set
-    push_start = 1_000_000 #random.randint(0, 10) # not set
+    push_epochs_gap = 8# 1_000_000 # not set
+    push_start = 12# 1_000_000 #random.randint(0, 10) # not set
     # I forget where this comment originated, but it seems useful:
     # number of training epochs, number of warm epochs, push start epoch, push epochs
     print("################################################")
@@ -285,7 +284,6 @@ for trial in range(3):
     print(f"Prototype length: {ptype_length}")
     print(f"Prototype shape: {prototype_shape}")
     print(f"Prototype activation function: {ptype_activation_fn}")
-    print(f"Add-on layers type: {add_on_layers_type}")
     print(f"Latent weight: {latent_weight}")
     print(f"Joint optimizer learning rates:")
     print(f"\tFeatures: {joint_optimizer_lrs['features']}")
@@ -327,7 +325,6 @@ for trial in range(3):
         prototype_shape=prototype_shape, # config['prototype_shape'],
         num_classes=config['num_classes'],
         prototype_activation_function=ptype_activation_fn, # config['prototype_activation_function'],
-        add_on_layers_type=add_on_layers_type, # config['add_on_layers_type'],
         latent_weight=latent_weight, # config['latent_weight']
     )
     #if prototype_activation_function == 'linear':
@@ -363,7 +360,7 @@ for trial in range(3):
         if epoch < num_warm_epochs:
             # train the prototypes without modifying the backbone
             tnt.warm_only(model=ppnet_multi, log=log)
-            train_actual, train_predicted = tnt.train(
+            train_actual, train_predicted, _ = tnt.train(
                 model=ppnet_multi,
                 dataloader=trainloader,
                 optimizer=warm_optimizer,
@@ -374,7 +371,7 @@ for trial in range(3):
         else:
             # train the prototypes and the backbone
             tnt.joint(model=ppnet_multi, log=log)
-            train_actual, train_predicted = tnt.train(
+            train_actual, train_predicted, _ = tnt.train(
                 model=ppnet_multi,
                 dataloader=trainloader,
                 optimizer=joint_optimizer,
@@ -384,13 +381,13 @@ for trial in range(3):
             )
             joint_lr_scheduler.step()
 
-        val_actual, val_predicted, _ = tnt.test(
+        val_actual, val_predicted, val_ptype_results = tnt.test(
             model=ppnet_multi,
             dataloader=valloader,
             class_specific=class_specific,
             log=log
         )
-        test_actual, test_predicted, test_time = tnt.test(
+        test_actual, test_predicted, test_ptype_results = tnt.test(
             model=ppnet_multi,
             dataloader=testloader,
             class_specific=class_specific,
@@ -407,7 +404,7 @@ for trial in range(3):
                 epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                 log=log)
             
-            val_actual, val_predicted, _  = tnt.test(
+            val_actual, val_predicted, val_ptype_results  = tnt.test(
                 model=ppnet_multi,
                 dataloader=valloader,
                 class_specific=class_specific,
@@ -417,8 +414,8 @@ for trial in range(3):
             if ptype_activation_fn != 'linear':
                 tnt.last_only(model=ppnet_multi, log=log)
                 for i in range(20):
-                    log('iteration: \t{0}'.format(i))
-                    train_actual, train_predicted = tnt.train(
+                    # log('iteration: \t{0}'.format(i))
+                    train_actual, train_predicted, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
                         optimizer=last_layer_optimizer,
@@ -426,7 +423,7 @@ for trial in range(3):
                         coefs=coefs,
                         log=log
                     )
-                    val_actual, val_predicted, _ = tnt.test(
+                    val_actual, val_predicted, val_ptype_results = tnt.test(
                         model=ppnet_multi,
                         dataloader=valloader,
                         class_specific=class_specific,
@@ -481,14 +478,21 @@ for trial in range(3):
                 'test_weighted_recall': test_w_recall,
                 'test_weighted_f1-score': test_w_f1,
                 'test_balanced_accuracy': test_bal_acc,
-                'test_time': test_time,
+                'epochs_taken': epoch+1,
+                'test_time': test_ptype_results['time'],
+                # Prototype Results
+                'val_cross_ent': val_ptype_results['cross_ent'],
+                'val_cluster': val_ptype_results['cluster'],
+                'val_separation': val_ptype_results['separation'],
+                'val_avg_separation': val_ptype_results['avg_separation'],
+                'val_p_avg_pair_dist': val_ptype_results['p_avg_pair_dist'],
+
 
                 # Variable variables
                 'num_ptypes_per_class': num_ptypes_per_class,
                 'ptype_length': ptype_length,
                 'prototype_shape': prototype_shape,
                 'ptype_activation_fn': ptype_activation_fn,
-                'add_on_layers_type': add_on_layers_type,
                 'latent_weight': latent_weight,
                 # joint is not used currently
                 'joint_features_lr': joint_optimizer_lrs['features'],
@@ -500,10 +504,10 @@ for trial in range(3):
                 'last_layer_optimizer_lr': last_layer_optimizer_lr,
                 'weight_decay': weight_decay,
                 'joint_lr_step_size': joint_lr_step_size,
-                'cross_entropy': coefs['crs_ent'],
-                'cluster': coefs['clst'],
-                'separation': coefs['sep'],
-                'l1': coefs['l1'],
+                'cross_entropy_weight': coefs['crs_ent'],
+                'cluster_weight': coefs['clst'],
+                'separation_weight': coefs['sep'],
+                'l1_weight': coefs['l1'],
                 'num_warm_epochs': num_warm_epochs,
                 'push_epochs_gap': push_epochs_gap,
                 'push_start': push_start,

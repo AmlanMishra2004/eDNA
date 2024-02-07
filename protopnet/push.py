@@ -24,7 +24,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
                     prototype_activation_function_in_numpy=None):
 
     prototype_network_parallel.eval()
-    log('\tpush')
+    # log('\tpush')
 
     start = time.time()
     prototype_shape = prototype_network_parallel.prototype_shape
@@ -97,7 +97,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     #     np.save(os.path.join(proto_epoch_dir, proto_bound_boxes_filename_prefix + str(epoch_number) + '.npy'),
     #             proto_bound_boxes)
 
-    log('\tExecuting push ...')
+    # log('\tExecuting push ...')
     prototype_update = np.reshape(global_max_fmap_patches,
                                   tuple(prototype_shape))
     prototype_network_parallel.prototype_vectors.data.copy_(torch.tensor(prototype_update, dtype=torch.float32).cuda())
@@ -111,7 +111,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     #                     num_classes=num_classes)
     # prototype_network_parallel.cuda()
     end = time.time()
-    log('\tpush time: \t{0}'.format(end -  start))
+    # log('\tpush time: \t{0}'.format(end -  start))
 
 
 def save_self_activations(dir_for_saving_prototypes, 
@@ -292,7 +292,7 @@ def update_prototypes_on_batch(search_batch_input,
             # fmap_width_end_index = fmap_width_start_index + proto_w
 
             if fmap_height_start_index < 0:
-                print(f"fmap_height_start_index is < 0")
+                # print(f"fmap_height_start_index is < 0")
                 # Handle zero padding
                 batch_max_fmap_patch_j = protoL_input_[seq_index_in_batch,
                                                     :,
@@ -302,7 +302,7 @@ def update_prototypes_on_batch(search_batch_input,
                 batch_max_fmap_patch_j = np.concatenate((zeros, batch_max_fmap_patch_j), axis=-1)
 
             elif fmap_height_end_index > protoL_input_.shape[-1]:
-                print(f"fmap_height_end_index is > protoL_input_.shape[-1]")
+                # print(f"fmap_height_end_index is > protoL_input_.shape[-1]")
 
                 # Handle zero padding
                 batch_max_fmap_patch_j = protoL_input_[seq_index_in_batch,
@@ -312,11 +312,12 @@ def update_prototypes_on_batch(search_batch_input,
                 zeros = np.zeros((batch_max_fmap_patch_j.shape[0], fmap_height_end_index - protoL_input_.shape[-1]))
                 batch_max_fmap_patch_j = np.concatenate((batch_max_fmap_patch_j, zeros), axis=-1)
             else:
-                print(f"else")
-                batch_max_fmap_patch_j = protoL_input_[seq_index_in_batch,
-                                                    :,
-                                                    fmap_height_start_index:fmap_height_end_index]
-                                                    #    fmap_width_start_index:fmap_width_end_index]
+                # print(f"else")
+                batch_max_fmap_patch_j = protoL_input_[
+                    seq_index_in_batch,
+                    :,
+                    fmap_height_start_index:fmap_height_end_index]
+                    #    fmap_width_start_index:fmap_width_end_index]
 
             global_max_proto_act[j] = batch_max_proto_act_j
             global_max_fmap_patches[j] = batch_max_fmap_patch_j

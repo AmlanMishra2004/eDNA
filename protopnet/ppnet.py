@@ -274,8 +274,8 @@ class PPNet(nn.Module):
         ], dim=1)
         concat = torch.cat((conv_output, x_stacked), dim=-2)
         # concat = torch.cat((conv_output, avg_pooled_x), dim=-2)
-        print(f"In push_forward: Shape of concat: {concat.shape}")
-        print(f"In push_forward: Shape of self.prototype_vectors: {self.prototype_vectors.shape}")
+        # print(f"In push_forward: Shape of concat: {concat.shape}")
+        # print(f"In push_forward: Shape of self.prototype_vectors: {self.prototype_vectors.shape}")
         similarities = self.cosine_similarity(concat, self.prototype_vectors)
         return concat, similarities
 
@@ -360,7 +360,7 @@ class PPNet(nn.Module):
 def construct_PPNet(features, pretrained=True, sequence_length=60,
                     prototype_shape=(2*156, 512, 1), num_classes=156,
                     prototype_activation_function='log',
-                    add_on_layers_type='bottleneck', latent_weight=0.8):
+                    add_on_layers_type='identity', latent_weight=0.8):
     # features = base_architecture_to_features[base_architecture](pretrained=pretrained)
     # layer_filter_sizes, layer_strides, layer_paddings = features.conv_info()
     # proto_layer_rf_info = compute_proto_layer_rf_info_v2(sequence_length=sequence_length,
