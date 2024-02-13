@@ -8,7 +8,7 @@ from helpers import list_of_distances, make_one_hot
 np.set_printoptions(threshold=1000000)
 
 def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l1_mask=True,
-                   coefs=None, log=print):
+                   coefs=None, scheduler=None, log=print):
     '''
     model: the multi-gpu model
     dataloader: sam: an iter() of a dataloader
@@ -108,6 +108,8 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
             optimizer.zero_grad()
             loss.backward()
             optimizer.step()
+            if scheduler:
+                scheduler.step()
 
         del input
         del target
@@ -167,7 +169,8 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
     # return n_correct / n_examples, confusion_mat
 
 
-def train(model, dataloader, optimizer, class_specific=False, coefs=None, log=print):
+def train(model, dataloader, optimizer, scheduler=None, class_specific=False,
+          coefs=None, log=print):
     assert(optimizer is not None)
     
     # log('\ttrain')
@@ -182,6 +185,7 @@ def train(model, dataloader, optimizer, class_specific=False, coefs=None, log=pr
         model=model,
         dataloader=dataloader,
         optimizer=optimizer,
+        scheduler=scheduler,
         class_specific=class_specific,
         coefs=coefs,
         log=log
