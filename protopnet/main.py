@@ -140,13 +140,13 @@ normalize = transforms.Normalize(mean=mean, std=std) # not used in this file or 
 # Jon says: we should look into distributed sampler more carefully at torch.utils.data.distributed.DistributedSampler(train_dataset)
 
 early_stopper = utils.EarlyStopping(
-    patience=4,
+    patience=2,
     min_pct_improvement=1,#1,#3, # previously 20 epochs, 0.1%
     verbose=False
 )
 
 log = print
-random.seed(5) # 42 error, 420 works until push
+random.seed(36)
 warnings.filterwarnings('ignore', 'y_pred contains classes not in y_true')
 
 # split data into train, validation, and test
@@ -237,15 +237,15 @@ backbone.linear_layer = nn.Identity() # remove the linear layer
 
 # np.random.seed(42)
 # begin random hyperparameter search
-for trial in range(4):
+for trial in range(10_000):
     # Print out the names and sizes of all variables in use
-    print("Iteration", trial)
-    for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
-                             key=lambda x: -x[1]):
-        print("{:>30}: {:>8}".format(name, size))
-    print("\n\n")
+    print("\n\n\nIteration", trial)
+    # for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
+    #                          key=lambda x: -x[1]):
+    #     print("{:>30}: {:>8}".format(name, size))
+    # print("\n\n")
 
-    print(f"\n\n\n\n\nTrial {trial+1}\n")
+    print(f"\nTrial {trial+1}\n")
     early_stopper.reset()
 
     # trainloader_iterator = iter(trainloader)
@@ -590,7 +590,7 @@ for trial in range(4):
                 filename='ppnresults.csv',
                 save_model_dir='saved_ppn_models'
             )
-            break
+            break # for early stopping
 
     del ppnet
     del ppnet_multi
