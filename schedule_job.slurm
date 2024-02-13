@@ -23,8 +23,10 @@ echo "==========================================="
 #   ../zurich_replica/src/... Instead, do: ./bash_scripts/schedule_job.sh
 
 source ../eDNA_env/bin/activate
+cd protopnet
 
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py
+# singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 testScript.py
 # singularity run --nv $PYTORCH_CONT python3 zurich_replica/src/models/testScript.py
