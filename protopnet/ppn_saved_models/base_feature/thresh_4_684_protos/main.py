@@ -276,8 +276,9 @@ for epoch in range(num_train_epochs):
             log=log)
         accu, cm = tnt.test(model=ppnet_multi, dataloader=testloader,
                         class_specific=class_specific, log=log)
-        save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=accu,
-                                     target_accu=0.70, log=log)
+        # UNCOMMENT for LOCAL ANALYSIS i think
+        # save_model_w_condition(model=ppnet, model_dir=model_dir, model_name=str(epoch) + 'push', accu=accu,
+        #                              target_accu=0.70, log=log)
 
         if prototype_activation_function != 'linear':
             tnt.last_only(model=ppnet_multi, log=log)

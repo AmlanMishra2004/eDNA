@@ -10,7 +10,6 @@ from tqdm import tqdm
 from sklearn import metrics
 import warnings
 
-
 import argparse
 import re
 import random
@@ -239,13 +238,13 @@ backbone.linear_layer = nn.Identity() # remove the linear layer
 # begin random hyperparameter search
 for trial in range(10_000):
     # Print out the names and sizes of all variables in use
-    print("\n\n\nIteration", trial)
+    # print("\n\n\nVariable memory usage at beginning of trial", trial)
     # for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
     #                          key=lambda x: -x[1]):
     #     print("{:>30}: {:>8}".format(name, size))
     # print("\n\n")
 
-    print(f"\nTrial {trial+1}\n")
+    print(f"\n\nTrial {trial+1}\n")
     early_stopper.reset()
 
     # trainloader_iterator = iter(trainloader)
@@ -267,10 +266,10 @@ for trial in range(10_000):
     # comments after the line indicate jon's original settings
     # if the settings were not applicable, I write "not set".
     num_ptypes_per_class = random.randint(1, 3) # not set
-    ptype_length = random.choice([i for i in range(5, 30, 2)]) # not set, must be ODD
+    ptype_length = random.choice([i for i in range(17, 30, 2)]) # not set, must be ODD
     # RuntimeError: Given groups=1, weight of size [3900, 508, 10],
     # expected input[156, 512, 30] to have 508 channels, but got 512 channels instead
-    prototype_shape = (config['num_classes']*num_ptypes_per_class, 512+8, ptype_length) # middle number+4 or 8? not set
+    prototype_shape = (config['num_classes']*num_ptypes_per_class, 512+8, ptype_length) # not set
     ptype_activation_fn = random.choice(['log', 'linear']) # log
     latent_weight = random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
     # Optimizer
@@ -377,9 +376,15 @@ for trial in range(10_000):
     last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
     for epoch in tqdm(range(30_000)):
+
+        # print(f"\n\n\nVariable memory usage at the beginning of epoch {epoch} for trial {trial}")
+        # for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
+        #                         key=lambda x: -x[1]):
+        #     print("{:>30}: {:>8}".format(name, size))
+        # print("\n\n")
         
         if epoch >= push_start and epoch % push_epochs_gap == 0:
-            # push epoch
+            # Push epoch
             push_prototypes(
                 pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                 prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
@@ -391,8 +396,9 @@ for trial in range(10_000):
             # After pushing, retrain the last layer to produce good results again.
             if ptype_activation_fn != 'linear':
                 tnt.last_only(model=ppnet_multi, log=log)
-                for i in range(20):
-                    train_actual, train_predicted, _ = tnt.train(
+                print(f"Retraining last layer: ")
+                for i in tqdm(range(20)):
+                    _, _, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
                         optimizer=last_layer_optimizer,
@@ -400,16 +406,10 @@ for trial in range(10_000):
                         coefs=coefs,
                         log=log
                     )
-                    val_actual, val_predicted, val_ptype_results = tnt.test(
-                        model=ppnet_multi,
-                        dataloader=valloader,
-                        class_specific=class_specific,
-                        log=log
-                    )
         elif epoch < num_warm_epochs:
             # train the prototypes without modifying the backbone
             tnt.warm_only(model=ppnet_multi, log=log)
-            train_actual, train_predicted, _ = tnt.train(
+            _, _, _ = tnt.train(
                 model=ppnet_multi,
                 dataloader=trainloader,
                 optimizer=warm_optimizer,
@@ -421,7 +421,7 @@ for trial in range(10_000):
         else:
             # train the prototypes and the backbone
             tnt.joint(model=ppnet_multi, log=log)
-            train_actual, train_predicted, _ = tnt.train(
+            _, _, _ = tnt.train(
                 model=ppnet_multi,
                 dataloader=trainloader,
                 optimizer=joint_optimizer,
@@ -430,7 +430,7 @@ for trial in range(10_000):
                 coefs=coefs,
                 log=log
             )   
-            
+        print(f"Calculating validation accuracy for epoch")
         val_actual, val_predicted, val_ptype_results  = tnt.test(
             model=ppnet_multi,
             dataloader=valloader,
@@ -439,16 +439,17 @@ for trial in range(10_000):
         )
 
         # warnings.filterwarnings("ignore")
-        val_acc = metrics.accuracy_score(train_actual, train_predicted)
+        val_acc = metrics.accuracy_score(val_actual, val_predicted)
         # warnings.filterwarnings("default")
 
         early_stopper(val_acc)
         print(f"val acc: {val_acc}")
+        if val_acc > 0.7:
+            print(f"Val acc at epoch {epoch}: {val_acc}")
         if early_stopper.stop:
-            # print(f"Early Stopping\n")
             print(f"Early stopping after epoch {epoch+1}.\n"
-                  f"Final validation accuracy: {val_acc*100}%")
-            
+                  f"Final validation accuracy before push: {val_acc*100}%")
+            print(f"Pushing prototypes since finished training")
             push_prototypes(
                 pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                 prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
@@ -460,8 +461,9 @@ for trial in range(10_000):
             # After pushing, retrain the last layer to produce good results again.
             if ptype_activation_fn != 'linear':
                 tnt.last_only(model=ppnet_multi, log=log)
-                for i in range(20):
-                    train_actual, train_predicted, _ = tnt.train(
+                print(f"Retraining last layer: ")
+                for i in tqdm(range(20)):
+                    _, _, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
                         optimizer=last_layer_optimizer,
@@ -469,13 +471,9 @@ for trial in range(10_000):
                         coefs=coefs,
                         log=log
                     )
-                    val_actual, val_predicted, val_ptype_results = tnt.test(
-                        model=ppnet_multi,
-                        dataloader=valloader,
-                        class_specific=class_specific,
-                        log=log
-                    )
 
+            # Get the final model validation and test scores
+            print(f"Getting final validation and test accuracy after training.")
             val_actual, val_predicted, val_ptype_results  = tnt.test(
                 model=ppnet_multi,
                 dataloader=valloader,
@@ -490,14 +488,15 @@ for trial in range(10_000):
             )
 
             # Compute metrics for validation set
-            val_m_f1 = metrics.f1_score(train_actual, train_predicted, average='macro')
-            val_m_recall = metrics.recall_score(train_actual, train_predicted, average='macro', zero_division=1)
-            val_acc = metrics.accuracy_score(train_actual, train_predicted)
-            val_m_precision = metrics.precision_score(train_actual, train_predicted, average='macro', zero_division=1)
-            val_w_precision = metrics.precision_score(train_actual, train_predicted, average='weighted', zero_division=1)
-            val_w_recall = metrics.recall_score(train_actual, train_predicted, average='weighted', zero_division=1)
-            val_w_f1 = metrics.f1_score(train_actual, train_predicted, average='weighted')
-            val_balanced_acc = metrics.balanced_accuracy_score(train_actual, train_predicted)
+            print(f"Computing and storing results metrics")
+            val_m_f1 = metrics.f1_score(val_actual, val_predicted, average='macro')
+            val_m_recall = metrics.recall_score(val_actual, val_predicted, average='macro', zero_division=1)
+            val_acc = metrics.accuracy_score(val_actual, val_predicted)
+            val_m_precision = metrics.precision_score(val_actual, val_predicted, average='macro', zero_division=1)
+            val_w_precision = metrics.precision_score(val_actual, val_predicted, average='weighted', zero_division=1)
+            val_w_recall = metrics.recall_score(val_actual, val_predicted, average='weighted', zero_division=1)
+            val_w_f1 = metrics.f1_score(val_actual, val_predicted, average='weighted')
+            val_balanced_acc = metrics.balanced_accuracy_score(val_actual, val_predicted)
 
             # Compute metrics for test set
             test_m_f1 = metrics.f1_score(test_actual, test_predicted, average='macro')
@@ -602,3 +601,10 @@ for trial in range(10_000):
     del warm_lr_scheduler
     del last_layer_optimizer
     del last_layer_optimizer_specs
+
+    # Print out the names and sizes of all variables in use
+    # print(f"\n\n\nVariables in use after completing trial {trial}")
+    # for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
+    #                          key=lambda x: -x[1]):
+    #     print("{:>30}: {:>8}".format(name, size))
+    # print("\n\n")
