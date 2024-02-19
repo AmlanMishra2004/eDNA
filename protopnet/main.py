@@ -266,7 +266,7 @@ for trial in range(10_000):
     # comments after the line indicate jon's original settings
     # if the settings were not applicable, I write "not set".
     num_ptypes_per_class = random.randint(1, 3) # not set
-    ptype_length = random.choice([i for i in range(17, 30, 2)]) # not set, must be ODD
+    ptype_length = random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     # RuntimeError: Given groups=1, weight of size [3900, 508, 10],
     # expected input[156, 512, 30] to have 508 channels, but got 512 channels instead
     prototype_shape = (config['num_classes']*num_ptypes_per_class, 512+8, ptype_length) # not set
