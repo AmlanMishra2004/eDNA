@@ -444,7 +444,7 @@ for trial in range(10_000):
 
         early_stopper(val_acc)
         print(f"val acc: {val_acc}")
-        if val_acc > 0.7:
+        if val_acc > 0.3:
             print(f"Val acc at epoch {epoch}: {val_acc}")
         if early_stopper.stop:
             print(f"Early stopping after epoch {epoch+1}.\n"
