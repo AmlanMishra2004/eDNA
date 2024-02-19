@@ -1,6 +1,6 @@
 #!/bin/bash
 
-#SBATCH --job-name=a_big_model_search  		# Job name
+#SBATCH --job-name=ppn_model_search  		# Job name
 #SBATCH --cpus-per-task=5 		# Run on 5 cores per node
 #SBATCH --nodes=1			# Run on 1 node
 #SBATCH --ntasks=1 			# One process (shared-memory)
