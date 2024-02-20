@@ -139,7 +139,7 @@ normalize = transforms.Normalize(mean=mean, std=std) # not used in this file or 
 # Jon says: we should look into distributed sampler more carefully at torch.utils.data.distributed.DistributedSampler(train_dataset)
 
 early_stopper = utils.EarlyStopping(
-    patience=4,
+    patience=7,
     min_pct_improvement=1,#1,#3, # previously 20 epochs, 0.1% (for backbone)
     verbose=False
 )
