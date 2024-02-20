@@ -280,7 +280,7 @@ for trial in range(10_000):
         'prototype_vectors': -1#random.uniform(0.0001, 0.01) # 0.003
     }
     weight_decay = 0.065 #random.uniform(0, 0.1) # 0.001, large number penalizes large weights
-    gamma = 0.8 #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+    gamma = random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
     joint_lr_step_size = -1 #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
     warm_lr_step_size = 14 #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
     coefs = { # weighting of different training losses
@@ -455,7 +455,7 @@ for trial in range(10_000):
                                 'lr': last_layer_optimizer_lr}]
     last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
-    for epoch in tqdm(range(30_000)):
+    for epoch in tqdm(range(25)): #30_000
 
         # print(f"\n\n\nVariable memory usage at the beginning of epoch {epoch} for trial {trial}")
         # for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
@@ -526,7 +526,8 @@ for trial in range(10_000):
         print(f"val acc: {val_acc}")
         if val_acc > 0.3:
             print(f"Val acc at epoch {epoch}: {val_acc}")
-        if early_stopper.stop or epoch == 50:
+        # if early_stopper.stop:
+        if epoch == 50:
             print(f"Early stopping after epoch {epoch+1}.\n"
                   f"Final validation accuracy before push: {val_acc*100}%")
             print(f"Pushing prototypes since finished training")
