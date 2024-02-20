@@ -455,7 +455,7 @@ for trial in range(10_000):
                                 'lr': last_layer_optimizer_lr}]
     last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
-    for epoch in tqdm(range(25)): #30_000
+    for epoch in tqdm(range(35)): #30_000
 
         # print(f"\n\n\nVariable memory usage at the beginning of epoch {epoch} for trial {trial}")
         # for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
