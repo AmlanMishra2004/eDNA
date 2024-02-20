@@ -263,25 +263,26 @@ for trial in range(10_000):
     # testloader = iter(testloader)
     # pushloader = iter(pushloader)
 
+
     # comments after the line indicate jon's original settings
     # if the settings were not applicable, I write "not set".
-    num_ptypes_per_class = random.randint(1, 3) # not set
-    ptype_length = random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    num_ptypes_per_class = 2 #random.randint(1, 3) # not set
+    ptype_length = 25 #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     # RuntimeError: Given groups=1, weight of size [3900, 508, 10],
     # expected input[156, 512, 30] to have 508 channels, but got 512 channels instead
     prototype_shape = (config['num_classes']*num_ptypes_per_class, 512+8, ptype_length) # not set
-    ptype_activation_fn = random.choice(['log', 'linear']) # log
-    latent_weight = random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+    ptype_activation_fn = 'linear' #random.choice(['log', 'linear']) # log
+    latent_weight = 0.6 #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
     # Optimizer
     joint_optimizer_lrs = { # learning rates for the different stages
-        'features': random.uniform(0.0001, 0.01), # 0.003
-        'add_on_layers': random.uniform(0.0001, 0.01), # 0.003
-        'prototype_vectors': random.uniform(0.0001, 0.01) # 0.003
+        'features': -1,#random.uniform(0.0001, 0.01), # 0.003
+        'add_on_layers': -1,#random.uniform(0.0001, 0.01), # 0.003
+        'prototype_vectors': -1#random.uniform(0.0001, 0.01) # 0.003
     }
-    weight_decay = random.uniform(0, 0.1) # 0.001, large number penalizes large weights
-    gamma = random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-    joint_lr_step_size = random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-    warm_lr_step_size = random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    weight_decay = 0.065 #random.uniform(0, 0.1) # 0.001, large number penalizes large weights
+    gamma = 0.8 #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+    joint_lr_step_size = -1 #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    warm_lr_step_size = 14 #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
     coefs = { # weighting of different training losses
         'crs_ent': 1,
         'clst': 1*12*-0.8,
@@ -289,13 +290,91 @@ for trial in range(10_000):
         'l1': 1e-3,
     }
     warm_optimizer_lrs = {
-        'add_on_layers': random.uniform(0.0001, 0.001), # 3e-3,
-        'prototype_vectors': random.uniform(0.0001, 0.001) # 4e-2
+        'add_on_layers': 0.00073, #random.uniform(0.0001, 0.001), # 3e-3,
+        'prototype_vectors': 0.00071, #random.uniform(0.0001, 0.001) # 4e-2
     }
-    last_layer_optimizer_lr = random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    last_layer_optimizer_lr = 0.00063 #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
     num_warm_epochs = 1_000_000 # random.randint(0, 10) # not set
-    push_epochs_gap = random.randint(10, 20)# 1_000_000 # not set
-    push_start = random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+    push_epochs_gap = 17 #random.randint(10, 20)# 1_000_000 # not set
+    push_start = 25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+
+    # Specific search (above)
+    ###############################################################
+    # Refined search (below)
+
+    # # comments after the line indicate jon's original settings
+    # # if the settings were not applicable, I write "not set".
+    # num_ptypes_per_class = random.randint(1, 3) # not set
+    # ptype_length = random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    # # RuntimeError: Given groups=1, weight of size [3900, 508, 10],
+    # # expected input[156, 512, 30] to have 508 channels, but got 512 channels instead
+    # prototype_shape = (config['num_classes']*num_ptypes_per_class, 512+8, ptype_length) # not set
+    # ptype_activation_fn = random.choice(['log', 'linear']) # log
+    # latent_weight = random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+    # # Optimizer
+    # joint_optimizer_lrs = { # learning rates for the different stages
+    #     'features': random.uniform(0.0001, 0.01), # 0.003
+    #     'add_on_layers': random.uniform(0.0001, 0.01), # 0.003
+    #     'prototype_vectors': random.uniform(0.0001, 0.01) # 0.003
+    # }
+    # weight_decay = random.uniform(0, 0.1) # 0.001, large number penalizes large weights
+    # gamma = random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+    # joint_lr_step_size = random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    # warm_lr_step_size = random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    # coefs = { # weighting of different training losses
+    #     'crs_ent': 1,
+    #     'clst': 1*12*-0.8,
+    #     'sep': 1*30*0.08,
+    #     'l1': 1e-3,
+    # }
+    # warm_optimizer_lrs = {
+    #     'add_on_layers': random.uniform(0.0001, 0.001), # 3e-3,
+    #     'prototype_vectors': random.uniform(0.0001, 0.001) # 4e-2
+    # }
+    # last_layer_optimizer_lr = random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    # num_warm_epochs = 1_000_000 # random.randint(0, 10) # not set
+    # push_epochs_gap = random.randint(10, 20)# 1_000_000 # not set
+    # push_start = random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+
+    # Refined search (above)
+    ###############################################################
+    # Random search (below)
+
+    # # comments after the line indicate jon's original settings
+    # # if the settings were not applicable, I write "not set".
+    # num_ptypes_per_class = random.randint(1, 3) # not set
+    # ptype_length = random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    # # RuntimeError: Given groups=1, weight of size [3900, 508, 10],
+    # # expected input[156, 512, 30] to have 508 channels, but got 512 channels instead
+    # prototype_shape = (config['num_classes']*num_ptypes_per_class, 512+8, ptype_length) # not set
+    # ptype_activation_fn = random.choice(['log', 'linear']) # log
+    # latent_weight = random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+    # # Optimizer
+    # joint_optimizer_lrs = { # learning rates for the different stages
+    #     'features': random.uniform(0.0001, 0.01), # 0.003
+    #     'add_on_layers': random.uniform(0.0001, 0.01), # 0.003
+    #     'prototype_vectors': random.uniform(0.0001, 0.01) # 0.003
+    # }
+    # weight_decay = random.uniform(0, 0.1) # 0.001, large number penalizes large weights
+    # gamma = random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+    # joint_lr_step_size = random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    # warm_lr_step_size = random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    # coefs = { # weighting of different training losses
+    #     'crs_ent': 1,
+    #     'clst': 1*12*-0.8,
+    #     'sep': 1*30*0.08,
+    #     'l1': 1e-3,
+    # }
+    # warm_optimizer_lrs = {
+    #     'add_on_layers': random.uniform(0.0001, 0.001), # 3e-3,
+    #     'prototype_vectors': random.uniform(0.0001, 0.001) # 4e-2
+    # }
+    # last_layer_optimizer_lr = random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    # num_warm_epochs = 1_000_000 # random.randint(0, 10) # not set
+    # push_epochs_gap = random.randint(10, 20)# 1_000_000 # not set
+    # push_start = random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+
+
     # I forget where this comment originated, but it seems useful:
     # number of training epochs, number of warm epochs, push start epoch, push epochs
     print("################################################")
@@ -311,6 +390,7 @@ for trial in range(10_000):
     print(f"Warm optimizer learning rates: ")
     print(f"\tAdd-on layers: {warm_optimizer_lrs['add_on_layers']}")
     print(f"\tPrototype vectors: {warm_optimizer_lrs['prototype_vectors']}")
+    print(f"Gamma: {gamma}")
     print(f"Weight decay: {weight_decay}")
     print(f"Joint learning rate step size: {joint_lr_step_size}")
     print(f"Warm learning rate step size: {warm_lr_step_size}")
@@ -446,7 +526,7 @@ for trial in range(10_000):
         print(f"val acc: {val_acc}")
         if val_acc > 0.3:
             print(f"Val acc at epoch {epoch}: {val_acc}")
-        if early_stopper.stop:
+        if early_stopper.stop or epoch == 50:
             print(f"Early stopping after epoch {epoch+1}.\n"
                   f"Final validation accuracy before push: {val_acc*100}%")
             print(f"Pushing prototypes since finished training")
