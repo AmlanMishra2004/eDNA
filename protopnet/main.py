@@ -236,13 +236,7 @@ backbone.linear_layer = nn.Identity() # remove the linear layer
 
 # np.random.seed(42)
 # begin random hyperparameter search
-for trial in range(10_000):
-    # Print out the names and sizes of all variables in use
-    # print("\n\n\nVariable memory usage at beginning of trial", trial)
-    # for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
-    #                          key=lambda x: -x[1]):
-    #     print("{:>30}: {:>8}".format(name, size))
-    # print("\n\n")
+for trial in range(5):
 
     print(f"\n\nTrial {trial+1}\n")
     early_stopper.reset()
@@ -279,8 +273,8 @@ for trial in range(10_000):
         'add_on_layers': -1,#random.uniform(0.0001, 0.01), # 0.003
         'prototype_vectors': -1#random.uniform(0.0001, 0.01) # 0.003
     }
-    weight_decay = 0.065 #random.uniform(0, 0.1) # 0.001, large number penalizes large weights
-    gamma = random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+    weight_decay = 0.065 #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+    gamma = 1 #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
     joint_lr_step_size = -1 #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
     warm_lr_step_size = 14 #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
     coefs = { # weighting of different training losses
@@ -290,10 +284,10 @@ for trial in range(10_000):
         'l1': 1e-3,
     }
     warm_optimizer_lrs = {
-        'add_on_layers': 0.00073, #random.uniform(0.0001, 0.001), # 3e-3,
-        'prototype_vectors': 0.00071, #random.uniform(0.0001, 0.001) # 4e-2
+        'add_on_layers': -1, #random.uniform(0.0001, 0.001), # 3e-3,
+        'prototype_vectors': 0.0007, #random.uniform(0.0001, 0.001) # 4e-2
     }
-    last_layer_optimizer_lr = 0.00063 #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    last_layer_optimizer_lr = 0.00065 #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
     num_warm_epochs = 1_000_000 # random.randint(0, 10) # not set
     push_epochs_gap = 17 #random.randint(10, 20)# 1_000_000 # not set
     push_start = 25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
@@ -356,7 +350,7 @@ for trial in range(10_000):
     #     'prototype_vectors': random.uniform(0.0001, 0.01) # 0.003
     # }
     # weight_decay = random.uniform(0, 0.1) # 0.001, large number penalizes large weights
-    # gamma = random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+    # gamma = random.choice([0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.3
     # joint_lr_step_size = random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
     # warm_lr_step_size = random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
     # coefs = { # weighting of different training losses
@@ -455,15 +449,9 @@ for trial in range(10_000):
                                 'lr': last_layer_optimizer_lr}]
     last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
-    for epoch in tqdm(range(5)): #30_000
-
-        # print(f"\n\n\nVariable memory usage at the beginning of epoch {epoch} for trial {trial}")
-        # for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
-        #                         key=lambda x: -x[1]):
-        #     print("{:>30}: {:>8}".format(name, size))
-        # print("\n\n")
+    for epoch in tqdm(range(30_000)):
         
-        if epoch >= push_start and epoch % push_epochs_gap == 0:
+        if epoch >= push_start and (epoch - push_start) % push_epochs_gap == 0:
             # Push epoch
             push_prototypes(
                 pushloader, # pytorch dataloader (must be unnormalized in [0,1])
@@ -526,8 +514,8 @@ for trial in range(10_000):
         print(f"Val acc at epoch {epoch}: {val_acc}")
         # if val_acc > 0.3:
         #     print(f"Val acc at epoch {epoch}: {val_acc}")
-        if early_stopper.stop:
-        # if epoch == 50:
+        # if early_stopper.stop:
+        if epoch == 200:
             print(f"Early stopping after epoch {epoch+1}.\n"
                   f"Final validation accuracy before push: {val_acc*100}%")
             print(f"Pushing prototypes since finished training")
