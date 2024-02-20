@@ -455,7 +455,7 @@ for trial in range(10_000):
                                 'lr': last_layer_optimizer_lr}]
     last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
-    for epoch in tqdm(range(35)): #30_000
+    for epoch in tqdm(range(5)): #30_000
 
         # print(f"\n\n\nVariable memory usage at the beginning of epoch {epoch} for trial {trial}")
         # for name, size in sorted(((name, sys.getsizeof(value)) for name, value in locals().items()),
@@ -523,11 +523,11 @@ for trial in range(10_000):
         # warnings.filterwarnings("default")
 
         early_stopper(val_acc)
-        print(f"val acc: {val_acc}")
-        if val_acc > 0.3:
-            print(f"Val acc at epoch {epoch}: {val_acc}")
-        # if early_stopper.stop:
-        if epoch == 50:
+        print(f"Val acc at epoch {epoch}: {val_acc}")
+        # if val_acc > 0.3:
+        #     print(f"Val acc at epoch {epoch}: {val_acc}")
+        if early_stopper.stop:
+        # if epoch == 50:
             print(f"Early stopping after epoch {epoch+1}.\n"
                   f"Final validation accuracy before push: {val_acc*100}%")
             print(f"Pushing prototypes since finished training")
