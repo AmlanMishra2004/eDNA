@@ -498,7 +498,7 @@ for trial in range(5):
                 coefs=coefs,
                 log=log
             )   
-        print(f"Calculating validation accuracy for epoch")
+        # print(f"Calculating validation accuracy for epoch")
         val_actual, val_predicted, val_ptype_results  = tnt.test(
             model=ppnet_multi,
             dataloader=valloader,
