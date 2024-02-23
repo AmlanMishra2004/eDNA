@@ -268,7 +268,7 @@ for trial in range(1):
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
         'ptype_activation_fn':      ['linear'], #random.choice(['log', 'linear']) # log
-        'latent_weight':            [0.6], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0.5, 0.6, 0.7, 0.8, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         'weight_decay':             [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'warm_lr_step_size':        [14], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
@@ -302,7 +302,7 @@ for trial in range(1):
     # Iterate through all combinations
     combos = len(combinations)
     if combos > 1:
-        print(f"Exploring {combos} hyperparameter combinations for grid search.")
+        print(f"\n\nExploring {combos} hyperparameter combinations for grid search.\n")
     for combination in combinations:
         params = dict(zip(hyperparameters.keys(), combination))
         print(f"\nAttempting combination:")
@@ -338,9 +338,9 @@ for trial in range(1):
             {'params': ppnet.features.parameters(),
             'lr': params['joint_optimizer_lrs']['features'],
             'weight_decay': params['weight_decay']}, # bias are now also being regularized
-            {'params': ppnet.add_on_layers.parameters(),
-            'lr': params['joint_optimizer_lrs']['add_on_layers'],
-            'weight_decay': params['weight_decay']},
+            # {'params': ppnet.add_on_layers.parameters(),
+            # 'lr': params['joint_optimizer_lrs']['add_on_layers'],
+            # 'weight_decay': params['weight_decay']},
             {'params': ppnet.prototype_vectors,
             'lr': params['joint_optimizer_lrs']['prototype_vectors']},
         ]
@@ -349,11 +349,11 @@ for trial in range(1):
         joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=params['joint_lr_step_size'], gamma=params['gamma'])
 
         warm_optimizer_specs = [
-            {'params': ppnet.add_on_layers.parameters(),
-            'lr': params['warm_optimizer_lrs']['add_on_layers'],
-            'weight_decay': params['weight_decay']},
+            # {'params': ppnet.add_on_layers.parameters(),
+            # 'lr': params['warm_optimizer_lrs']['add_on_layers'],
+            # 'weight_decay': params['weight_decay']},
             {'params': ppnet.prototype_vectors,
-            'lr': params['warm_optimizer_lrs']['prototype_vectors']},
+            'lr': params['warm_optimizer_lrs']['prototype_vectors']}
         ]
         warm_optimizer = torch.optim.Adam(warm_optimizer_specs)
         # after step-size epochs, the lr is multiplied by gamma
