@@ -496,7 +496,12 @@ for trial in range(1):
                 test_w_recall = metrics.recall_score(test_actual, test_predicted, average='weighted', zero_division=1)
                 test_w_f1 = metrics.f1_score(test_actual, test_predicted, average='weighted')
                 test_bal_acc = metrics.balanced_accuracy_score(test_actual, test_predicted)
-                        
+
+                print(f"Final val macro f1-score: {val_m_f1}")
+                print(f"Final val micro accuracy: {val_acc}")
+                print(f"Final test macro f1-score: {test_m_f1}")
+                print(f"Final test micro accuracy: {test_acc}")
+
                 results = {
                     # Results
                     'val_macro_f1-score': val_m_f1,
