@@ -870,14 +870,19 @@ def update_results(results, compare_cols, model=None, filename='results.csv',
     df_sorted.to_csv(filename, index=False)
 
     # If the val_macro_f1-score is the best, save the model parameters
-    if results['val_macro_f1-score'] >= df_sorted.iloc[0]['val_macro_f1-score']:
-        if results['val_micro_accuracy'] >= df_sorted.iloc[0]['val_micro_accuracy']:
-            print("Found a new best model!")
-            if model:
-                torch.save(
-                    model.state_dict(),
-                    os.path.join(save_model_dir, f'best_model_{timestamp}.pt')
-                )
+    # if results['val_macro_f1-score'] >= df_sorted.iloc[0]['val_macro_f1-score']:
+    #     if results['val_micro_accuracy'] >= df_sorted.iloc[0]['val_micro_accuracy']:
+    #         print("Found a new best model!")
+    #         if model:
+    #             torch.save(
+    #                 model.state_dict(),
+    #                 os.path.join(save_model_dir, f'best_model_{timestamp}.pt')
+    #             )
+    # save regardless of performance, since it was >= 97%.
+    torch.save(
+        model.state_dict(),
+        os.path.join(save_model_dir, f'best_model_{timestamp}.pt')
+    )
     print("Saved Results")
 
 def conv1d_output_size(input_length, kernel_size, padding, stride):
