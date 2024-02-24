@@ -267,7 +267,7 @@ for trial in range(1):
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'ptype_activation_fn':      ['linear'], #random.choice(['log', 'linear']) # log
+        'ptype_activation_fn':      ['log', 'linear'], #random.choice(['log', 'linear']) # log
         'latent_weight':            [0.5, 0.6, 0.7, 0.8, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         'weight_decay':             [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
@@ -279,8 +279,6 @@ for trial in range(1):
             'l1':                   1e-3,
         }],
         'warm_optimizer_lrs': [{
-            # add_on_layers is UNUSED
-            'add_on_layers':        -1, #random.uniform(0.0001, 0.001), # 3e-3,
             'prototype_vectors':    0.0007, #random.uniform(0.0001, 0.001) # 4e-2
         }], 
         'last_layer_optimizer_lr':  [0.00065], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
@@ -291,7 +289,6 @@ for trial in range(1):
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
             'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
-            'add_on_layers':        -1,#random.uniform(0.0001, 0.01), # 0.003
             'prototype_vectors':    -1#random.uniform(0.0001, 0.01) # 0.003
         }]
     }
@@ -338,9 +335,6 @@ for trial in range(1):
             {'params': ppnet.features.parameters(),
             'lr': params['joint_optimizer_lrs']['features'],
             'weight_decay': params['weight_decay']}, # bias are now also being regularized
-            # {'params': ppnet.add_on_layers.parameters(),
-            # 'lr': params['joint_optimizer_lrs']['add_on_layers'],
-            # 'weight_decay': params['weight_decay']},
             {'params': ppnet.prototype_vectors,
             'lr': params['joint_optimizer_lrs']['prototype_vectors']},
         ]
@@ -349,9 +343,6 @@ for trial in range(1):
         joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=params['joint_lr_step_size'], gamma=params['gamma'])
 
         warm_optimizer_specs = [
-            # {'params': ppnet.add_on_layers.parameters(),
-            # 'lr': params['warm_optimizer_lrs']['add_on_layers'],
-            # 'weight_decay': params['weight_decay']},
             {'params': ppnet.prototype_vectors,
             'lr': params['warm_optimizer_lrs']['prototype_vectors']}
         ]
@@ -448,18 +439,29 @@ for trial in range(1):
                     log=log
                 )
                 # After pushing, retrain the last layer to produce good results again.
-                if params['ptype_activation_fn'] != 'linear':
-                    tnt.last_only(model=ppnet_multi, log=log)
-                    print(f"Retraining last layer: ")
-                    for i in tqdm(range(20)):
-                        _, _, _ = tnt.train(
-                            model=ppnet_multi,
-                            dataloader=trainloader,
-                            optimizer=last_layer_optimizer,
-                            class_specific=class_specific,
-                            coefs=params['coefs'],
-                            log=log
-                        )
+                # if params['ptype_activation_fn'] != 'linear':
+                #     tnt.last_only(model=ppnet_multi, log=log)
+                #     print(f"Retraining last layer: ")
+                #     for i in tqdm(range(20)):
+                #         _, _, _ = tnt.train(
+                #             model=ppnet_multi,
+                #             dataloader=trainloader,
+                #             optimizer=last_layer_optimizer,
+                #             class_specific=class_specific,
+                #             coefs=params['coefs'],
+                #             log=log
+                #         )
+                tnt.last_only(model=ppnet_multi, log=log)
+                print(f"Retraining last layer: ")
+                for i in tqdm(range(20)): # took 11
+                    _, _, _ = tnt.train(
+                        model=ppnet_multi,
+                        dataloader=trainloader,
+                        optimizer=last_layer_optimizer,
+                        class_specific=class_specific,
+                        coefs=params['coefs'],
+                        log=log
+                    )
 
                 # Get the final model validation and test scores
                 print(f"Getting final validation and test accuracy after training.")
@@ -538,10 +540,10 @@ for trial in range(1):
                     'latent_weight': params['latent_weight'],
                     # joint is not used currently
                     'joint_features_lr': params['joint_optimizer_lrs']['features'],
-                    'joint_add_on_layers_lr': params['joint_optimizer_lrs']['add_on_layers'],
+                    'joint_add_on_layers_lr': -1,
                     'joint_ptypes_lr': params['joint_optimizer_lrs']['prototype_vectors'],
                     # only warm is used
-                    'warm_add_on_layers_lr': params['warm_optimizer_lrs']['add_on_layers'],
+                    'warm_add_on_layers_lr': -1,
                     'warm_ptypes_lr': params['warm_optimizer_lrs']['prototype_vectors'],
                     'last_layer_optimizer_lr': params['last_layer_optimizer_lr'],
                     'weight_decay': params['weight_decay'],
