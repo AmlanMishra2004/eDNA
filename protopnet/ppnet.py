@@ -244,9 +244,15 @@ class PPNet(nn.Module):
             return torch.log((distances + 1) / (distances + self.epsilon))
         elif self.prototype_activation_function == 'linear':
             return -distances
+        # elif self.prototype_activation_function == 'inverse':
+        #     return 1.0 / (distances + self.epsilon)
+        # elif self.prototype_activation_function == 'exponential':
+        #     return torch.exp(-distances)
+        # elif self.prototype_activation_function == 'squared_inverse':
+        #     return 1.0 / torch.pow(distances + self.epsilon, 2)
         else:
             return self.prototype_activation_function(distances)
-
+        
     def forward(self, x):
         # print("Starting forward()!")
         distances = self.prototype_distances(x)

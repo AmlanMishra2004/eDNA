@@ -251,6 +251,7 @@ for trial in range(1):
 
     num_latent_channels = 512
 
+    # These two are also hyperparameters. Feel free to add more values to try.
     num_ptypes_per_class = [2] #random.randint(1, 3) # not set
     ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     
@@ -267,11 +268,10 @@ for trial in range(1):
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'ptype_activation_fn':      ['log', 'linear'], #random.choice(['log', 'linear']) # log
         'latent_weight':            [0.5, 0.6, 0.7, 0.8, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         'weight_decay':             [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-        'warm_lr_step_size':        [14], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+        'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'coefs': [{ # weighting of different training losses
             'crs_ent':              1,
             'clst':                 1*12*-0.8,
@@ -283,13 +283,13 @@ for trial in range(1):
         }], 
         'last_layer_optimizer_lr':  [0.00065], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_epochs_gap':          [17], #random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [25], #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_epochs_gap':          [10, 12, 14], # 17 #random.randint(10, 20)# 1_000_000 # not set
+        'push_start':               [10, 15, 20, 25, 30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
             'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
-            'prototype_vectors':    -1#random.uniform(0.0001, 0.01) # 0.003
+            'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
         }]
     }
 
@@ -317,16 +317,14 @@ for trial in range(1):
             features=backbone,
             pretrained=True,
             sequence_length=config['seq_target_length'],
-            prototype_shape=params['prototype_shape'], # config['prototype_shape'],
+            prototype_shape=params['prototype_shape'],
             num_classes=config['num_classes'],
-            prototype_activation_function=params['ptype_activation_fn'], # config['prototype_activation_function'],
-            latent_weight=params['latent_weight'], # config['latent_weight']
+            prototype_activation_function='this is not used',
+            latent_weight=params['latent_weight'],
         )
-        #if prototype_activation_function == 'linear':
-        #    ppnet.set_last_layer_incorrect_connection(incorrect_strength=0)
         ppnet = ppnet.cuda()
-        # ppnet_multi = torch.nn.DataParallel(ppnet)
-        ppnet_multi = ppnet
+        ppnet_multi = torch.nn.DataParallel(ppnet) # uncomment?
+        # ppnet_multi = ppnet
         class_specific = True
 
         # define optimizer
@@ -366,18 +364,17 @@ for trial in range(1):
                     log=log
                 )
                 # After pushing, retrain the last layer to produce good results again.
-                if params['ptype_activation_fn'] != 'linear':
-                    tnt.last_only(model=ppnet_multi, log=log)
-                    print(f"Retraining last layer: ")
-                    for i in tqdm(range(20)):
-                        _, _, _ = tnt.train(
-                            model=ppnet_multi,
-                            dataloader=trainloader,
-                            optimizer=last_layer_optimizer,
-                            class_specific=class_specific,
-                            coefs=params['coefs'],
-                            log=log
-                        )
+                tnt.last_only(model=ppnet_multi, log=log)
+                print(f"Retraining last layer: ")
+                for i in tqdm(range(20)):
+                    _, _, _ = tnt.train(
+                        model=ppnet_multi,
+                        dataloader=trainloader,
+                        optimizer=last_layer_optimizer,
+                        class_specific=class_specific,
+                        coefs=params['coefs'],
+                        log=log
+                    )
             elif epoch < params['num_warm_epochs']:
                 # train the prototypes without modifying the backbone
                 tnt.warm_only(model=ppnet_multi, log=log)
@@ -426,7 +423,7 @@ for trial in range(1):
                 # give up on testing the model
                 print("giving up on achieving desired accuracy")
                 break
-            if val_acc >= 0.97:
+            if val_acc >= 0.97: 
                 print(f"Early stopping after epoch {epoch+1}.\n"
                     f"Final validation accuracy before push: {val_acc*100}%")
                 print(f"Pushing prototypes since finished training")
@@ -439,20 +436,8 @@ for trial in range(1):
                     log=log
                 )
                 # After pushing, retrain the last layer to produce good results again.
-                # if params['ptype_activation_fn'] != 'linear':
-                #     tnt.last_only(model=ppnet_multi, log=log)
-                #     print(f"Retraining last layer: ")
-                #     for i in tqdm(range(20)):
-                #         _, _, _ = tnt.train(
-                #             model=ppnet_multi,
-                #             dataloader=trainloader,
-                #             optimizer=last_layer_optimizer,
-                #             class_specific=class_specific,
-                #             coefs=params['coefs'],
-                #             log=log
-                #         )
                 tnt.last_only(model=ppnet_multi, log=log)
-                print(f"Retraining last layer: ")
+                print(f"Retraining last layer")
                 for i in tqdm(range(20)): # took 11
                     _, _, _ = tnt.train(
                         model=ppnet_multi,
@@ -536,7 +521,7 @@ for trial in range(1):
                     'num_ptypes_per_class': num_ptypes_per_class,
                     'ptype_length': ptype_length,
                     'prototype_shape': params['prototype_shape'],
-                    'ptype_activation_fn': params['ptype_activation_fn'],
+                    'ptype_activation_fn': 'unused',
                     'latent_weight': params['latent_weight'],
                     # joint is not used currently
                     'joint_features_lr': params['joint_optimizer_lrs']['features'],
@@ -581,7 +566,7 @@ for trial in range(1):
                 utils.update_results(
                     results,
                     compare_cols='ppn',
-                    model=ppnet,
+                    model=ppnet_multi,
                     filename='ppnresults.csv',
                     save_model_dir='saved_ppn_models'
                 )
