@@ -410,7 +410,7 @@ for trial in range(1):
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
                 print(f"Retraining last layer: ")
-                # Set the lr to the original lr
+                # Set the last layer lr to the original lr
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_optimizer_lr']
                 for i in range(20):
@@ -496,6 +496,9 @@ for trial in range(1):
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
                 print(f"Retraining last layer")
+                # Set the last layer lr to the original lr
+                for param_group in last_layer_optimizer.param_groups:
+                    param_group['lr'] = params['last_layer_optimizer_lr']
                 for i in range(20):
                     if i == 0:
                         for param_group in last_layer_optimizer.param_groups:
