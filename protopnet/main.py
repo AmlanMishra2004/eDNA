@@ -316,7 +316,7 @@ for trial in range(1):
         'warm_optimizer_lrs': [{
             'prototype_vectors':    0.0007, #random.uniform(0.0001, 0.001) # 4e-2
         }], 
-        'last_layer_optimizer_lr':  [99999], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_epochs_gap':          [6], # 17 #random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [10], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
@@ -382,10 +382,16 @@ for trial in range(1):
         warm_optimizer = torch.optim.Adam(warm_optimizer_specs)
         # after step-size epochs, the lr is multiplied by gamma
         warm_lr_scheduler = torch.optim.lr_scheduler.StepLR(warm_optimizer, step_size=params['warm_lr_step_size'], gamma=params['gamma'])
+        print(f"WHAT YOU WANT: {params['last_layer_optimizer_lr']}")
+        pause = input("pause")
         last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(),
                                     'lr': params['last_layer_optimizer_lr']}]
         last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
+# TODO:
+# cluster should be larger than separation. if it is lower, then it will destroy on the push
+# modify cluster and separation, and print it out
+        
         for epoch in tqdm(range(30_000)):
             
             if epoch == 0:
@@ -437,7 +443,7 @@ for trial in range(1):
             elif epoch < params['num_warm_epochs']:
                 # train the prototypes without modifying the backbone
                 tnt.warm_only(model=ppnet_multi, log=log)
-                _, _, _ = tnt.train(
+                _, _, ptype_results = tnt.train(
                     model=ppnet_multi,
                     dataloader=trainloader,
                     optimizer=warm_optimizer,
@@ -446,10 +452,11 @@ for trial in range(1):
                     coefs=params['coefs'],
                     log=log
                 )
+                print(f"Prototype results: {ptype_results}")
             else:
                 # train the prototypes and the backbone
                 tnt.joint(model=ppnet_multi, log=log)
-                _, _, _ = tnt.train(
+                _, _, ptype_results = tnt.train(
                     model=ppnet_multi,
                     dataloader=trainloader,
                     optimizer=joint_optimizer,
@@ -458,6 +465,7 @@ for trial in range(1):
                     coefs=params['coefs'],
                     log=log
                 )   
+                print(f"Prototype results: {ptype_results}")
             # print(f"Calculating validation accuracy for epoch")
             val_actual, val_predicted, val_ptype_results  = tnt.test(
                 model=ppnet_multi,
