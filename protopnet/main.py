@@ -419,11 +419,11 @@ for trial in range(1):
 
             # peaked around epoch [38*, 58, 73]
 
-            if epoch >= 45:
-                # give up on testing the model
-                print("giving up on achieving desired accuracy")
-                break
-            if val_acc >= 0.97: 
+            # if epoch >= 55: # 45, expected: 38
+            #     # give up on testing the model
+            #     print("giving up on achieving desired accuracy")
+            #     break
+            if epoch >= 55 or val_acc >= 0.965: 
                 print(f"Early stopping after epoch {epoch+1}.\n"
                     f"Final validation accuracy before push: {val_acc*100}%")
                 print(f"Pushing prototypes since finished training")
