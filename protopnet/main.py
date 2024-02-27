@@ -567,7 +567,7 @@ for trial in range(1):
                     results,
                     compare_cols='ppn',
                     model=ppnet_multi,
-                    filename='ppnresults.csv',
+                    filename='ppnresults_gridsearch_2_27_24.csv',
                     save_model_dir='saved_ppn_models'
                 )
                 break # for early stopping
