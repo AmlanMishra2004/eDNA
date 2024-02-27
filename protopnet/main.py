@@ -16,6 +16,7 @@ import re
 import random
 import pandas as pd
 import torch.nn as nn
+import numpy as np
 
 from helpers import makedir
 from push import push_prototypes
@@ -431,7 +432,7 @@ for trial in range(1):
                         coefs=params['coefs'],
                         log=log
                     )
-                    acc = torch.mean(actual == pred)
+                    acc = np.mean(actual == pred)
                     print(f"Train acc at iteration {i}: acc")
             elif epoch < params['num_warm_epochs']:
                 # train the prototypes without modifying the backbone
@@ -517,7 +518,7 @@ for trial in range(1):
                         coefs=params['coefs'],
                         log=log
                     )
-                    acc = torch.mean(actual == pred)
+                    acc = np.mean(actual == pred)
                     print(f"Train acc at iteration {i}: acc")
 
                 # Get the final model validation and test scores
