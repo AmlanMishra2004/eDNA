@@ -200,11 +200,11 @@ class PPNet(nn.Module):
 
         x_norm = torch.norm(x, p=2, dim=1, keepdim=True)
         x_normalized = x / (self.epsilon + x_norm)
-        x_normalized /= torch.sqrt(prototypes.shape[-1])
+        x_normalized /= float(prototypes.shape[-1])**0.5
 
         p_norm = torch.norm(prototypes, p=2, dim=1, keepdim=True)
         p_normalized = prototypes / (self.epsilon + p_norm)
-        p_normalized /= torch.sqrt(prototypes.shape[-1])
+        p_normalized /= float(prototypes.shape[-1])**0.5
 
         # print(f"\tShape of x_normalized: {x_normalized.shape}")
         # print(f"\tShape of p_normalized: {p_normalized.shape}")
