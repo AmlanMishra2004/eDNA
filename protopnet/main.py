@@ -250,11 +250,7 @@ for trial in range(1):
     print('test batch size: {0}'.format(config['test_batch_size']))
 
     num_latent_channels = 512
-
-    # These two are also hyperparameters. Feel free to add more values to try.
-    num_ptypes_per_class = [2] #random.randint(1, 3) # not set
-    ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
-    
+  
     """
     If you want to do GRID SEARCH, then set the number of trials above to 1
     and defined the lists of numbers to try below.
@@ -263,12 +259,50 @@ for trial in range(1):
     however many combinations you want to try, and define the random
     distributions below.
     """
+    # search 2/25/24
+    # # These two are also hyperparameters. Feel free to add more values to try.
+    # num_ptypes_per_class = [2] #random.randint(1, 3) # not set
+    # ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    # hyperparameters = {    
+    #     # comments after the line indicate jon's original settings
+    #     # if the settings were not applicable, I write "not set".
+
+    #     'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
+    #     'latent_weight':            [0.5, 0.6, 0.7, 0.8, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+    #     'weight_decay':             [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+    #     'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+    #     'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    #     'coefs': [{ # weighting of different training losses
+    #         'crs_ent':              1,
+    #         'clst':                 1*12*-0.8,
+    #         'sep':                  1*30*0.08,
+    #         'l1':                   1e-3,
+    #     }],
+    #     'warm_optimizer_lrs': [{
+    #         'prototype_vectors':    0.0007, #random.uniform(0.0001, 0.001) # 4e-2
+    #     }], 
+    #     'last_layer_optimizer_lr':  [0.00065], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
+    #     'push_epochs_gap':          [10, 12, 14], # 17 #random.randint(10, 20)# 1_000_000 # not set
+    #     'push_start':               [10, 15, 20, 25, 30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+    #     # BELOW IS UNUSED
+    #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    #     'joint_optimizer_lrs': [{ # learning rates for the different stages
+    #         'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
+    #         'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
+    #     }]
+    # }
+
+    # search 2/27/24
+    # These two are also hyperparameters. Feel free to add more values to try.
+    num_ptypes_per_class = [2] #random.randint(1, 3) # not set
+    ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {    
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0.5, 0.6, 0.7, 0.8, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0.7], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         'weight_decay':             [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
@@ -283,8 +317,8 @@ for trial in range(1):
         }], 
         'last_layer_optimizer_lr':  [0.00065], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_epochs_gap':          [10, 12, 14], # 17 #random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [10, 15, 20, 25, 30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_epochs_gap':          [14], # 17 #random.randint(10, 20)# 1_000_000 # not set
+        'push_start':               [30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
