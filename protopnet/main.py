@@ -382,8 +382,8 @@ for trial in range(1):
         warm_optimizer = torch.optim.Adam(warm_optimizer_specs)
         # after step-size epochs, the lr is multiplied by gamma
         warm_lr_scheduler = torch.optim.lr_scheduler.StepLR(warm_optimizer, step_size=params['warm_lr_step_size'], gamma=params['gamma'])
-        print(f"WHAT YOU WANT: {params['last_layer_optimizer_lr']}")
-        pause = input("pause")
+        # print(f"WHAT YOU WANT: {params['last_layer_optimizer_lr']}")
+        # pause = input("pause")
         last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(),
                                     'lr': params['last_layer_optimizer_lr']}]
         last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
