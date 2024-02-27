@@ -200,9 +200,11 @@ class PPNet(nn.Module):
 
         x_norm = torch.norm(x, p=2, dim=1, keepdim=True)
         x_normalized = x / (self.epsilon + x_norm)
+        x_normalized /= torch.sqrt(prototypes.shape[-1])
 
         p_norm = torch.norm(prototypes, p=2, dim=1, keepdim=True)
         p_normalized = prototypes / (self.epsilon + p_norm)
+        p_normalized /= torch.sqrt(prototypes.shape[-1])
 
         # print(f"\tShape of x_normalized: {x_normalized.shape}")
         # print(f"\tShape of p_normalized: {p_normalized.shape}")
@@ -239,6 +241,7 @@ class PPNet(nn.Module):
         # input_distances = self.cosine_similarity(avg_pooled_x, self.prototype_vectors[:, -4:])
         return self.latent_weight * latent_distances + (1 - self.latent_weight) * input_distances
 
+    # not used
     def distance_2_similarity(self, distances):
         if self.prototype_activation_function == 'log':
             return torch.log((distances + 1) / (distances + self.epsilon))
