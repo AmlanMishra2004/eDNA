@@ -385,17 +385,17 @@ for trial in range(1):
                                     'lr': params['last_layer_optimizer_lr']}]
         last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
-        for epoch in tqdm(range(30_000)):
+        for epoch in range(30_000):
             
             if epoch == 0:
                 for param_group in warm_optimizer.param_groups:
                     param_group['lr'] *= 10
             elif epoch == 10:
                 for param_group in warm_optimizer.param_groups:
-                    param_group['lr'] /= 10
+                    param_group['lr'] /= 20
             elif epoch == 20:
                 for param_group in warm_optimizer.param_groups:
-                    param_group['lr'] /= 10
+                    param_group['lr'] /= 20
 
             if epoch >= params['push_start'] and (epoch - params['push_start']) % params['push_epochs_gap'] == 0:
                 # Push epoch
@@ -410,7 +410,7 @@ for trial in range(1):
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
                 print(f"Retraining last layer: ")
-                for i in tqdm(range(20)):
+                for i in range(20):
                     if i == 0:
                         for param_group in last_layer_optimizer.param_groups:
                             param_group['lr'] *= 10
@@ -420,7 +420,7 @@ for trial in range(1):
                     elif i == 15:
                         for param_group in last_layer_optimizer.param_groups:
                             param_group['lr'] /= 10
-                    _, _, _ = tnt.train(
+                    actual, pred, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
                         optimizer=last_layer_optimizer,
@@ -428,6 +428,8 @@ for trial in range(1):
                         coefs=params['coefs'],
                         log=log
                     )
+                    acc = torch.mean(actual == pred)
+                    print(f"Train acc at iteration {i}: acc")
             elif epoch < params['num_warm_epochs']:
                 # train the prototypes without modifying the backbone
                 tnt.warm_only(model=ppnet_multi, log=log)
