@@ -410,6 +410,9 @@ for trial in range(1):
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
                 print(f"Retraining last layer: ")
+                # Set the lr to the original lr
+                for param_group in last_layer_optimizer.param_groups:
+                    param_group['lr'] = params['last_layer_optimizer_lr']
                 for i in range(20):
                     if i == 0:
                         for param_group in last_layer_optimizer.param_groups:
@@ -493,8 +496,17 @@ for trial in range(1):
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
                 print(f"Retraining last layer")
-                for i in tqdm(range(20)): # took 11
-                    _, _, _ = tnt.train(
+                for i in range(20):
+                    if i == 0:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] *= 10
+                    elif i == 10:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 10
+                    elif i == 15:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 10
+                    actual, pred, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
                         optimizer=last_layer_optimizer,
@@ -502,6 +514,8 @@ for trial in range(1):
                         coefs=params['coefs'],
                         log=log
                     )
+                    acc = torch.mean(actual == pred)
+                    print(f"Train acc at iteration {i}: acc")
 
                 # Get the final model validation and test scores
                 print(f"Getting final validation and test accuracy after training.")
