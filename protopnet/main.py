@@ -316,7 +316,7 @@ for trial in range(1):
         'warm_optimizer_lrs': [{
             'prototype_vectors':    0.0007, #random.uniform(0.0001, 0.001) # 4e-2
         }], 
-        'last_layer_optimizer_lr':  [0.0065], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'last_layer_optimizer_lr':  [0.01], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_epochs_gap':          [6], # 17 #random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [10], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
