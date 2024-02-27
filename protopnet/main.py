@@ -323,8 +323,8 @@ for trial in range(1):
             latent_weight=params['latent_weight'],
         )
         ppnet = ppnet.cuda()
-        ppnet_multi = torch.nn.DataParallel(ppnet) # uncomment?
-        # ppnet_multi = ppnet
+        # ppnet_multi = torch.nn.DataParallel(ppnet) # uncomment?
+        ppnet_multi = ppnet
         class_specific = True
 
         # define optimizer
