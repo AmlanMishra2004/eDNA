@@ -386,7 +386,7 @@ for trial in range(1):
                                     'lr': params['last_layer_optimizer_lr']}]
         last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
 
-        for epoch in range(30_000):
+        for epoch in tqdm(range(30_000)):
             
             if epoch == 0:
                 for param_group in warm_optimizer.param_groups:
@@ -414,7 +414,7 @@ for trial in range(1):
                 # Set the last layer lr to the original lr
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_optimizer_lr']
-                for i in range(20):
+                for i in tqdm(range(20)):
                     if i == 0:
                         for param_group in last_layer_optimizer.param_groups:
                             param_group['lr'] *= 10
@@ -433,7 +433,7 @@ for trial in range(1):
                         log=log
                     )
                     acc = np.mean(actual == pred)
-                    print(f"Train acc at iteration {i}: acc")
+                    print(f"Train acc at iteration {i}: {acc}")
             elif epoch < params['num_warm_epochs']:
                 # train the prototypes without modifying the backbone
                 tnt.warm_only(model=ppnet_multi, log=log)
@@ -500,7 +500,7 @@ for trial in range(1):
                 # Set the last layer lr to the original lr
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_optimizer_lr']
-                for i in range(20):
+                for i in tqdm(range(20)):
                     if i == 0:
                         for param_group in last_layer_optimizer.param_groups:
                             param_group['lr'] *= 10
@@ -519,7 +519,7 @@ for trial in range(1):
                         log=log
                     )
                     acc = np.mean(actual == pred)
-                    print(f"Train acc at iteration {i}: acc")
+                    print(f"Train acc at iteration {i}: {acc}")
 
                 # Get the final model validation and test scores
                 print(f"Getting final validation and test accuracy after training.")
