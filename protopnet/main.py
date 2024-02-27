@@ -411,6 +411,15 @@ for trial in range(1):
                 tnt.last_only(model=ppnet_multi, log=log)
                 print(f"Retraining last layer: ")
                 for i in tqdm(range(20)):
+                    if i == 0:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] *= 10
+                    elif i == 10:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 10
+                    elif i == 15:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 10
                     _, _, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
@@ -467,7 +476,7 @@ for trial in range(1):
             #     # give up on testing the model
             #     print("giving up on achieving desired accuracy")
             #     break
-            if epoch >= 55 or val_acc >= 0.965: 
+            if epoch >= 25 or val_acc >= 0.99: 
                 print(f"Early stopping after epoch {epoch+1}.\n"
                     f"Final validation accuracy before push: {val_acc*100}%")
                 print(f"Pushing prototypes since finished training")
