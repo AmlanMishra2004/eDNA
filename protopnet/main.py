@@ -284,7 +284,7 @@ for trial in range(1):
     #     }], 
     #     'last_layer_optimizer_lr':  [0.00065], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
     #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-    #     'push_epochs_gap':          [10, 12, 14], # 17 #random.randint(10, 20)# 1_000_000 # not set
+    #     'push_gap':          [10, 12, 14], # 17 #random.randint(10, 20)# 1_000_000 # not set
     #     'push_start':               [10, 15, 20, 25, 30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
     #     # BELOW IS UNUSED
     #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
@@ -307,19 +307,16 @@ for trial in range(1):
         'weight_decay':             [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-        'coefs': [{ # weighting of different training losses
-            'crs_ent':              1,
-            'clst':                 1*12*-0.8,
-            'sep':                  1*30*0.08,
-            'l1':                   1e-3,
-        }],
-        'warm_optimizer_lrs': [{
-            'prototype_vectors':    0.0007, #random.uniform(0.0001, 0.001) # 4e-2
-        }], 
+        'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
+        'clst_weight':              [1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+        'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
+        'l1_weight':                [1e-3],
+        'warm_ptype_lr':            [0.0007], #random.uniform(0.0001, 0.001) # 4e-2 
         'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_epochs_gap':          [11], # 17 #random.randint(10, 20)# 1_000_000 # not set
+        'push_gap':                 [11], # 17 #random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [10], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'num_pushes':               [1,2,3],
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -341,6 +338,12 @@ for trial in range(1):
         for key, value in params.items():
             print(f"{key}: {value}")
         print('\n\n')
+        params['coefs'] = {
+            'crs_ent': params['crs_ent_weight'],
+            'clst': params['clst_weight'],
+            'sep': params['sep_weight'],
+            'l1': params['l1_weight'],
+        }
         # print(params['num_warm_epochs'])
         # pause = input("pause")
 
@@ -377,7 +380,7 @@ for trial in range(1):
 
         warm_optimizer_specs = [
             {'params': ppnet.prototype_vectors,
-            'lr': params['warm_optimizer_lrs']['prototype_vectors']}
+            'lr': params['warm_ptype_lr']}
         ]
         warm_optimizer = torch.optim.Adam(warm_optimizer_specs)
         # after step-size epochs, the lr is multiplied by gamma
@@ -387,85 +390,31 @@ for trial in range(1):
         last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(),
                                     'lr': params['last_layer_optimizer_lr']}]
         last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
+        # if start_push=17, push_gap=11, num_pushes=0,1,...,4
+        # push 17(DONE)                                      17 + 0*11
+        # push 17, push 22(DONE)                             17 + 1*11
+        # push 17, push 22, push 33(DONE)                    17 + 2*11
+        # push 17, push 22, push 33, push 44(DONE)           17 + 3*11
+        # push 17, push 22, push 33, push 44, push 55(DONE)  17 + 4*11        
 
 # TODO:
 # cluster should be larger than separation. if it is lower, then it will destroy on the push
 # modify cluster and separation, and print it out
         
+        end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']
+        
         for epoch in tqdm(range(30_000)):
-            
+
             if epoch == 0:
                 for param_group in warm_optimizer.param_groups:
                     param_group['lr'] *= 10
             elif epoch == 10:
                 for param_group in warm_optimizer.param_groups:
-                    param_group['lr'] /= 20
+                    param_group['lr'] /= 10
             elif epoch == 20:
                 for param_group in warm_optimizer.param_groups:
-                    param_group['lr'] /= 20
+                    param_group['lr'] /= 10
 
-            if epoch >= params['push_start'] and (epoch - params['push_start']) % params['push_epochs_gap'] == 0:
-                # Push epoch
-                push_prototypes(
-                    pushloader, # pytorch dataloader (must be unnormalized in [0,1])
-                    prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
-                    preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
-                    epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
-                    log=log
-                )
-                # After pushing, retrain the last layer to produce good results again.
-                tnt.last_only(model=ppnet_multi, log=log)
-                print(f"Retraining last layer: ")
-                # Set the last layer lr to the original lr
-                for param_group in last_layer_optimizer.param_groups:
-                    param_group['lr'] = params['last_layer_optimizer_lr']
-                for i in tqdm(range(20)):
-                    if i == 0:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] *= 10
-                    elif i == 10:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 10
-                    elif i == 15:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 10
-                    actual, pred, _ = tnt.train(
-                        model=ppnet_multi,
-                        dataloader=trainloader,
-                        optimizer=last_layer_optimizer,
-                        class_specific=class_specific,
-                        coefs=params['coefs'],
-                        log=log
-                    )
-                    acc = np.mean(actual == pred)
-                    print(f"Train acc at iteration {i}: {acc}")
-            elif epoch < params['num_warm_epochs']:
-                # train the prototypes without modifying the backbone
-                tnt.warm_only(model=ppnet_multi, log=log)
-                _, _, ptype_results = tnt.train(
-                    model=ppnet_multi,
-                    dataloader=trainloader,
-                    optimizer=warm_optimizer,
-                    scheduler=warm_lr_scheduler,
-                    class_specific=class_specific,
-                    coefs=params['coefs'],
-                    log=log
-                )
-                print(f"Prototype results: {ptype_results}")
-            else:
-                # train the prototypes and the backbone
-                tnt.joint(model=ppnet_multi, log=log)
-                _, _, ptype_results = tnt.train(
-                    model=ppnet_multi,
-                    dataloader=trainloader,
-                    optimizer=joint_optimizer,
-                    scheduler=joint_lr_scheduler,
-                    class_specific=class_specific,
-                    coefs=params['coefs'],
-                    log=log
-                )   
-                print(f"Prototype results: {ptype_results}")
             # print(f"Calculating validation accuracy for epoch")
             val_actual, val_predicted, val_ptype_results  = tnt.test(
                 model=ppnet_multi,
@@ -477,20 +426,16 @@ for trial in range(1):
             # warnings.filterwarnings("ignore")
             val_acc = metrics.accuracy_score(val_actual, val_predicted)
             # warnings.filterwarnings("default")
-
             early_stopper(val_acc)
-            print(f"Val acc at epoch {epoch}: {val_acc}")
-            # if val_acc > 0.3:
-            #     print(f"Val acc at epoch {epoch}: {val_acc}")
-            # if early_stopper.stop:
-
+            print(f"Val acc before epoch {epoch}: {val_acc}")
+            
             # peaked around epoch [38*, 58, 73]
-
             # if epoch >= 55: # 45, expected: 38
             #     # give up on testing the model
             #     print("giving up on achieving desired accuracy")
             #     break
-            if epoch >= 31 or val_acc >= 0.99: 
+            # if epoch >= 31 or val_acc >= 0.99: 
+            if epoch == end_epoch:
                 print(f"Early stopping after epoch {epoch+1}.\n"
                     f"Final validation accuracy before push: {val_acc*100}%")
                 print(f"Pushing prototypes since finished training")
@@ -502,6 +447,9 @@ for trial in range(1):
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log
                 )
+                print(f"Evaluating after push")
+                # TODO: evaluate on train, find aggregate sep and cluster loss
+
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
                 print(f"Retraining last layer")
@@ -527,7 +475,7 @@ for trial in range(1):
                         log=log
                     )
                     acc = np.mean(actual == pred)
-                    print(f"Train acc at iteration {i}: {acc}")
+                    print(f"\tTrain acc at iteration {i}: {acc}")
 
                 # Get the final model validation and test scores
                 print(f"Getting final validation and test accuracy after training.")
@@ -570,6 +518,9 @@ for trial in range(1):
                 print(f"Final test macro f1-score: {test_m_f1}")
                 print(f"Final test micro accuracy: {test_acc}")
 
+                print(f"Final val prototype results: {val_ptype_results}")
+                print(f"Final test prototype results: {test_ptype_results}")
+
                 results = {
                     # Results
                     'val_macro_f1-score': val_m_f1,
@@ -606,10 +557,7 @@ for trial in range(1):
                     'latent_weight': params['latent_weight'],
                     # joint is not used currently
                     'joint_features_lr': params['joint_optimizer_lrs']['features'],
-                    'joint_add_on_layers_lr': -1,
                     'joint_ptypes_lr': params['joint_optimizer_lrs']['prototype_vectors'],
-                    # only warm is used
-                    'warm_add_on_layers_lr': -1,
                     'warm_ptypes_lr': params['warm_optimizer_lrs']['prototype_vectors'],
                     'last_layer_optimizer_lr': params['last_layer_optimizer_lr'],
                     'weight_decay': params['weight_decay'],
@@ -620,8 +568,9 @@ for trial in range(1):
                     'separation_weight': params['coefs']['sep'],
                     'l1_weight': params['coefs']['l1'],
                     'num_warm_epochs': params['num_warm_epochs'],
-                    'push_epochs_gap': params['push_epochs_gap'],
+                    'push_gap': params['push_gap'],
                     'push_start': params['push_start'],
+                    'num_pushes': params['num_pushes'],
 
                     # Static Variables
                     'seq_count_thresh': config['seq_count_thresh'],           
@@ -648,10 +597,77 @@ for trial in range(1):
                     results,
                     compare_cols='ppn',
                     model=ppnet_multi,
-                    filename='ppnresults_gridsearch_2_27_24.csv',
+                    filename='ppnresults_gridsearch_3_2_24.csv',
                     save_model_dir='saved_ppn_models'
                 )
                 break # for early stopping
+
+            elif epoch >= params['push_start'] and (epoch - params['push_start']) % params['push_gap'] == 0:
+                # Push epoch
+                push_prototypes(
+                    pushloader, # pytorch dataloader (must be unnormalized in [0,1])
+                    prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
+                    preprocess_input_function=None, # normalize if needed
+                    root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
+                    epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
+                    log=log
+                )
+                print(f"Evaluating after push")
+                # TODO: evaluate on train, find aggregate sep and cluster loss
+
+                # After pushing, retrain the last layer to produce good results again.
+                tnt.last_only(model=ppnet_multi, log=log)
+                print(f"Retraining last layer: ")
+                # Set the last layer lr to the original lr
+                for param_group in last_layer_optimizer.param_groups:
+                    param_group['lr'] = params['last_layer_optimizer_lr']
+                for i in tqdm(range(20)):
+                    if i == 0:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] *= 10
+                    elif i == 10:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 10
+                    elif i == 15:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 10
+                    actual, pred, _ = tnt.train(
+                        model=ppnet_multi,
+                        dataloader=trainloader,
+                        optimizer=last_layer_optimizer,
+                        class_specific=class_specific,
+                        coefs=params['coefs'],
+                        log=log
+                    )
+                    acc = np.mean(actual == pred)
+                    print(f"\tTrain acc at iteration {i}: {acc}")
+            elif epoch < params['num_warm_epochs']:
+                # train the prototypes without modifying the backbone
+                tnt.warm_only(model=ppnet_multi, log=log)
+                _, _, ptype_results = tnt.train(
+                    model=ppnet_multi,
+                    dataloader=trainloader,
+                    optimizer=warm_optimizer,
+                    scheduler=warm_lr_scheduler,
+                    class_specific=class_specific,
+                    coefs=params['coefs'],
+                    log=log
+                )
+                print(f"Prototype results: {ptype_results}")
+            else:
+                # train the prototypes and the backbone
+                tnt.joint(model=ppnet_multi, log=log)
+                _, _, ptype_results = tnt.train(
+                    model=ppnet_multi,
+                    dataloader=trainloader,
+                    optimizer=joint_optimizer,
+                    scheduler=joint_lr_scheduler,
+                    class_specific=class_specific,
+                    coefs=params['coefs'],
+                    log=log
+                )   
+                print(f"Prototype results: {ptype_results}")
+            
 
         # end of training and testing for given model
         del ppnet
