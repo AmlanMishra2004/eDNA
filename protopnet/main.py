@@ -347,13 +347,13 @@ for trial in range(1):
         # 'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
         'warm_ptype_lr':            [0.0007], #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_optimizer_lr':  [0.01, 0.005, 0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'last_layer_optimizer_lr':  [0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005, 0.00001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [11], # 17 #random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [10], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [0,1,2,3],
+        'num_pushes':               [0], # [0,1,2,3], # number of push epochs, excluding final push
         # BELOW IS UNUSED
-        'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+        'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set
         'joint_optimizer_lrs': [{ # learning rates for the different stages
             'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
             'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
@@ -638,7 +638,7 @@ for trial in range(1):
                 break # for early stopping
 
             elif epoch >= params['push_start'] and (epoch - params['push_start']) % params['push_gap'] == 0:
-                # Push epoch
+                print(f"Push epoch")
                 push_prototypes(
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
@@ -677,6 +677,7 @@ for trial in range(1):
                     acc = np.mean(actual == pred)
                     print(f"\tTrain acc at iteration {i}: {acc}")
             elif epoch < params['num_warm_epochs']:
+                print(f"Train epoch")
                 # train the prototypes without modifying the backbone
                 tnt.warm_only(model=ppnet_multi, log=log)
                 _, _, ptype_results = tnt.train(
