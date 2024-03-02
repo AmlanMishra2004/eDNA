@@ -294,7 +294,40 @@ for trial in range(1):
     #     }]
     # }
 
-    # search 2/27/24
+    # # search 2/27/24
+    # # These two are also hyperparameters. Feel free to add more values to try.
+    # num_ptypes_per_class = [2] #random.randint(1, 3) # not set
+    # ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    # hyperparameters = {    
+    #     # comments after the line indicate jon's original settings
+    #     # if the settings were not applicable, I write "not set".
+
+    #     'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
+    #     'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+    #     'weight_decay':             [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+    #     'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+    #     'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    #     'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
+    #     'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+    #     'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
+    #     # 'clst_weight':              [1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+    #     # 'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
+    #     'l1_weight':                [1e-3],
+    #     'warm_ptype_lr':            [0.0007], #random.uniform(0.0001, 0.001) # 4e-2 
+    #     'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
+    #     'push_gap':                 [11], # 17 #random.randint(10, 20)# 1_000_000 # not set
+    #     'push_start':               [10], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+    #     'num_pushes':               [0,1,2,3],
+    #     # BELOW IS UNUSED
+    #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    #     'joint_optimizer_lrs': [{ # learning rates for the different stages
+    #         'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
+    #         'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
+    #     }]
+    # }
+
+    # search 3/2/24
     # These two are also hyperparameters. Feel free to add more values to try.
     num_ptypes_per_class = [2] #random.randint(1, 3) # not set
     ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
@@ -314,11 +347,11 @@ for trial in range(1):
         # 'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
         'warm_ptype_lr':            [0.0007], #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'last_layer_optimizer_lr':  [0.01, 0.005, 0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [11], # 17 #random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [10], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [1,2,3],
+        'num_pushes':               [0,1,2,3],
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -459,15 +492,15 @@ for trial in range(1):
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_optimizer_lr']
                 for i in tqdm(range(20)):
-                    if i == 0:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] *= 10
-                    elif i == 10:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 10
-                    elif i == 15:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 10
+                    # if i == 0:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] *= 10
+                    # elif i == 10:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] /= 10
+                    # elif i == 15:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] /= 10
                     actual, pred, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
@@ -560,7 +593,7 @@ for trial in range(1):
                     # joint is not used currently
                     'joint_features_lr': params['joint_optimizer_lrs']['features'],
                     'joint_ptypes_lr': params['joint_optimizer_lrs']['prototype_vectors'],
-                    'warm_ptypes_lr': params['warm_optimizer_lrs']['prototype_vectors'],
+                    'warm_ptypes_lr': params['warm_ptype_lr'],
                     'last_layer_optimizer_lr': params['last_layer_optimizer_lr'],
                     'weight_decay': params['weight_decay'],
                     'joint_lr_step_size': params['joint_lr_step_size'],
@@ -624,15 +657,15 @@ for trial in range(1):
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_optimizer_lr']
                 for i in tqdm(range(20)):
-                    if i == 0:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] *= 10
-                    elif i == 10:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 10
-                    elif i == 15:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 10
+                    # if i == 0:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] *= 10
+                    # elif i == 10:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] /= 10
+                    # elif i == 15:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] /= 10
                     actual, pred, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
