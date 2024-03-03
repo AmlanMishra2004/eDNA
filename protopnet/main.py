@@ -341,8 +341,8 @@ for trial in range(1):
         'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
-        'clst_weight':              [32*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-        'sep_weight':               [1/4*30*0.08], # OG: 1*30*0.08 go as high as 50x
+        'clst_weight':              [-4*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+        'sep_weight':               [-4*30*0.08], # OG: 1*30*0.08 go as high as 50x
         # 'clst_weight':              [1/32*12*-0.8, 1/16*12*-0.8, 1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         # 'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [0.1, 0.01, 0.001, 0.0001], # 1e-3
