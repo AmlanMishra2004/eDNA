@@ -482,8 +482,17 @@ for trial in range(1):
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log
                 )
-                print(f"Evaluating after push")
-                # TODO: evaluate on train, find aggregate sep and cluster loss
+                print(f"Evaluating after push, before retraining last layer")
+                # evaluate on train, find aggregate sep and cluster loss
+                train_actual, train_predicted, train_ptype_results = tnt.test(
+                    model=ppnet_multi,
+                    dataloader=trainloader,
+                    class_specific=class_specific,
+                    log=log
+                )
+                acc = np.mean(train_actual == train_predicted)
+                print(f"\tTrain acc after push, before retraining last layer: {acc}")
+                print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
 
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
@@ -647,8 +656,17 @@ for trial in range(1):
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log
                 )
-                print(f"Evaluating after push")
-                # TODO: evaluate on train, find aggregate sep and cluster loss
+                print(f"Evaluating after push, before retraining last layer")
+                # evaluate on train, find aggregate sep and cluster loss
+                train_actual, train_predicted, train_ptype_results = tnt.test(
+                    model=ppnet_multi,
+                    dataloader=trainloader,
+                    class_specific=class_specific,
+                    log=log
+                )
+                acc = np.mean(train_actual == train_predicted)
+                print(f"\tTrain acc after push, before retraining last layer: {acc}")
+                print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
 
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
