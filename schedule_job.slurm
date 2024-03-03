@@ -5,9 +5,9 @@
 #SBATCH --nodes=1			# Run on 1 node
 #SBATCH --ntasks=1 			# One process (shared-memory)
 #SBATCH --partition=grtx		# Select partition
-#SBATCH --mem=75gb			# Job memory request
+#SBATCH --mem=100gb			# Job memory request
 #SBATCH --time=72:00:00		# Time limit, hrs:min:sec
-#SBATCH --gres=gpu:3			# Request 1 gpu            
+#SBATCH --gres=gpu:1			# Request 1 gpu            
 #SBATCH --output=out.%j.log		# Standard output and error log
 
 # Load versions of modules
