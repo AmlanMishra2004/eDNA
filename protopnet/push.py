@@ -21,7 +21,8 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
                     prototype_self_act_filename_prefix=None,
                     save_prototype_class_identity=True, # which class the prototype image comes from
                     log=print,
-                    prototype_activation_function_in_numpy=None):
+                    prototype_activation_function_in_numpy=None,
+                    sanity_check=False):
 
     prototype_network_parallel.eval()
     # log('\tpush')
@@ -114,6 +115,32 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     # prototype_network_parallel.cuda()
     # end = time.time()
     # log('\tpush time: \t{0}'.format(end -  start))
+
+    if sanity_check:
+        for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
+            '''
+            start_index_of_search keeps track of the index of the image
+            assigned to serve as prototype
+            '''
+            start_index_of_search_batch = push_iter * search_batch_size
+
+            update_prototypes_on_batch(search_batch_input,
+                                    start_index_of_search_batch,
+                                    prototype_network_parallel,
+                                    global_max_proto_act,
+                                    global_max_fmap_patches,
+                                    proto_rf_boxes,
+                                    proto_bound_boxes,
+                                    class_specific=class_specific,
+                                    search_y=search_y,
+                                    num_classes=num_classes,
+                                    preprocess_input_function=preprocess_input_function,
+                                    prototype_layer_stride=prototype_layer_stride,
+                                    dir_for_saving_prototypes=proto_epoch_dir,
+                                    prototype_seq_filename_prefix=prototype_seq_filename_prefix,
+                                    prototype_self_act_filename_prefix=prototype_self_act_filename_prefix,
+                                    prototype_activation_function_in_numpy=prototype_activation_function_in_numpy)
+        print(f"global_max_proto_act: {global_max_proto_act}")
 
 
 def save_self_activations(dir_for_saving_prototypes, 

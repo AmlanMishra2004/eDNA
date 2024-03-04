@@ -285,8 +285,9 @@ class PPNet(nn.Module):
         # concat = torch.cat((conv_output, avg_pooled_x), dim=-2)
         # print(f"In push_forward: Shape of concat: {concat.shape}")
         # print(f"In push_forward: Shape of self.prototype_vectors: {self.prototype_vectors.shape}")
-        similarities = self.cosine_similarity(concat, self.prototype_vectors)
-        return concat, similarities
+        # similarities = self.cosine_similarity(concat, self.prototype_vectors)
+        return concat, self.prototype_distances(x)
+        # return concat, similarities
 
     def prune_prototypes(self, prototypes_to_prune):
         '''

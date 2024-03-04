@@ -327,7 +327,40 @@ for trial in range(1):
     #     }]
     # }
 
-    # search 3/2/24
+    # # search 3/2/24
+    # # These two are also hyperparameters. Feel free to add more values to try.
+    # num_ptypes_per_class = [2] #random.randint(1, 3) # not set
+    # ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    # hyperparameters = {    
+    #     # comments after the line indicate jon's original settings
+    #     # if the settings were not applicable, I write "not set".
+
+    #     'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
+    #     'latent_weight':            [0.7, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+    #     'weight_decay':             [0.0001, 0.001, 0.01, 0.1], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+    #     'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+    #     'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    #     'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
+    #     # 'clst_weight':              [-4*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+    #     # 'sep_weight':               [-4*30*0.08], # OG: 1*30*0.08 go as high as 50x
+    #     'clst_weight':              [1/32*12*-0.8, 1/16*12*-0.8, 1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+    #     'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
+    #     'l1_weight':                [0.1, 0.01, 0.001, 0.0001], # 1e-3
+    #     'warm_ptype_lr':            [0.005, 0.001, 0.0005, 0.0001], #random.uniform(0.0001, 0.001) # 4e-2 
+    #     'last_layer_optimizer_lr':  [0.005, 0.001, 0.0005, 0.0001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
+    #     'push_gap':                 [11, 17], # 17 #random.randint(10, 20)# 1_000_000 # not set
+    #     'push_start':               [10, 20, 30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+    #     'num_pushes':               [0,1,2,3], # [0,1,2,3], # number of push epochs, excluding final push
+    #     # BELOW IS UNUSED
+    #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set
+    #     'joint_optimizer_lrs': [{ # learning rates for the different stages
+    #         'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
+    #         'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
+    #     }]
+    # }
+
+    # sanity check 3/4/24
     # These two are also hyperparameters. Feel free to add more values to try.
     num_ptypes_per_class = [2] #random.randint(1, 3) # not set
     ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
@@ -336,24 +369,24 @@ for trial in range(1):
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0.7, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
-        'weight_decay':             [0.0001, 0.001, 0.01, 0.1], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+        'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'weight_decay':             [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
-        # 'clst_weight':              [-4*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-        # 'sep_weight':               [-4*30*0.08], # OG: 1*30*0.08 go as high as 50x
-        'clst_weight':              [1/32*12*-0.8, 1/16*12*-0.8, 1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-        'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
-        'l1_weight':                [0.1, 0.01, 0.001, 0.0001], # 1e-3
-        'warm_ptype_lr':            [0.005, 0.001, 0.0005, 0.0001], #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_optimizer_lr':  [0.005, 0.001, 0.0005, 0.0001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+        'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
+        # 'clst_weight':              [1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+        # 'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
+        'l1_weight':                [1e-3],
+        'warm_ptype_lr':            [0.0007], #random.uniform(0.0001, 0.001) # 4e-2 
+        'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_gap':                 [11, 17], # 17 #random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [10, 20, 30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [0,1,2,3], # [0,1,2,3], # number of push epochs, excluding final push
+        'push_gap':                 [11], # 17 #random.randint(10, 20)# 1_000_000 # not set
+        'push_start':               [1], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'num_pushes':               [1],
         # BELOW IS UNUSED
-        'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set
+        'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
             'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
             'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
@@ -654,8 +687,10 @@ for trial in range(1):
                     preprocess_input_function=None, # normalize if needed
                     root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
-                    log=log
+                    log=log,
+                    sanity_check=True
                 )
+                pause = input("Pause")
                 print(f"Evaluating after push, before retraining last layer")
                 # evaluate on train, find aggregate sep and cluster loss
                 train_actual, train_predicted, train_ptype_results = tnt.test(
