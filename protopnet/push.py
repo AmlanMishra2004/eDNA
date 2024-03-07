@@ -323,7 +323,6 @@ def update_prototypes_on_batch(search_batch_input,
             if fmap_height_start_index < 0:
                 print("fmap_height_start_index is < 0")
                 pause = input("Pause")
-                # print(f"fmap_height_start_index is < 0")
                 # Handle zero padding
                 batch_max_fmap_patch_j = protoL_input_[seq_index_in_batch,
                                                     :,
@@ -335,7 +334,6 @@ def update_prototypes_on_batch(search_batch_input,
             elif fmap_height_end_index > protoL_input_.shape[-1]:
                 print("fmap_height_start_index is > protoL_input_.shape[-1]")
                 pause = input("Pause")
-                # print(f"fmap_height_end_index is > protoL_input_.shape[-1]")
 
                 # Handle zero padding
                 batch_max_fmap_patch_j = protoL_input_[seq_index_in_batch,
@@ -347,7 +345,6 @@ def update_prototypes_on_batch(search_batch_input,
             else:
                 print("else")
                 pause = input("Pause")
-                # print(f"else")
                 batch_max_fmap_patch_j = protoL_input_[
                     seq_index_in_batch,
                     :,
