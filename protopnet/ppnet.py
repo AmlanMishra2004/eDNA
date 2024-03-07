@@ -43,26 +43,29 @@ class PPNet(nn.Module):
                 #  proto_layer_rf_info,
                  num_classes, init_weights=True,
                  prototype_activation_function='log',
-                 add_on_layers_type='bottleneck',
                  latent_weight=0.8):
 
         super(PPNet, self).__init__()
         self.sequence_length = sequence_length
         self.prototype_shape = prototype_shape
+        assert prototype_shape[2] % 2 != 0, \
+            "Error: Prototype length must be odd, since it needs a center."
         self.num_prototypes = prototype_shape[0]
         self.num_classes = num_classes
         self.epsilon = 1e-4
         assert latent_weight >= 0 and latent_weight <= 1, \
             "Error: Latent weight must be in [0, 1]"
+        
         self.latent_weight = latent_weight
         self.prototype_activation_function = prototype_activation_function
-        '''
-        Here we are initializing the class identities of the prototypes.
-        Without domain specific knowledge we allocate the same number of
-        prototypes for each class.
-        '''
+
+        # Here we are initializing the class identities of the prototypes.
+        # Without domain specific knowledge we allocate the same number of
+        # prototypes for each class.
+
         assert(self.num_prototypes % self.num_classes == 0)
-        # a one-hot indication matrix for each prototype's class identity
+        # a one-hot indication matrix for each prototype's class identity, 
+        # sam: ex. [512, 156], tells you how well each prototype matches to each class?
         self.prototype_class_identity = torch.zeros(
             self.num_prototypes,
             self.num_classes
@@ -70,6 +73,8 @@ class PPNet(nn.Module):
         num_prototypes_per_class = self.num_prototypes // self.num_classes
         for j in range(self.num_prototypes):
             self.prototype_class_identity[j, j // num_prototypes_per_class] = 1
+        print(f"prototype_class_identity: \n{self.prototype_class_identity}")
+        pause = input("pause")
         # self.proto_layer_rf_info = proto_layer_rf_info
         self.features = features
 
@@ -369,8 +374,7 @@ class PPNet(nn.Module):
 # prototype_shape = (num prototypes, input channel, spatial dim, spatial dim)
 def construct_PPNet(features, pretrained=True, sequence_length=60,
                     prototype_shape=(2*156, 512, 1), num_classes=156,
-                    prototype_activation_function='log',
-                    add_on_layers_type='identity', latent_weight=0.8):
+                    prototype_activation_function='log', latent_weight=0.8):
     # features = base_architecture_to_features[base_architecture](pretrained=pretrained)
     # layer_filter_sizes, layer_strides, layer_paddings = features.conv_info()
     # proto_layer_rf_info = compute_proto_layer_rf_info_v2(sequence_length=sequence_length,
@@ -385,5 +389,4 @@ def construct_PPNet(features, pretrained=True, sequence_length=60,
                  num_classes=num_classes,
                  init_weights=True,
                  prototype_activation_function=prototype_activation_function,
-                 add_on_layers_type=add_on_layers_type, 
                  latent_weight=latent_weight)
