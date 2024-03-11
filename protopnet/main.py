@@ -108,6 +108,8 @@ elif not config['augment_test_data']:
     config['testRandomInsertions'] = [0,0]
     config['testRandomDeletions'] = [0,0]
     config['testMutationRate'] = 0
+assert config['seq_target_length'] % 2 != 0, \
+    "Error: sequence length must be even"
 
 
 # allow the user to call the program with command line gpu argument
@@ -465,10 +467,10 @@ for trial in range(1):
         # push 17, push 22, push 33, push 44(DONE)           17 + 3*11
         # push 17, push 22, push 33, push 44, push 55(DONE)  17 + 4*11        
 
-# TODO:
-# cluster should be larger than separation. if it is lower, then it will destroy accuracy on the push
-# modify cluster and separation, and print it out
-        
+        # TODO:
+        # cluster should be larger than separation. if it is lower, then it
+        # will destroy accuracy on the push
+          
         end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']
         
         for epoch in tqdm(range(30_000)):

@@ -38,8 +38,7 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
         # torch.enable_grad() has no effect outside of no_grad()
         grad_req = torch.enable_grad() if is_train else torch.no_grad()
         with grad_req:
-            # nn.Module has implemented __call__() function
-            # so no need to call .forward
+            # this calls model.forward()
             output, max_similarities = model(input)
 
             # compute loss
@@ -209,8 +208,6 @@ def test(model, dataloader, class_specific=False, log=print):
 def last_only(model, log=print):
     for p in model.features.parameters():
         p.requires_grad = False
-    for p in model.add_on_layers.parameters():
-        p.requires_grad = False
     model.prototype_vectors.requires_grad = False
     for p in model.last_layer.parameters():
         p.requires_grad = True
@@ -221,8 +218,6 @@ def last_only(model, log=print):
 def warm_only(model, log=print):
     for p in model.features.parameters():
         p.requires_grad = False
-    for p in model.add_on_layers.parameters():
-        p.requires_grad = True
     model.prototype_vectors.requires_grad = True
     for p in model.last_layer.parameters():
         p.requires_grad = True
@@ -232,8 +227,6 @@ def warm_only(model, log=print):
 
 def joint(model, log=print):
     for p in model.features.parameters():
-        p.requires_grad = True
-    for p in model.add_on_layers.parameters():
         p.requires_grad = True
     model.prototype_vectors.requires_grad = True
     for p in model.last_layer.parameters():

@@ -739,9 +739,8 @@ def check_hyperparam_originality(results, compare_cols, filename='results.csv'):
     elif compare_cols == "ppn":
         unique_columns = [
             'num_ptypes_per_class', 'ptype_length', 'prototype_shape',
-            'ptype_activation_fn', 'add_on_layers_type', 'latent_weight', 
-            'joint_features_lr', 'joint_add_on_layers_lr', 'joint_ptypes_lr',
-            'warm_add_on_layers_lr', 'warm_ptypes_lr',
+            'ptype_activation_fn', 'latent_weight', 
+            'joint_features_lr', 'joint_ptypes_lr', 'warm_ptypes_lr',
             'last_layer_optimizer_lr', 'weight_decay', 'joint_lr_step_size', 
             'cross_entropy_weight', 'cluster_weight', 'separation_weight',
             'l1_weight', 'num_warm_epochs',

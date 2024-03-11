@@ -21,7 +21,6 @@ ppnet = ppn.construct_PPNet(
     prototype_shape=ptype_shape,
     num_classes=156,
     prototype_activation_function='log',
-    add_on_layers_type='identity',
     latent_weight=0.8,
 )
 
