@@ -81,13 +81,13 @@ class PPNet(nn.Module):
     # normalizes along each channel then returns the summed dot product
     # for each prototype
     def cosine_similarity(self, x, prototypes):
-        # Shape of X: torch.Size([64, 512, 30])
+        # Shape of X: without -8: torch.Size([64, 512, 30])(old) with: ([94, 512, 35])
         # 64 examples (in one batch), each with 512 channels and 30 sequence length
         # Shape of prototypes: torch.Size([1560, 512, 5])
         # 1560 prototypes (10 for each class), each with 512 channels and 5 sequence length
-        # print(f"In cosine_similarity()...")
-        # print(f"\tShape of X: {x.shape}") # ([94, 512, 35])
-        # print(f"\tShape of prototypes: {prototypes.shape}") # ([312, 512, 25])
+        print(f"\nIn cosine_similarity()...")
+        print(f"\tShape of X: {x.shape}") # without -8: ([94, 512, 35]), with: ([94, 512, 35])
+        print(f"\tShape of prototypes: {prototypes.shape}") # without -8: ([312, 512, 25]), with: ([312, 512, 25])
         # Normalize for each position in the sequence.
         # x_normalized will have the same shape as x, but each 30-element
         # vector along the last dimension will be a unit vector. This means
@@ -106,11 +106,11 @@ class PPNet(nn.Module):
         p_normalized = prototypes / (self.epsilon + p_norm)
         p_normalized /= float(prototypes.shape[-1])**0.5
 
-        # print(f"\tShape of x_normalized: {x_normalized.shape}") # ([94, 512, 35])
-        # print(f"\tShape of p_normalized: {p_normalized.shape}") # ([312, 512, 25])
+        print(f"\tShape of x_normalized: {x_normalized.shape}") # ([94, 512, 35])
+        print(f"\tShape of p_normalized: {p_normalized.shape}") # ([312, 512, 25])
         
         similarities = F.conv1d(input=x_normalized, weight=p_normalized)
-        # print(f"Shape of similarities: {similarities.shape}")
+        print(f"\tShape of similarities: {similarities.shape}") # without -8: ([94, 312, 11]), with: ([94, 312, 11])
         # wait = input("PAUSE")
         return similarities
     

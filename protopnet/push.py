@@ -27,12 +27,14 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     prototype_network_parallel.eval()
     # log('\tpush')
 
-    start = time.time()
+    # start = time.time()
     prototype_shape = prototype_network_parallel.prototype_shape
     n_prototypes = prototype_network_parallel.num_prototypes
-    # saves the closest distance seen so far
+    # saves the closest distance seen so far for each prototype, init to -1
     global_max_proto_act = np.full(n_prototypes, -1)
     # saves the patch representation that gives the current smallest distance
+    # same as prototype_network_parallel.prototype_shape?
+    # (156*2, 512+8, 25)
     global_max_fmap_patches = np.zeros(
         [n_prototypes,
          prototype_shape[1],
@@ -75,22 +77,24 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
         '''
         start_index_of_search_batch = push_iter * search_batch_size
 
-        update_prototypes_on_batch(search_batch_input,
-                                   start_index_of_search_batch,
-                                   prototype_network_parallel,
-                                   global_max_proto_act,
-                                   global_max_fmap_patches,
-                                   proto_rf_boxes,
-                                   proto_bound_boxes,
-                                   class_specific=class_specific,
-                                   search_y=search_y,
-                                   num_classes=num_classes,
-                                   preprocess_input_function=preprocess_input_function,
-                                   prototype_layer_stride=prototype_layer_stride,
-                                   dir_for_saving_prototypes=proto_epoch_dir,
-                                   prototype_seq_filename_prefix=prototype_seq_filename_prefix,
-                                   prototype_self_act_filename_prefix=prototype_self_act_filename_prefix,
-                                   prototype_activation_function_in_numpy=prototype_activation_function_in_numpy)
+        update_prototypes_on_batch(
+            search_batch_input,
+            start_index_of_search_batch,
+            prototype_network_parallel,
+            global_max_proto_act,
+            global_max_fmap_patches,
+            proto_rf_boxes,
+            proto_bound_boxes,
+            class_specific=class_specific,
+            search_y=search_y,
+            num_classes=num_classes,
+            preprocess_input_function=preprocess_input_function,
+            prototype_layer_stride=prototype_layer_stride,
+            dir_for_saving_prototypes=proto_epoch_dir,
+            prototype_seq_filename_prefix=prototype_seq_filename_prefix,
+            prototype_self_act_filename_prefix=prototype_self_act_filename_prefix,
+            prototype_activation_function_in_numpy=prototype_activation_function_in_numpy
+        )
 
     # if proto_epoch_dir != None and proto_bound_boxes_filename_prefix != None:
     #     np.save(os.path.join(proto_epoch_dir, proto_bound_boxes_filename_prefix + '-receptive_field' + str(epoch_number) + '.npy'),
@@ -124,22 +128,24 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
             '''
             start_index_of_search_batch = push_iter * search_batch_size
 
-            update_prototypes_on_batch(search_batch_input,
-                                    start_index_of_search_batch,
-                                    prototype_network_parallel,
-                                    global_max_proto_act,
-                                    global_max_fmap_patches,
-                                    proto_rf_boxes,
-                                    proto_bound_boxes,
-                                    class_specific=class_specific,
-                                    search_y=search_y,
-                                    num_classes=num_classes,
-                                    preprocess_input_function=preprocess_input_function,
-                                    prototype_layer_stride=prototype_layer_stride,
-                                    dir_for_saving_prototypes=proto_epoch_dir,
-                                    prototype_seq_filename_prefix=prototype_seq_filename_prefix,
-                                    prototype_self_act_filename_prefix=prototype_self_act_filename_prefix,
-                                    prototype_activation_function_in_numpy=prototype_activation_function_in_numpy)
+            global_max_proto_act = update_prototypes_on_batch(
+                search_batch_input,
+                start_index_of_search_batch,
+                prototype_network_parallel,
+                global_max_proto_act,
+                global_max_fmap_patches,
+                proto_rf_boxes,
+                proto_bound_boxes,
+                class_specific=class_specific,
+                search_y=search_y,
+                num_classes=num_classes,
+                preprocess_input_function=preprocess_input_function,
+                prototype_layer_stride=prototype_layer_stride,
+                dir_for_saving_prototypes=proto_epoch_dir,
+                prototype_seq_filename_prefix=prototype_seq_filename_prefix,
+                prototype_self_act_filename_prefix=prototype_self_act_filename_prefix,
+                prototype_activation_function_in_numpy=prototype_activation_function_in_numpy
+            )
         print(f"global_max_proto_act: {global_max_proto_act}") # should be a tensor of 1s, or 1/sqrt(25)
 
 
@@ -447,3 +453,5 @@ def update_prototypes_on_batch(search_batch_input,
                 
     if class_specific:
         del class_to_seq_index_dict
+    
+    return global_max_proto_act
