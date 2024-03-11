@@ -80,60 +80,62 @@ class PPNet(nn.Module):
     
     # normalizes along each channel then returns the summed dot product
     # for each prototype
-    # def cosine_similarity(self, x, prototypes):
-    #     # Shape of X: torch.Size([64, 512, 30])
-    #     # 64 examples (in one batch), each with 512 channels and 30 sequence length
-    #     # Shape of prototypes: torch.Size([1560, 512, 5])
-    #     # 1560 prototypes (10 for each class), each with 512 channels and 5 sequence length
-    #     # print(f"In cosine_similarity()...")
-    #     # print(f"\tShape of X: {x.shape}")
-    #     # print(f"\tShape of prototypes: {prototypes.shape}")
-    #     # Normalize for each position in the sequence.
-    #     # x_normalized will have the same shape as x, but each 30-element
-    #     # vector along the last dimension will be a unit vector. This means
-    #     # that the Euclidean norm (or length) of each of these vectors will
-    #     # be 1. The same for p_normalized.
-
-    #     # Compute L2 (euclidean) norm along each channel. (sqrt(sum(x**2 for each x)))
-    #     # Divide each element by its norm (plus self.epsilon for numerical stability)
-    #     # Divide each element by sqrt(prototype length)
-
-    #     x_norm = torch.norm(x, p=2, dim=1, keepdim=True)
-    #     x_normalized = x / (self.epsilon + x_norm)
-    #     x_normalized /= float(prototypes.shape[-1])**0.5
-
-    #     p_norm = torch.norm(prototypes, p=2, dim=1, keepdim=True)
-    #     p_normalized = prototypes / (self.epsilon + p_norm)
-    #     p_normalized /= float(prototypes.shape[-1])**0.5
-
-    #     # print(f"\tShape of x_normalized: {x_normalized.shape}")
-    #     # print(f"\tShape of p_normalized: {p_normalized.shape}")
-        
-    #     similarities = F.conv1d(input=x_normalized, weight=p_normalized)
-    #     return similarities
-    
     def cosine_similarity(self, x, prototypes):
-        # Compute the L2 norm of x and prototypes along each channel
+        # Shape of X: torch.Size([64, 512, 30])
+        # 64 examples (in one batch), each with 512 channels and 30 sequence length
+        # Shape of prototypes: torch.Size([1560, 512, 5])
+        # 1560 prototypes (10 for each class), each with 512 channels and 5 sequence length
+        # print(f"In cosine_similarity()...")
+        # print(f"\tShape of X: {x.shape}") # ([94, 512, 35])
+        # print(f"\tShape of prototypes: {prototypes.shape}") # ([312, 512, 25])
+        # Normalize for each position in the sequence.
+        # x_normalized will have the same shape as x, but each 30-element
+        # vector along the last dimension will be a unit vector. This means
+        # that the Euclidean norm (or length) of each of these vectors will
+        # be 1. The same for p_normalized.
+
+        # Compute L2 (euclidean) norm along each channel. (sqrt(sum(x**2 for each x)))
+        # Divide each element by its norm (plus self.epsilon for numerical stability)
+        # Divide each element by sqrt(prototype length)
+
         x_norm = torch.norm(x, p=2, dim=1, keepdim=True)
-        p_norm = torch.norm(prototypes, p=2, dim=1, keepdim=True)
-
-        # Normalize x and prototypes by their L2 norms
         x_normalized = x / (self.epsilon + x_norm)
+        x_normalized /= float(prototypes.shape[-1])**0.5
+
+        p_norm = torch.norm(prototypes, p=2, dim=1, keepdim=True)
         p_normalized = prototypes / (self.epsilon + p_norm)
+        p_normalized /= float(prototypes.shape[-1])**0.5
 
-        # Compute the dot product of x_normalized and p_normalized
-        dot_product = torch.sum(x_normalized * p_normalized, dim=1)
+        # print(f"\tShape of x_normalized: {x_normalized.shape}") # ([94, 512, 35])
+        # print(f"\tShape of p_normalized: {p_normalized.shape}") # ([312, 512, 25])
+        
+        similarities = F.conv1d(input=x_normalized, weight=p_normalized)
+        # print(f"Shape of similarities: {similarities.shape}")
+        # wait = input("PAUSE")
+        return similarities
+    
+    # def cosine_similarity(self, x, prototypes):
+    #     # Compute the L2 norm of x and prototypes along each channel
+    #     x_norm = torch.norm(x, p=2, dim=1, keepdim=True)
+    #     p_norm = torch.norm(prototypes, p=2, dim=1, keepdim=True)
 
-        # Compute the cosine similarity
-        cosine_similarity = dot_product / (torch.norm(x_normalized, p=2, dim=1) * torch.norm(p_normalized, p=2, dim=1) + epsilon)
+    #     # Normalize x and prototypes by their L2 norms
+    #     x_normalized = x / (self.epsilon + x_norm)
+    #     p_normalized = prototypes / (self.epsilon + p_norm)
 
-        return cosine_similarity
+    #     # Compute the dot product of x_normalized and p_normalized
+    #     dot_product = torch.sum(x_normalized * p_normalized, dim=1)
+
+    #     # Compute the cosine similarity
+    #     cosine_similarity = dot_product / (torch.norm(x_normalized, p=2, dim=1) * torch.norm(p_normalized, p=2, dim=1) + self.epsilon)
+
+    #     return cosine_similarity
 
     def prototype_distances(self, x):
         '''
         x is the raw input, (batch=64, channels=4, width=70)
         '''
-        # Run the input through the convolutional layers -> (batch=64, channels=512, width=30)
+        # Run the input through the convolutional layers -> (batch=156, channels=512, width=30)
         conv_features = self.conv_features(x)
         # avg_pooled_x = F.avg_pool1d(x, kernel_size=2, stride=2)
         # CHANGED: concatenate (stack, below) instead of average (above). Doubles the # of channels.
@@ -160,8 +162,8 @@ class PPNet(nn.Module):
         #   [1, 3, 5,..., 69],
         #   [1, 3, 5,..., 69]]]
 
-        latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors[:, :, :])
-        input_distances = self.cosine_similarity(x_stacked, self.prototype_vectors[:, :, :])
+        latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors[:, :-8, :])
+        input_distances = self.cosine_similarity(x_stacked, self.prototype_vectors[:, -8:, :])
         # latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors)
         # input_distances = self.cosine_similarity(avg_pooled_x, self.prototype_vectors[:, -4:])
         return self.latent_weight * latent_distances + (1 - self.latent_weight) * input_distances

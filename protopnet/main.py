@@ -1,27 +1,27 @@
 import os
-import shutil
+# import shutil
 
 import itertools
 import torch
 import torch.utils.data
 # import torch.utils.data.distributed
-import torchvision.transforms as transforms
-import torchvision.datasets as datasets
+# import torchvision.transforms as transforms
+# import torchvision.datasets as datasets
 from tqdm import tqdm
 from sklearn import metrics
 import warnings
 
 import argparse
-import re
+# import re
 import random
 import pandas as pd
 import torch.nn as nn
 import numpy as np
 
-from helpers import makedir
+# from helpers import makedir
 from push import push_prototypes
 import train_and_test as tnt
-from preprocess import mean, std, preprocess_input_function
+# from preprocess import mean, std, preprocess_input_function
 import sys
 from sklearn.model_selection import train_test_split
 
@@ -138,7 +138,7 @@ print(os.environ['CUDA_VISIBLE_DEVICES'])
 # prototype_self_act_filename_prefix = 'prototype-self-act'
 # proto_bound_boxes_filename_prefix = 'bb'
 
-normalize = transforms.Normalize(mean=mean, std=std) # not used in this file or any other?
+# normalize = transforms.Normalize(mean=mean, std=std) # not used in this file or any other?
 
 # Jon says: we should look into distributed sampler more carefully at torch.utils.data.distributed.DistributedSampler(train_dataset)
 
@@ -370,7 +370,7 @@ for trial in range(1):
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
 
-        'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
+        'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
         'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         'weight_decay':             [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'gamma':                    [.1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
@@ -455,8 +455,6 @@ for trial in range(1):
         warm_optimizer = torch.optim.Adam(warm_optimizer_specs)
         # after step-size epochs, the lr is multiplied by gamma
         warm_lr_scheduler = torch.optim.lr_scheduler.StepLR(warm_optimizer, step_size=params['warm_lr_step_size'], gamma=params['gamma'])
-        # print(f"WHAT YOU WANT: {params['last_layer_optimizer_lr']}")
-        # pause = input("pause")
         last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(),
                                     'lr': params['last_layer_optimizer_lr']}]
         last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)

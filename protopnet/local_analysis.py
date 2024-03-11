@@ -85,8 +85,8 @@ prototype_shape = ppnet.prototype_shape
 
 class_specific = True
 
-normalize = transforms.Normalize(mean=mean,
-                                 std=std)
+# normalize = transforms.Normalize(mean=mean,
+#                                  std=std)
 
 # load the test data and check test accuracy
 from settings import test_dir
