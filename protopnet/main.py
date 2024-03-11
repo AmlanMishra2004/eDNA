@@ -108,7 +108,7 @@ elif not config['augment_test_data']:
     config['testRandomInsertions'] = [0,0]
     config['testRandomDeletions'] = [0,0]
     config['testMutationRate'] = 0
-assert config['seq_target_length'] % 2 != 0, \
+assert config['seq_target_length'] % 2 == 0, \
     "Error: sequence length must be even"
 
 
