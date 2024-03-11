@@ -1260,7 +1260,7 @@ if __name__ == '__main__':
         X_test = test[config['seq_col']]
         y_test = test[config['species_col']]
 
-        pause = input("PAUSE")
+        # pause = input("PAUSE")
 
 
 

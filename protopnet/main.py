@@ -366,7 +366,7 @@ for trial in range(1):
     # These two are also hyperparameters. Feel free to add more values to try.
     num_ptypes_per_class = [2] #random.randint(1, 3) # not set
     ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
-    hyperparameters = {    
+    hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
 
@@ -385,7 +385,7 @@ for trial in range(1):
         'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [11], # 17 #random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [1], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_start':               [3], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'num_pushes':               [1],
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
@@ -431,7 +431,7 @@ for trial in range(1):
             latent_weight=params['latent_weight'],
         )
         ppnet = ppnet.cuda()
-        # ppnet_multi = torch.nn.DataParallel(ppnet) # uncomment?
+        # ppnet_multi = torch.nn.DataParallel(ppnet) # uncommenting breaks it
         ppnet_multi = ppnet
         class_specific = True
 
@@ -692,7 +692,7 @@ for trial in range(1):
                     log=log,
                     sanity_check=True
                 )
-                pause = input("Pause")
+                # pause = input("Pause")
                 print(f"Evaluating after push, before retraining last layer")
                 # evaluate on train, find aggregate sep and cluster loss
                 train_actual, train_predicted, train_ptype_results = tnt.test(
