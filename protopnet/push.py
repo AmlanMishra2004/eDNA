@@ -323,7 +323,7 @@ def update_prototypes_on_batch(search_batch_input,
             # retrieve the corresponding feature map patch
             seq_index_in_batch = batch_argmax_proto_act_j[0]
             fmap_height_start_index = batch_argmax_proto_act_j[1] * prototype_layer_stride
-            fmap_height_end_index = batch_argmax_proto_act_j[1] + proto_h + 1
+            fmap_height_end_index = batch_argmax_proto_act_j[1] + proto_h # + 1
             # fmap_width_start_index = batch_argmax_proto_act_j[2] * prototype_layer_stride
             # fmap_width_end_index = fmap_width_start_index + proto_w
 
