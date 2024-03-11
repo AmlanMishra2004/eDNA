@@ -147,6 +147,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
                 prototype_activation_function_in_numpy=prototype_activation_function_in_numpy
             )
         print(f"global_max_proto_act: {global_max_proto_act}") # should be a tensor of 1s, or 1/sqrt(25)
+        wait = input("PAUSE")
 
 
 def save_self_activations(dir_for_saving_prototypes, 
