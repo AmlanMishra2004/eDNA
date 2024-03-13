@@ -254,7 +254,7 @@ backbone.linear_layer = nn.Identity() # remove the linear layer
 for trial in range(1):
 
     print(f"\n\nTrial {trial+1}\n")
-    early_stopper.reset()
+    # early_stopper.reset()
 
     print('training set size: {0}'.format(len(trainloader.dataset)))
     print('push set size: {0}'.format(len(pushloader.dataset)))
@@ -719,8 +719,8 @@ for trial in range(1):
                     'addTagAndPrimer': config['addTagAndPrimer'],
                     'addRevComplements': config['addRevComplements'],
                     'val_portion_of_train': val_portion,
-                    'patience': early_stopper.patience,
-                    'min_pc_improvement': early_stopper.min_pct_improvement,
+                    # 'patience': early_stopper.patience,
+                    # 'min_pc_improvement': early_stopper.min_pct_improvement,
                 }
                 utils.update_results(
                     results,
