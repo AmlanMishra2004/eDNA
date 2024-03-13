@@ -364,29 +364,29 @@ for trial in range(1):
 
     # sanity check 3/4/24
     # These two are also hyperparameters. Feel free to add more values to try.
-    num_ptypes_per_class = [2] #random.randint(1, 3) # not set
-    ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    num_ptypes_per_class = [2,3] #random.randint(1, 3) # not set
+    ptype_length = [23,25,27] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0.6, 0.7, 0.8, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         'weight_decay':             [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'gamma':                    [.1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'warm_lr_step_size':        [10], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
-        'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-        'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
-        # 'clst_weight':              [1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-        # 'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
+        # 'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+        # 'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
+        'clst_weight':              [1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+        'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
-        'warm_ptype_lr':            [0.007], #random.uniform(0.0001, 0.001) # 4e-2 
+        'warm_ptype_lr':            [0.08, 0.008, 0.0008], #random.uniform(0.0001, 0.001) # 4e-2 
         'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_gap':                 [11], # 17 #random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [3], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [1],
+        'push_gap':                 [10, 15, 20], # 17 #random.randint(10, 20)# 1_000_000 # not set
+        'push_start':               [1], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'num_pushes':               [1, 2, 3, 4],
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -402,9 +402,9 @@ for trial in range(1):
     combos = len(combinations)
     if combos > 1:
         print(f"\n\nExploring {combos} hyperparameter combinations for grid search.\n")
-    for combination in combinations:
+    for iter, combination in enumerate(combinations):
         params = dict(zip(hyperparameters.keys(), combination))
-        print(f"\nAttempting combination:")
+        print(f"\nAttempting combination {iter}/{combos}:")
         for key, value in params.items():
             print(f"{key}: {value}")
         print('\n\n')
@@ -473,15 +473,16 @@ for trial in range(1):
         
         for epoch in tqdm(range(30_000)):
 
-            if epoch == 0:
-                for param_group in warm_optimizer.param_groups:
-                    param_group['lr'] *= 10
-            elif epoch == 10:
-                for param_group in warm_optimizer.param_groups:
-                    param_group['lr'] /= 10
-            elif epoch == 20:
-                for param_group in warm_optimizer.param_groups:
-                    param_group['lr'] /= 10
+            # Instead of manual lr below, use gamma in settings
+            # if epoch == 0:
+            #     for param_group in warm_optimizer.param_groups:
+            #         param_group['lr'] *= 10
+            # elif epoch == 10:
+            #     for param_group in warm_optimizer.param_groups:
+            #         param_group['lr'] /= 10
+            # elif epoch == 20:
+            #     for param_group in warm_optimizer.param_groups:
+            #         param_group['lr'] /= 10
 
             # print(f"Calculating validation accuracy for epoch")
             val_actual, val_predicted, val_ptype_results  = tnt.test(
@@ -490,11 +491,10 @@ for trial in range(1):
                 class_specific=class_specific,
                 log=log
             )
-
             # warnings.filterwarnings("ignore")
             val_acc = metrics.accuracy_score(val_actual, val_predicted)
             # warnings.filterwarnings("default")
-            early_stopper(val_acc)
+            # early_stopper(val_acc)
             print(f"Val acc before epoch {epoch}: {val_acc}")
             
             # peaked around epoch [38*, 58, 73]
@@ -504,7 +504,7 @@ for trial in range(1):
             #     break
             # if epoch >= 31 or val_acc >= 0.99: 
             if epoch == end_epoch:
-                print(f"Early stopping after epoch {epoch+1}.\n"
+                print(f"Stopping after epoch {epoch+1}.\n"
                     f"Final validation accuracy before push: {val_acc*100}%")
                 print(f"Pushing prototypes since finished training")
                 push_prototypes(
@@ -515,8 +515,8 @@ for trial in range(1):
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log
                 )
+                # evaluate on train, find aggregate sep and cluster loss for analysis purposes
                 print(f"Evaluating after push, before retraining last layer")
-                # evaluate on train, find aggregate sep and cluster loss
                 train_actual, train_predicted, train_ptype_results = tnt.test(
                     model=ppnet_multi,
                     dataloader=trainloader,
@@ -524,8 +524,11 @@ for trial in range(1):
                     log=log
                 )
                 acc = np.mean(train_actual == train_predicted)
-                print(f"\tTrain acc after push, before retraining last layer: {acc}")
-                print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
+                print(f"After push, before retraining last layer:")
+                print(f"\tTrain acc: {acc}")
+                print(f"\tCluster: {train_ptype_results['cluster']}")
+                print(f"\tSeparation: {train_ptype_results['separation']}")
+                # print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
 
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
@@ -674,7 +677,7 @@ for trial in range(1):
                     results,
                     compare_cols='ppn',
                     model=ppnet_multi,
-                    filename='ppnresults_gridsearch_3_3_24.csv',
+                    filename='ppnresults_fixed_gridsearch_3_12_24.csv',
                     save_model_dir='saved_ppn_models'
                 )
                 break # for early stopping
@@ -688,11 +691,11 @@ for trial in range(1):
                     root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log,
-                    sanity_check=True
+                    sanity_check=False
                 )
-                # pause = input("Pause")
+
+                # evaluate on train, find aggregate sep and cluster loss for analysis purposes
                 print(f"Evaluating after push, before retraining last layer")
-                # evaluate on train, find aggregate sep and cluster loss
                 train_actual, train_predicted, train_ptype_results = tnt.test(
                     model=ppnet_multi,
                     dataloader=trainloader,
@@ -700,8 +703,11 @@ for trial in range(1):
                     log=log
                 )
                 acc = np.mean(train_actual == train_predicted)
-                print(f"\tTrain acc after push, before retraining last layer: {acc}")
-                print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
+                print(f"After push, before retraining last layer:")
+                print(f"\tTrain acc: {acc}")
+                print(f"\tCluster: {train_ptype_results['cluster']}")
+                print(f"\tSeparation: {train_ptype_results['separation']}")
+                # print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
 
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
