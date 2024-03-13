@@ -165,15 +165,15 @@ X_train, X_val, y_train, y_val = train_test_split(
     random_state=42,
     stratify = train[config['species_col']]
 )
-print(X_train.shape)
-print(y_train.shape)
-print(type(X_train))
-print(type(y_train))
+# print(X_train.shape)
+# print(y_train.shape)
+# print(type(X_train))
+# print(type(y_train))
 orig_train = pd.concat([X_train, y_train], axis=1)
-print("success")
-wait=input("pause")
+# print("success")
+# wait=input("pause")
+# orig_train = pd.concat([[1,2,3],[3,2,3]], axis=1)
 
-orig_train = pd.concat([[1,2,3],[3,2,3]], axis=1)
 if config['oversample']:
     train = utils.oversample_underrepresented_species(
         orig_train,
