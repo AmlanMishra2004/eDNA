@@ -103,11 +103,11 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     #             proto_bound_boxes)
 
     # log('\tExecuting push ...')
-    print(f"prototype_network_parallel.prototype_vectors BEFORE: {prototype_network_parallel.prototype_vectors}")
+    # print(f"prototype_network_parallel.prototype_vectors BEFORE: {prototype_network_parallel.prototype_vectors}")
     prototype_update = np.reshape(global_max_fmap_patches,
                                   tuple(prototype_shape))
     prototype_network_parallel.prototype_vectors.data.copy_(torch.tensor(prototype_update, dtype=torch.float32).cuda())
-    print(f"prototype_network_parallel.prototype_vectors AFTER: {prototype_network_parallel.prototype_vectors}")
+    # print(f"prototype_network_parallel.prototype_vectors AFTER: {prototype_network_parallel.prototype_vectors}")
     
     # ANALYSIS (this saves files)
     # np.save(os.path.join(proto_epoch_dir,
@@ -149,7 +149,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
                 prototype_self_act_filename_prefix=prototype_self_act_filename_prefix,
                 prototype_activation_function_in_numpy=prototype_activation_function_in_numpy
             )
-        print(f"global_max_proto_act: {global_max_proto_act}") # should be a tensor of 1s, or 1/sqrt(25)
+        # print(f"global_max_proto_act: {global_max_proto_act}") # should be a tensor of 1s, or 1/sqrt(25)
         wait = input("PAUSE")
 
 # update each prototype for current search batch
@@ -438,7 +438,7 @@ def save_self_activations(dir_for_saving_prototypes,
 
         batch_max_proto_act_j = np.amax(proto_act_j)
         if batch_max_proto_act_j >= 0.999:
-            print("Grabbed activation map for prototype {}".format(j))
+            # print("Grabbed activation map for prototype {}".format(j))
             batch_argmax_proto_act_j = \
                 list(np.unravel_index(np.argmax(proto_act_j, axis=None),
                                       proto_act_j.shape))

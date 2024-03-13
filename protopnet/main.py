@@ -516,7 +516,7 @@ for trial in range(1):
                     log=log
                 )
                 # evaluate on train, find aggregate sep and cluster loss for analysis purposes
-                print(f"Evaluating after push, before retraining last layer")
+                # print(f"Evaluating after push, before retraining last layer")
                 train_actual, train_predicted, train_ptype_results = tnt.test(
                     model=ppnet_multi,
                     dataloader=trainloader,
@@ -598,8 +598,14 @@ for trial in range(1):
                 print(f"Final test macro f1-score: {test_m_f1}")
                 print(f"Final test micro accuracy: {test_acc}")
 
-                print(f"Final val prototype results: {val_ptype_results}")
-                print(f"Final test prototype results: {test_ptype_results}")
+                print(f"Final validation:")
+                print(f"\tCluster: {val_ptype_results['cluster']}")
+                print(f"\tSeparation: {val_ptype_results['separation']}")
+                # print(f"Final val prototype results: {val_ptype_results}")
+                print(f"Final test:")
+                print(f"\tCluster: {test_ptype_results['cluster']}")
+                print(f"\tSeparation: {test_ptype_results['separation']}")
+                # print(f"Final test prototype results: {test_ptype_results}")
 
                 results = {
                     # Results
@@ -695,7 +701,7 @@ for trial in range(1):
                 )
 
                 # evaluate on train, find aggregate sep and cluster loss for analysis purposes
-                print(f"Evaluating after push, before retraining last layer")
+                # print(f"Evaluating after push, before retraining last layer")
                 train_actual, train_predicted, train_ptype_results = tnt.test(
                     model=ppnet_multi,
                     dataloader=trainloader,
@@ -736,7 +742,7 @@ for trial in range(1):
                     acc = np.mean(actual == pred)
                     print(f"\tTrain acc at iteration {i}: {acc}")
             elif epoch < params['num_warm_epochs']:
-                print(f"Train epoch")
+                # print(f"Train epoch")
                 # train the prototypes without modifying the backbone
                 tnt.warm_only(model=ppnet_multi, log=log)
                 _, _, ptype_results = tnt.train(
@@ -748,7 +754,7 @@ for trial in range(1):
                     coefs=params['coefs'],
                     log=log
                 )
-                print(f"Prototype results: {ptype_results}")
+                # print(f"Prototype results: {ptype_results}")
             else:
                 # train the prototypes and the backbone
                 tnt.joint(model=ppnet_multi, log=log)
@@ -761,7 +767,7 @@ for trial in range(1):
                     coefs=params['coefs'],
                     log=log
                 )   
-                print(f"Prototype results: {ptype_results}")
+                # print(f"Prototype results: {ptype_results}")
             
 
         # end of training and testing for given model
