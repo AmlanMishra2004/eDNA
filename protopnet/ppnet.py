@@ -164,8 +164,8 @@ class PPNet(nn.Module):
 
         latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors[:, :-8, :])
         input_distances = self.cosine_similarity(x_stacked, self.prototype_vectors[:, -8:, :])
-        print(f"latent_distances: {latent_distances}")
-        print(f"input_distances: {input_distances}")
+        # print(f"latent_distances: {latent_distances}")
+        # print(f"input_distances: {input_distances}")
         # latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors)
         # input_distances = self.cosine_similarity(avg_pooled_x, self.prototype_vectors[:, -4:])
         return self.latent_weight * latent_distances + (1 - self.latent_weight) * input_distances
