@@ -145,7 +145,8 @@ class PPNet(nn.Module):
             x[:, :, odd_indexes]
         ], dim=1)
 
-        # Halves the length of the raw sequences and doubles the number of channels
+        # The average method halved the length and kept the number of channels
+        # Concat halves the length of the raw sequences and doubles the number of channels
         # If x were a single batch:
         # [[[0, 1, 2, 3,..., 69],
         #   [0, 1, 2, 3,..., 69],
@@ -163,6 +164,8 @@ class PPNet(nn.Module):
 
         latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors[:, :-8, :])
         input_distances = self.cosine_similarity(x_stacked, self.prototype_vectors[:, -8:, :])
+        print(f"latent_distances: {latent_distances}")
+        print(f"input_distances: {input_distances}")
         # latent_distances = self.cosine_similarity(conv_features, self.prototype_vectors)
         # input_distances = self.cosine_similarity(avg_pooled_x, self.prototype_vectors[:, -4:])
         return self.latent_weight * latent_distances + (1 - self.latent_weight) * input_distances
@@ -189,12 +192,14 @@ class PPNet(nn.Module):
         max_similarities = max_similarities.view(-1, self.num_prototypes)
         # prototype_similarities = self.distance_2_similarity(max_similarities)
         logits = self.last_layer(max_similarities)
+        # print(f"Max similarities in forward(): {max_similarities}")
         return logits, max_similarities
 
     def push_forward(self, x):
         '''this method is needed for the pushing operation'''
         conv_output = self.conv_features(x)
         # avg_pooled_x = F.avg_pool1d(x, 2, stride=2)
+        # 
         even_indexes = [a*2 for a in range(int(x.shape[-1]/2))] # adjust 15 (?)
         odd_indexes = [a+1 for a in even_indexes]
         x_stacked = torch.concat([
@@ -206,7 +211,12 @@ class PPNet(nn.Module):
         # print(f"In push_forward: Shape of concat: {concat.shape}")
         # print(f"In push_forward: Shape of self.prototype_vectors: {self.prototype_vectors.shape}")
         # similarities = self.cosine_similarity(concat, self.prototype_vectors)
-        return concat, self.prototype_distances(x)
+        distances = self.prototype_distances(x)
+        max_similarities = F.max_pool1d(distances,
+                                      kernel_size=(distances.size()[2]))
+        max_similarities = max_similarities.view(-1, self.num_prototypes)
+        # print(f"Max similarities in push_forward(): {max_similarities}")
+        return concat, distances
         # return concat, similarities
 
     # Defines how you would print the model, ex. print(ppnet)
