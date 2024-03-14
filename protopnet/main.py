@@ -415,8 +415,8 @@ for trial in range(1):
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
         'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
-        'weight_decay':             [0.008], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-        'gamma':                    [.1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'weight_decay':             [0.001], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+        'gamma':                    [.5], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'warm_lr_step_size':        [10], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
         # 'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
@@ -424,7 +424,7 @@ for trial in range(1):
         'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
-        'warm_ptype_lr':            [0.001], #random.uniform(0.0001, 0.001) # 4e-2 
+        'warm_ptype_lr':            [0.01], #random.uniform(0.0001, 0.001) # 4e-2 
         'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [15], # 17 #random.randint(10, 20)# 1_000_000 # not set
@@ -514,7 +514,8 @@ for trial in range(1):
           
         end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']
         
-        for epoch in tqdm(range(30_000)):
+        for epoch in range(30_000):
+        # for epoch in tqdm(range(30_000)):
 
             # Instead of manual lr below, use gamma in settings
             # if epoch == 0:
@@ -579,7 +580,8 @@ for trial in range(1):
                 # Set the last layer lr to the original lr
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_optimizer_lr']
-                for i in tqdm(range(20)):
+                for i in range(20):
+                # for i in tqdm(range(20)):
                     # if i == 0:
                     #     for param_group in last_layer_optimizer.param_groups:
                     #         param_group['lr'] *= 10
