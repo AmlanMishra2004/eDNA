@@ -294,7 +294,7 @@ for trial in range(1):
     #     'warm_optimizer_lrs': [{
     #         'prototype_vectors':    0.0007, #random.uniform(0.0001, 0.001) # 4e-2
     #     }], 
-    #     'last_layer_optimizer_lr':  [0.00065], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    #     'last_layer_lr':  [0.00065], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
     #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
     #     'push_gap':          [10, 12, 14], # 17 #random.randint(10, 20)# 1_000_000 # not set
     #     'push_start':               [10, 15, 20, 25, 30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
@@ -326,7 +326,7 @@ for trial in range(1):
     #     # 'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
     #     'l1_weight':                [1e-3],
     #     'warm_ptype_lr':            [0.0007], #random.uniform(0.0001, 0.001) # 4e-2 
-    #     'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    #     'last_layer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
     #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
     #     'push_gap':                 [11], # 17 #random.randint(10, 20)# 1_000_000 # not set
     #     'push_start':               [10], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
@@ -359,7 +359,7 @@ for trial in range(1):
     #     'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
     #     'l1_weight':                [0.1, 0.01, 0.001, 0.0001], # 1e-3
     #     'warm_ptype_lr':            [0.005, 0.001, 0.0005, 0.0001], #random.uniform(0.0001, 0.001) # 4e-2 
-    #     'last_layer_optimizer_lr':  [0.005, 0.001, 0.0005, 0.0001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    #     'last_layer_lr':  [0.005, 0.001, 0.0005, 0.0001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
     #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
     #     'push_gap':                 [11, 17], # 17 #random.randint(10, 20)# 1_000_000 # not set
     #     'push_start':               [10, 20, 30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
@@ -392,7 +392,7 @@ for trial in range(1):
     #     'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
     #     'l1_weight':                [1e-3],
     #     'warm_ptype_lr':            [0.08, 0.008, 0.0008], #random.uniform(0.0001, 0.001) # 4e-2 
-    #     'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    #     'last_layer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
     #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
     #     'push_gap':                 [10, 15, 20], # 17 #random.randint(10, 20)# 1_000_000 # not set
     #     'push_start':               [35], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
@@ -423,11 +423,12 @@ for trial in range(1):
         'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
         'warm_ptype_lr':            [0.007], #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'last_layer_lr':            [0.01], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [1], # 17 #random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [50], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [4],
+        'push_start':               [2], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'num_pushes':               [5],
+        'last_layer_epochs':        [50],
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -497,7 +498,7 @@ for trial in range(1):
         # after step-size epochs, the lr is multiplied by gamma
         warm_lr_scheduler = torch.optim.lr_scheduler.StepLR(warm_optimizer, step_size=params['warm_lr_step_size'], gamma=params['gamma'])
         last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(),
-                                    'lr': params['last_layer_optimizer_lr']}]
+                                    'lr': params['last_layer_lr']}]
         last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
         # if start_push=17, push_gap=11, num_pushes=0,1,...,4
         # push 17(DONE)                                      17 + 0*11
@@ -577,8 +578,8 @@ for trial in range(1):
                 print(f"Retraining last layer")
                 # Set the last layer lr to the original lr
                 for param_group in last_layer_optimizer.param_groups:
-                    param_group['lr'] = params['last_layer_optimizer_lr']
-                for i in range(50):
+                    param_group['lr'] = params['last_layer_lr']
+                for i in range(params['last_layer_epochs']):
                     # if i == 0:
                     #     for param_group in last_layer_optimizer.param_groups:
                     #         param_group['lr'] *= 10
@@ -687,7 +688,7 @@ for trial in range(1):
                     'joint_features_lr': params['joint_optimizer_lrs']['features'],
                     'joint_ptypes_lr': params['joint_optimizer_lrs']['prototype_vectors'],
                     'warm_ptypes_lr': params['warm_ptype_lr'],
-                    'last_layer_optimizer_lr': params['last_layer_optimizer_lr'],
+                    'last_layer_lr': params['last_layer_lr'],
                     'joint_weight_decay': params['joint_weight_decay'],
                     'joint_lr_step_size': params['joint_lr_step_size'],
                     'warm_lr_step_size': params['warm_lr_step_size'],
@@ -699,6 +700,7 @@ for trial in range(1):
                     'push_gap': params['push_gap'],
                     'push_start': params['push_start'],
                     'num_pushes': params['num_pushes'],
+                    'last_layer_epochs': params['last_layer_epochs'],
 
                     # Static Variables
                     'seq_count_thresh': config['seq_count_thresh'],           
@@ -725,7 +727,7 @@ for trial in range(1):
                     results,
                     compare_cols='ppn',
                     model=ppnet_multi,
-                    filename='ppnresults_fixed_gridsearch_3_13_24.csv',
+                    filename='ppnresults_manual_search_3_13_24.csv',
                     save_model_dir='saved_ppn_models'
                 )
                 break # for early stopping
@@ -762,17 +764,17 @@ for trial in range(1):
                 print(f"Retraining last layer: ")
                 # Set the last layer lr to the original lr
                 for param_group in last_layer_optimizer.param_groups:
-                    param_group['lr'] = params['last_layer_optimizer_lr']
-                for i in range(100):
-                    # if i == 0:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] *= 10
-                    # elif i == 10:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] /= 10
-                    # elif i == 15:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] /= 10
+                    param_group['lr'] = params['last_layer_lr']
+                for i in range(params['last_layer_epochs']):
+                    if i == 0:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 10
+                    elif i == 15:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 10
+                    elif i == 30:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 10
                     actual, pred, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
