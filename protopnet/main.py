@@ -170,7 +170,7 @@ X_train, X_val, y_train, y_val = train_test_split(
 # print(type(X_train))
 # print(type(y_train))
 
-train = np.column_stack((X_train, y_train)) # USED TO BE train = pd.concat([X_train, y_train], axis=1)
+train = X_train.join(y_train) # USED TO BE train = pd.concat([X_train, y_train], axis=1)
 
 # print("success")
 # wait=input("pause")
