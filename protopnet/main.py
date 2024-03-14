@@ -361,7 +361,7 @@ for trial in range(30_000):
         if epoch < num_warm_epochs:
             # train the prototypes without modifying the backbone
             for param_group in warm_optimizer.param_groups:
-                print(f"Warm optimizer lr: {param_group['lr']}")
+                print(f"Warm optimizer lr: {param_group['lr']}", flush=True)
             tnt.warm_only(model=ppnet_multi, log=log)
             train_actual, train_predicted, _ = tnt.train(
                 model=ppnet_multi,
@@ -371,7 +371,7 @@ for trial in range(30_000):
                 coefs=coefs,
                 log=log
             )
-            print(f"Train accuracy at epoch {epoch}: {np.mean(train_actual == train_predicted)}")
+            print(f"Train accuracy at epoch {epoch}: {np.mean(train_actual == train_predicted)}", flush=True)
         else:
             # train the prototypes and the backbone
             tnt.joint(model=ppnet_multi, log=log)
