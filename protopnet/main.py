@@ -169,14 +169,14 @@ X_train, X_val, y_train, y_val = train_test_split(
 # print(y_train.shape)
 # print(type(X_train))
 # print(type(y_train))
-orig_train = pd.concat([X_train, y_train], axis=1)
+train = pd.concat([X_train, y_train], axis=1)
 # print("success")
 # wait=input("pause")
 # orig_train = pd.concat([[1,2,3],[3,2,3]], axis=1)
 
 if config['oversample']:
     train = utils.oversample_underrepresented_species(
-        orig_train,
+        train,
         config['species_col'],
         config['verbose']
     )
@@ -409,6 +409,8 @@ for trial in range(1):
     # These two are also hyperparameters. Feel free to add more values to try.
     num_ptypes_per_class = [2] #random.randint(1, 3) # not set
     ptype_length = [27] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    print(f"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\nTRAIN LENGTH:{train.shape[0]}")
+    print(f"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\nNUMBER OF BATCHES PER EPOCH:{train.shape[0]//config['train_batch_size']}")
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
@@ -416,8 +418,8 @@ for trial in range(1):
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
         'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         'joint_weight_decay':       [0], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-        'gamma':                    [.1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-        'warm_lr_step_size':        [10], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+        'gamma':                    [.5], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'warm_lr_step_size':        [10*train.shape[0]//config['train_batch_size']], #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
         'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
