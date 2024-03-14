@@ -804,8 +804,8 @@ for trial in range(1):
                     log=log
                 )
 
-                # for param_group in warm_optimizer.param_groups:
-                #     print(f"Warm optimizer lr: {param_group['lr']}")
+                for param_group in warm_optimizer.param_groups:
+                    print(f"Warm optimizer lr: {param_group['lr']}")
                 # print(f"Prototype results: {ptype_results}")
                     
             else:
