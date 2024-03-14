@@ -425,7 +425,7 @@ for trial in range(1):
         'warm_ptype_lr':            [0.007], #random.uniform(0.0001, 0.001) # 4e-2 
         'last_layer_optimizer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_gap':                 [15], # 17 #random.randint(10, 20)# 1_000_000 # not set
+        'push_gap':                 [1], # 17 #random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [50], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'num_pushes':               [4],
         # BELOW IS UNUSED
