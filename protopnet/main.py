@@ -13,6 +13,7 @@ import warnings
 
 import argparse
 import re
+import numpy as np
 import random
 import pandas as pd
 import torch.nn as nn
@@ -359,6 +360,8 @@ for trial in range(30_000):
 
         if epoch < num_warm_epochs:
             # train the prototypes without modifying the backbone
+            for param_group in warm_optimizer.param_groups:
+                print(f"Warm optimizer lr: {param_group['lr']}")
             tnt.warm_only(model=ppnet_multi, log=log)
             train_actual, train_predicted, _ = tnt.train(
                 model=ppnet_multi,
@@ -368,6 +371,7 @@ for trial in range(30_000):
                 coefs=coefs,
                 log=log
             )
+            print(f"Train accuracy at epoch {epoch}: {np.mean(train_actual == train_predicted)}")
         else:
             # train the prototypes and the backbone
             tnt.joint(model=ppnet_multi, log=log)
