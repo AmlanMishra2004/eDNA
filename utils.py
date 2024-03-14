@@ -879,12 +879,13 @@ def update_results(results, compare_cols, model=None, filename='results.csv',
     #             )
     # save regardless of performance, since it was >= 97%.
     
-    # Create the directory if it does not already exist
-    os.makedirs(save_model_dir, exist_ok=True)
-    torch.save(
-        model.state_dict(),
-        os.path.join(save_model_dir, f'best_model_{timestamp}.pt')
-    )
+    if save_model_dir:
+        # Create the directory if it does not already exist
+        os.makedirs(save_model_dir, exist_ok=True)
+        torch.save(
+            model.state_dict(),
+            os.path.join(save_model_dir, f'best_model_{timestamp}.pt')
+        )
     print("Saved Results")
 
 def conv1d_output_size(input_length, kernel_size, padding, stride):

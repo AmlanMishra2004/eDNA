@@ -169,7 +169,9 @@ X_train, X_val, y_train, y_val = train_test_split(
 # print(y_train.shape)
 # print(type(X_train))
 # print(type(y_train))
-train = pd.concat([X_train, y_train], axis=1)
+
+train = np.column_stack((X_train, y_train)) # USED TO BE train = pd.concat([X_train, y_train], axis=1)
+
 # print("success")
 # wait=input("pause")
 # orig_train = pd.concat([[1,2,3],[3,2,3]], axis=1)
@@ -407,8 +409,8 @@ for trial in range(1):
 
     # manual search 3/13/24
     # These two are also hyperparameters. Feel free to add more values to try.
-    num_ptypes_per_class = [3] #random.randint(1, 3) # not set
-    ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    num_ptypes_per_class = [2,3] #random.randint(1, 3) # not set
+    ptype_length = [17, 23, 27] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
@@ -422,13 +424,13 @@ for trial in range(1):
         'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
-        'warm_ptype_lr':            [0.007], #random.uniform(0.0001, 0.001) # 4e-2 
+        'warm_ptype_lr':            [0.7, 0.07, 0.007, 0.0007, 0.00007], #random.uniform(0.0001, 0.001) # 4e-2 
         'last_layer_lr':            [0.05], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [15], # 17 #random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [50], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [5],
-        'last_layer_epochs':        [50],
+        'push_start':               [70], #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'num_pushes':               [0], # 3-5?
+        'last_layer_epochs':        [50], # 50
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -507,11 +509,11 @@ for trial in range(1):
         # push 17, push 22, push 33, push 44(DONE)           17 + 3*11
         # push 17, push 22, push 33, push 44, push 55(DONE)  17 + 4*11        
 
-        # TODO:
         # cluster should be larger than separation. if it is lower, then it
         # will destroy accuracy on the push
           
         end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']
+        print(f"End epoch: {end_epoch}")
         
         for epoch in range(30_000):
         # for epoch in tqdm(range(30_000)):
@@ -547,58 +549,58 @@ for trial in range(1):
             #     break
             # if epoch >= 31 or val_acc >= 0.99: 
             if epoch == end_epoch:
-                print(f"Stopping after epoch {epoch+1}.\n"
-                    f"Final validation accuracy before push: {val_acc*100}%")
-                print(f"Pushing prototypes since finished training")
-                push_prototypes(
-                    pushloader, # pytorch dataloader (must be unnormalized in [0,1])
-                    prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
-                    preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
-                    epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
-                    log=log
-                )
-                # evaluate on train, find aggregate sep and cluster loss for analysis purposes
-                # print(f"Evaluating after push, before retraining last layer")
-                train_actual, train_predicted, train_ptype_results = tnt.test(
-                    model=ppnet_multi,
-                    dataloader=trainloader,
-                    class_specific=class_specific,
-                    log=log
-                )
-                acc = np.mean(train_actual == train_predicted)
-                print(f"After push, before retraining last layer:")
-                print(f"\tTrain acc: {acc}")
-                print(f"\tCluster: {train_ptype_results['cluster']}")
-                print(f"\tSeparation: {train_ptype_results['separation']}")
-                # print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
+                # print(f"Stopping after epoch {epoch+1}.\n"
+                #     f"Final validation accuracy before push: {val_acc*100}%")
+                # print(f"Pushing prototypes since finished training")
+                # push_prototypes(
+                #     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
+                #     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
+                #     preprocess_input_function=None, # normalize if needed
+                #     root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
+                #     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
+                #     log=log
+                # )
+                # # evaluate on train, find aggregate sep and cluster loss for analysis purposes
+                # # print(f"Evaluating after push, before retraining last layer")
+                # train_actual, train_predicted, train_ptype_results = tnt.test(
+                #     model=ppnet_multi,
+                #     dataloader=trainloader,
+                #     class_specific=class_specific,
+                #     log=log
+                # )
+                # acc = np.mean(train_actual == train_predicted)
+                # print(f"After push, before retraining last layer:")
+                # print(f"\tTrain acc: {acc}")
+                # print(f"\tCluster: {train_ptype_results['cluster']}")
+                # print(f"\tSeparation: {train_ptype_results['separation']}")
+                # # print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
 
-                # After pushing, retrain the last layer to produce good results again.
-                tnt.last_only(model=ppnet_multi, log=log)
-                print(f"Retraining last layer")
-                # Set the last layer lr to the original lr
-                for param_group in last_layer_optimizer.param_groups:
-                    param_group['lr'] = params['last_layer_lr']
-                for i in range(params['last_layer_epochs']):
-                    if i == 25:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 5
-                    elif i == 35:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 5
-                    elif i == 45:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 5
-                    actual, pred, _ = tnt.train(
-                        model=ppnet_multi,
-                        dataloader=trainloader,
-                        optimizer=last_layer_optimizer,
-                        class_specific=class_specific,
-                        coefs=params['coefs'],
-                        log=log
-                    )
-                    acc = np.mean(actual == pred)
-                    print(f"\tTrain acc at iteration {i}: {acc}", flush=True)
+                # # After pushing, retrain the last layer to produce good results again.
+                # tnt.last_only(model=ppnet_multi, log=log)
+                # print(f"Retraining last layer")
+                # # Set the last layer lr to the original lr
+                # for param_group in last_layer_optimizer.param_groups:
+                #     param_group['lr'] = params['last_layer_lr']
+                # for i in range(params['last_layer_epochs']):
+                #     if i == 25:
+                #         for param_group in last_layer_optimizer.param_groups:
+                #             param_group['lr'] /= 5
+                #     elif i == 35:
+                #         for param_group in last_layer_optimizer.param_groups:
+                #             param_group['lr'] /= 5
+                #     elif i == 45:
+                #         for param_group in last_layer_optimizer.param_groups:
+                #             param_group['lr'] /= 5
+                #     actual, pred, _ = tnt.train(
+                #         model=ppnet_multi,
+                #         dataloader=trainloader,
+                #         optimizer=last_layer_optimizer,
+                #         class_specific=class_specific,
+                #         coefs=params['coefs'],
+                #         log=log
+                #     )
+                #     acc = np.mean(actual == pred)
+                #     print(f"\tTrain acc at iteration {i}: {acc}", flush=True)
 
                 # Get the final model validation and test scores
                 print(f"Getting final validation and test accuracy after training.")
@@ -727,8 +729,9 @@ for trial in range(1):
                     results,
                     compare_cols='ppn',
                     model=ppnet_multi,
-                    filename='ppnresults_manual_search_3_13_24.csv',
-                    save_model_dir='saved_ppn_models'
+                    filename='search_for_warm_improvement_3_14_24.csv',
+                    save_model_dir = None
+                    # save_model_dir='saved_ppn_models'
                 )
                 break # for early stopping
 
