@@ -423,7 +423,7 @@ for trial in range(1):
         'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
         'warm_ptype_lr':            [0.007], #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_lr':            [0.01], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'last_layer_lr':            [0.05], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [1], # 17 #random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [2], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
@@ -580,15 +580,15 @@ for trial in range(1):
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_lr']
                 for i in range(params['last_layer_epochs']):
-                    # if i == 0:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] *= 10
-                    # elif i == 10:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] /= 10
-                    # elif i == 15:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] /= 10
+                    if i == 25:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 5
+                    elif i == 35:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 5
+                    elif i == 45:
+                        for param_group in last_layer_optimizer.param_groups:
+                            param_group['lr'] /= 5
                     actual, pred, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
@@ -766,15 +766,15 @@ for trial in range(1):
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_lr']
                 for i in range(params['last_layer_epochs']):
-                    if i == 0:
+                    if i == 25:
                         for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 10
-                    elif i == 15:
+                            param_group['lr'] /= 5
+                    elif i == 35:
                         for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 10
-                    elif i == 30:
+                            param_group['lr'] /= 5
+                    elif i == 45:
                         for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 10
+                            param_group['lr'] /= 5
                     actual, pred, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
@@ -803,8 +803,9 @@ for trial in range(1):
                     coefs=params['coefs'],
                     log=log
                 )
-                for param_group in warm_optimizer.param_groups:
-                    print(f"Warm optimizer lr: {param_group['lr']}")
+
+                # for param_group in warm_optimizer.param_groups:
+                #     print(f"Warm optimizer lr: {param_group['lr']}")
                 # print(f"Prototype results: {ptype_results}")
                     
             else:
