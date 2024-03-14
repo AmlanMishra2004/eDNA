@@ -537,7 +537,7 @@ for trial in range(1):
             val_acc = metrics.accuracy_score(val_actual, val_predicted)
             # warnings.filterwarnings("default")
             # early_stopper(val_acc)
-            print(f"Val acc before epoch {epoch}: {val_acc}")
+            print(f"Val acc before epoch {epoch}: {val_acc}", flush=True)
             
             # peaked around epoch [38*, 58, 73]
             # if epoch >= 55: # 45, expected: 38
@@ -797,6 +797,8 @@ for trial in range(1):
                     coefs=params['coefs'],
                     log=log
                 )
+                for param_group in warm_optimizer.param_groups:
+                    print(f"Warm optimizer lr: {param_group['lr']}")
                 # print(f"Prototype results: {ptype_results}")
             else:
                 # train the prototypes and the backbone
