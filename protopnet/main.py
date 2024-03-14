@@ -409,8 +409,6 @@ for trial in range(1):
     # These two are also hyperparameters. Feel free to add more values to try.
     num_ptypes_per_class = [2] #random.randint(1, 3) # not set
     ptype_length = [27] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
-    print(f"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\nTRAIN LENGTH:{train.shape[0]}")
-    print(f"&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&\nNUMBER OF BATCHES PER EPOCH:{train.shape[0]//config['train_batch_size']}")
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
@@ -580,8 +578,7 @@ for trial in range(1):
                 # Set the last layer lr to the original lr
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_optimizer_lr']
-                for i in range(20):
-                # for i in tqdm(range(20)):
+                for i in range(50):
                     # if i == 0:
                     #     for param_group in last_layer_optimizer.param_groups:
                     #         param_group['lr'] *= 10
@@ -600,7 +597,7 @@ for trial in range(1):
                         log=log
                     )
                     acc = np.mean(actual == pred)
-                    print(f"\tTrain acc at iteration {i}: {acc}")
+                    print(f"\tTrain acc at iteration {i}: {acc}", flush=True)
 
                 # Get the final model validation and test scores
                 print(f"Getting final validation and test accuracy after training.")
@@ -766,7 +763,7 @@ for trial in range(1):
                 # Set the last layer lr to the original lr
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_optimizer_lr']
-                for i in tqdm(range(20)):
+                for i in range(100):
                     # if i == 0:
                     #     for param_group in last_layer_optimizer.param_groups:
                     #         param_group['lr'] *= 10
@@ -785,7 +782,12 @@ for trial in range(1):
                         log=log
                     )
                     acc = np.mean(actual == pred)
-                    print(f"\tTrain acc at iteration {i}: {acc}")
+                    print(f"\tTrain acc at iteration {i}: {acc}", flush=True)
+
+                # Reset warm lr to original lr
+                for param_group in warm_optimizer.param_groups:
+                    param_group['lr'] = params['warm_lr_step_size']
+
             elif epoch < params['num_warm_epochs']:
                 # print(f"Train epoch")
                 # train the prototypes without modifying the backbone
@@ -802,6 +804,7 @@ for trial in range(1):
                 for param_group in warm_optimizer.param_groups:
                     print(f"Warm optimizer lr: {param_group['lr']}")
                 # print(f"Prototype results: {ptype_results}")
+                    
             else:
                 # train the prototypes and the backbone
                 tnt.joint(model=ppnet_multi, log=log)
