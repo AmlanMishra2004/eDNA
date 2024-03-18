@@ -410,7 +410,7 @@ for trial in range(1):
     # manual search 3/13/24
     # These two are also hyperparameters. Feel free to add more values to try.
     num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
-    ptype_length = [21, 29] #[17, 19, 21, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    ptype_length = [21, 25, 29] #[17, 19, 21, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
