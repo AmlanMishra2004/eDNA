@@ -729,7 +729,7 @@ for trial in range(1):
                     results,
                     compare_cols='ppn',
                     model=ppnet_multi,
-                    filename='search_for_warm_improvement_3_14_24.csv',
+                    filename='search_for_warm_improvement_3_18_24.csv',
                     save_model_dir = None
                     # save_model_dir='saved_ppn_models'
                 )
