@@ -1,0 +1,2753 @@
+===========================================
+/home/swaggoner/eDNA
+grtx-1.cluster
+Tue Mar 19 10:37:12 EDT 2024
+===========================================
+13:4: not a valid test operator: (
+13:4: not a valid test operator: 525.85.12
+
+=============
+== PyTorch ==
+=============
+
+NVIDIA Release 23.09 (build 69180607)
+PyTorch Version 2.1.0a0+32f93b1
+
+Container image Copyright (c) 2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+Copyright (c) 2014-2023 Facebook Inc.
+Copyright (c) 2011-2014 Idiap Research Institute (Ronan Collobert)
+Copyright (c) 2012-2014 Deepmind Technologies    (Koray Kavukcuoglu)
+Copyright (c) 2011-2012 NEC Laboratories America (Koray Kavukcuoglu)
+Copyright (c) 2011-2013 NYU                      (Clement Farabet)
+Copyright (c) 2006-2010 NEC Laboratories America (Ronan Collobert, Leon Bottou, Iain Melvin, Jason Weston)
+Copyright (c) 2006      Idiap Research Institute (Samy Bengio)
+Copyright (c) 2001-2004 Idiap Research Institute (Ronan Collobert, Samy Bengio, Johnny Mariethoz)
+Copyright (c) 2015      Google Inc.
+Copyright (c) 2015      Yangqing Jia
+Copyright (c) 2013-2016 The Caffe contributors
+All rights reserved.
+
+Various files include modifications (c) NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+WARNING: CUDA Minor Version Compatibility mode ENABLED.
+  Using driver version 525.85.12 which has support for CUDA 12.0.  This container
+  was built with CUDA 12.2 and will be run in Minor Version Compatibility mode.
+  CUDA Forward Compatibility is preferred over Minor Version Compatibility for use
+  with this container but was unavailable:
+  [[]]
+  See https://docs.nvidia.com/deploy/cuda-compatibility/ for details.
+
+NOTE: Mellanox network driver detected, but NVIDIA peer memory driver not
+      detected.  Multi-node communication performance may be reduced.
+
+2024-03-19 10:37:24.572767: I tensorflow/tsl/cuda/cudart_stub.cc:28] Could not find cuda drivers on your machine, GPU will not be used.
+2024-03-19 10:37:25.347518: E tensorflow/compiler/xla/stream_executor/cuda/cuda_dnn.cc:9342] Unable to register cuDNN factory: Attempting to register factory for plugin cuDNN when one has already been registered
+2024-03-19 10:37:25.444509: E tensorflow/compiler/xla/stream_executor/cuda/cuda_fft.cc:609] Unable to register cuFFT factory: Attempting to register factory for plugin cuFFT when one has already been registered
+2024-03-19 10:37:25.457460: E tensorflow/compiler/xla/stream_executor/cuda/cuda_blas.cc:1518] Unable to register cuBLAS factory: Attempting to register factory for plugin cuBLAS when one has already been registered
+2024-03-19 10:37:25.818288: I tensorflow/core/platform/cpu_feature_guard.cc:182] This TensorFlow binary is optimized to use available CPU instructions in performance-critical operations.
+To enable the following instructions: AVX2 FMA, in other operations, rebuild TensorFlow with the appropriate compiler flags.
+0
+Oversampled shape: (748, 2)
+
+
+Trial 1
+
+training set size: 780
+push set size: 748
+test set size: 175
+train batch size: 156
+test batch size: 94
+
+Attempting combination 0/1:
+prototype_shape: (468, 520, 29)
+latent_weight: 0.9
+joint_weight_decay: 0
+gamma: 0.8
+warm_lr_step_size: 100
+crs_ent_weight: 1
+clst_weight: -9.600000000000001
+sep_weight: 2.4
+l1_weight: 0.001
+warm_ptype_lr: 0.1
+last_layer_lr: 0.05
+num_warm_epochs: 1000000
+push_gap: 100
+push_start: 50
+num_pushes: 10
+last_layer_epochs: 50
+joint_lr_step_size: -1
+joint_optimizer_lrs: {'features': -1, 'prototype_vectors': -1}
+
+
+
+End epoch: 1050
+Val acc before epoch 0: 0.0
+Warm optimizer lr: 0.1
+Val acc before epoch 1: 0.02127659574468085
+Warm optimizer lr: 0.1
+Val acc before epoch 2: 0.031914893617021274
+Warm optimizer lr: 0.1
+Val acc before epoch 3: 0.02127659574468085
+Warm optimizer lr: 0.1
+Val acc before epoch 4: 0.031914893617021274
+Warm optimizer lr: 0.1
+Val acc before epoch 5: 0.0425531914893617
+Warm optimizer lr: 0.1
+Val acc before epoch 6: 0.0851063829787234
+Warm optimizer lr: 0.1
+Val acc before epoch 7: 0.07446808510638298
+Warm optimizer lr: 0.1
+Val acc before epoch 8: 0.10638297872340426
+Warm optimizer lr: 0.1
+Val acc before epoch 9: 0.11702127659574468
+Warm optimizer lr: 0.1
+Val acc before epoch 10: 0.14893617021276595
+Warm optimizer lr: 0.1
+Val acc before epoch 11: 0.2127659574468085
+Warm optimizer lr: 0.1
+Val acc before epoch 12: 0.2127659574468085
+Warm optimizer lr: 0.1
+Val acc before epoch 13: 0.2127659574468085
+Warm optimizer lr: 0.1
+Val acc before epoch 14: 0.20212765957446807
+Warm optimizer lr: 0.1
+Val acc before epoch 15: 0.2553191489361702
+Warm optimizer lr: 0.1
+Val acc before epoch 16: 0.2765957446808511
+Warm optimizer lr: 0.1
+Val acc before epoch 17: 0.3404255319148936
+Warm optimizer lr: 0.1
+Val acc before epoch 18: 0.2872340425531915
+Warm optimizer lr: 0.1
+Val acc before epoch 19: 0.2553191489361702
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 20: 0.30851063829787234
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 21: 0.3191489361702128
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 22: 0.3723404255319149
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 23: 0.35106382978723405
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 24: 0.32978723404255317
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 25: 0.3404255319148936
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 26: 0.3617021276595745
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 27: 0.39361702127659576
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 28: 0.3617021276595745
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 29: 0.39361702127659576
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 30: 0.3829787234042553
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 31: 0.3723404255319149
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 32: 0.3191489361702128
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 33: 0.35106382978723405
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 34: 0.39361702127659576
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 35: 0.40425531914893614
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 36: 0.3723404255319149
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 37: 0.3829787234042553
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 38: 0.40425531914893614
+Warm optimizer lr: 0.08000000000000002
+Val acc before epoch 39: 0.3829787234042553
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 40: 0.35106382978723405
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 41: 0.3723404255319149
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 42: 0.425531914893617
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 43: 0.4148936170212766
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 44: 0.425531914893617
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 45: 0.39361702127659576
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 46: 0.40425531914893614
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 47: 0.32978723404255317
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 48: 0.3723404255319149
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 49: 0.40425531914893614
+Warm optimizer lr: 0.06400000000000002
+Val acc before epoch 50: 0.4148936170212766
+Push epoch
+After push, before retraining last layer:
+	Train acc: 0.00641025641025641
+	Cluster: 0.6616002202033997
+	Separation: 0.5013430714607239
+Retraining last layer: 
+	Train acc at iteration 0: 0.003205128205128205
+	Train acc at iteration 1: 0.004807692307692308
+	Train acc at iteration 2: 0.016025641025641024
+	Train acc at iteration 3: 0.016025641025641024
+	Train acc at iteration 4: 0.05448717948717949
+	Train acc at iteration 5: 0.04487179487179487
+	Train acc at iteration 6: 0.05448717948717949
+	Train acc at iteration 7: 0.08814102564102565
+	Train acc at iteration 8: 0.11858974358974358
+	Train acc at iteration 9: 0.15705128205128205
+	Train acc at iteration 10: 0.11378205128205128
+	Train acc at iteration 11: 0.1955128205128205
+	Train acc at iteration 12: 0.22435897435897437
+	Train acc at iteration 13: 0.2548076923076923
+	Train acc at iteration 14: 0.27724358974358976
+	Train acc at iteration 15: 0.27403846153846156
+	Train acc at iteration 16: 0.28846153846153844
+	Train acc at iteration 17: 0.328525641025641
+	Train acc at iteration 18: 0.2932692307692308
+	Train acc at iteration 19: 0.40865384615384615
+	Train acc at iteration 20: 0.3942307692307692
+	Train acc at iteration 21: 0.38461538461538464
+	Train acc at iteration 22: 0.49198717948717946
+	Train acc at iteration 23: 0.5448717948717948
+	Train acc at iteration 24: 0.530448717948718
+	Train acc at iteration 25: 0.6282051282051282
+	Train acc at iteration 26: 0.7868589743589743
+	Train acc at iteration 27: 0.7355769230769231
+	Train acc at iteration 28: 0.7900641025641025
+	Train acc at iteration 29: 0.8028846153846154
+	Train acc at iteration 30: 0.7932692307692307
+	Train acc at iteration 31: 0.7964743589743589
+	Train acc at iteration 32: 0.8173076923076923
+	Train acc at iteration 33: 0.8189102564102564
+	Train acc at iteration 34: 0.8269230769230769
+	Train acc at iteration 35: 0.8365384615384616
+	Train acc at iteration 36: 0.8125
+	Train acc at iteration 37: 0.8317307692307693
+	Train acc at iteration 38: 0.8157051282051282
+	Train acc at iteration 39: 0.8413461538461539
+	Train acc at iteration 40: 0.8269230769230769
+	Train acc at iteration 41: 0.8189102564102564
+	Train acc at iteration 42: 0.8573717948717948
+	Train acc at iteration 43: 0.8301282051282052
+	Train acc at iteration 44: 0.8349358974358975
+	Train acc at iteration 45: 0.842948717948718
+	Train acc at iteration 46: 0.8189102564102564
+	Train acc at iteration 47: 0.8301282051282052
+	Train acc at iteration 48: 0.8237179487179487
+	Train acc at iteration 49: 0.8301282051282052
+Val acc before epoch 51: 0.7659574468085106
+Warm optimizer lr: 100
+Val acc before epoch 52: 0.11702127659574468
+Warm optimizer lr: 100
+Val acc before epoch 53: 0.19148936170212766
+Warm optimizer lr: 100
+Val acc before epoch 54: 0.20212765957446807
+Warm optimizer lr: 100
+Val acc before epoch 55: 0.22340425531914893
+Warm optimizer lr: 100
+Val acc before epoch 56: 0.26595744680851063
+Warm optimizer lr: 100
+Val acc before epoch 57: 0.2127659574468085
+Warm optimizer lr: 100
+Val acc before epoch 58: 0.23404255319148937
+Warm optimizer lr: 100
+Val acc before epoch 59: 0.22340425531914893
+Warm optimizer lr: 100
+Val acc before epoch 60: 0.24468085106382978
+Warm optimizer lr: 80.0
+Val acc before epoch 61: 0.19148936170212766
+Warm optimizer lr: 80.0
+Val acc before epoch 62: 0.2553191489361702
+Warm optimizer lr: 80.0
+Val acc before epoch 63: 0.3191489361702128
+Warm optimizer lr: 80.0
+Val acc before epoch 64: 0.2872340425531915
+Warm optimizer lr: 80.0
+Val acc before epoch 65: 0.26595744680851063
+Warm optimizer lr: 80.0
+Val acc before epoch 66: 0.2127659574468085
+Warm optimizer lr: 80.0
+Val acc before epoch 67: 0.26595744680851063
+Warm optimizer lr: 80.0
+Val acc before epoch 68: 0.2978723404255319
+Warm optimizer lr: 80.0
+Val acc before epoch 69: 0.32978723404255317
+Warm optimizer lr: 80.0
+Val acc before epoch 70: 0.30851063829787234
+Warm optimizer lr: 80.0
+Val acc before epoch 71: 0.3404255319148936
+Warm optimizer lr: 80.0
+Val acc before epoch 72: 0.3617021276595745
+Warm optimizer lr: 80.0
+Val acc before epoch 73: 0.3723404255319149
+Warm optimizer lr: 80.0
+Val acc before epoch 74: 0.3829787234042553
+Warm optimizer lr: 80.0
+Val acc before epoch 75: 0.39361702127659576
+Warm optimizer lr: 80.0
+Val acc before epoch 76: 0.4148936170212766
+Warm optimizer lr: 80.0
+Val acc before epoch 77: 0.425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 78: 0.3404255319148936
+Warm optimizer lr: 80.0
+Val acc before epoch 79: 0.3829787234042553
+Warm optimizer lr: 80.0
+Val acc before epoch 80: 0.40425531914893614
+Warm optimizer lr: 64.0
+Val acc before epoch 81: 0.3723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 82: 0.43617021276595747
+Warm optimizer lr: 64.0
+Val acc before epoch 83: 0.4574468085106383
+Warm optimizer lr: 64.0
+Val acc before epoch 84: 0.43617021276595747
+Warm optimizer lr: 64.0
+Val acc before epoch 85: 0.4787234042553192
+Warm optimizer lr: 64.0
+Val acc before epoch 86: 0.48936170212765956
+Warm optimizer lr: 64.0
+Val acc before epoch 87: 0.4148936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 88: 0.4574468085106383
+Warm optimizer lr: 64.0
+Val acc before epoch 89: 0.574468085106383
+Warm optimizer lr: 64.0
+Val acc before epoch 90: 0.5106382978723404
+Warm optimizer lr: 64.0
+Val acc before epoch 91: 0.5
+Warm optimizer lr: 64.0
+Val acc before epoch 92: 0.5
+Warm optimizer lr: 64.0
+Val acc before epoch 93: 0.46808510638297873
+Warm optimizer lr: 64.0
+Val acc before epoch 94: 0.5638297872340425
+Warm optimizer lr: 64.0
+Val acc before epoch 95: 0.5319148936170213
+Warm optimizer lr: 64.0
+Val acc before epoch 96: 0.5638297872340425
+Warm optimizer lr: 64.0
+Val acc before epoch 97: 0.5
+Warm optimizer lr: 64.0
+Val acc before epoch 98: 0.5319148936170213
+Warm optimizer lr: 64.0
+Val acc before epoch 99: 0.574468085106383
+Warm optimizer lr: 64.0
+Val acc before epoch 100: 0.5851063829787234
+Warm optimizer lr: 51.2
+Val acc before epoch 101: 0.5425531914893617
+Warm optimizer lr: 51.2
+Val acc before epoch 102: 0.5851063829787234
+Warm optimizer lr: 51.2
+Val acc before epoch 103: 0.6276595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 104: 0.5851063829787234
+Warm optimizer lr: 51.2
+Val acc before epoch 105: 0.5957446808510638
+Warm optimizer lr: 51.2
+Val acc before epoch 106: 0.648936170212766
+Warm optimizer lr: 51.2
+Val acc before epoch 107: 0.6382978723404256
+Warm optimizer lr: 51.2
+Val acc before epoch 108: 0.5851063829787234
+Warm optimizer lr: 51.2
+Val acc before epoch 109: 0.6914893617021277
+Warm optimizer lr: 51.2
+Val acc before epoch 110: 0.6382978723404256
+Warm optimizer lr: 51.2
+Val acc before epoch 111: 0.6382978723404256
+Warm optimizer lr: 51.2
+Val acc before epoch 112: 0.6702127659574468
+Warm optimizer lr: 51.2
+Val acc before epoch 113: 0.6382978723404256
+Warm optimizer lr: 51.2
+Val acc before epoch 114: 0.6382978723404256
+Warm optimizer lr: 51.2
+Val acc before epoch 115: 0.6595744680851063
+Warm optimizer lr: 51.2
+Val acc before epoch 116: 0.6276595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 117: 0.6808510638297872
+Warm optimizer lr: 51.2
+Val acc before epoch 118: 0.7127659574468085
+Warm optimizer lr: 51.2
+Val acc before epoch 119: 0.6595744680851063
+Warm optimizer lr: 51.2
+Val acc before epoch 120: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 121: 0.648936170212766
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 122: 0.7446808510638298
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 123: 0.7446808510638298
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 124: 0.7553191489361702
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 125: 0.7340425531914894
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 126: 0.723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 127: 0.7021276595744681
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 128: 0.723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 129: 0.7021276595744681
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 130: 0.7021276595744681
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 131: 0.7021276595744681
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 132: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 133: 0.723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 134: 0.7446808510638298
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 135: 0.7021276595744681
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 136: 0.7553191489361702
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 137: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 138: 0.723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 139: 0.7446808510638298
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 140: 0.723404255319149
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 141: 0.7021276595744681
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 142: 0.7446808510638298
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 143: 0.7659574468085106
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 144: 0.7553191489361702
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 145: 0.776595744680851
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 146: 0.7872340425531915
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 147: 0.7872340425531915
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 148: 0.7553191489361702
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 149: 0.7872340425531915
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 150: 0.776595744680851
+Push epoch
+After push, before retraining last layer:
+	Train acc: 0.8317307692307693
+	Cluster: 0.652980625629425
+	Separation: 0.5044167518615723
+Retraining last layer: 
+	Train acc at iteration 0: 0.6746794871794872
+	Train acc at iteration 1: 0.6041666666666666
+	Train acc at iteration 2: 0.5769230769230769
+	Train acc at iteration 3: 0.5833333333333334
+	Train acc at iteration 4: 0.530448717948718
+	Train acc at iteration 5: 0.5833333333333334
+	Train acc at iteration 6: 0.5352564102564102
+	Train acc at iteration 7: 0.5961538461538461
+	Train acc at iteration 8: 0.6394230769230769
+	Train acc at iteration 9: 0.6153846153846154
+	Train acc at iteration 10: 0.6298076923076923
+	Train acc at iteration 11: 0.6282051282051282
+	Train acc at iteration 12: 0.6346153846153846
+	Train acc at iteration 13: 0.655448717948718
+	Train acc at iteration 14: 0.594551282051282
+	Train acc at iteration 15: 0.6650641025641025
+	Train acc at iteration 16: 0.6971153846153846
+	Train acc at iteration 17: 0.7275641025641025
+	Train acc at iteration 18: 0.6907051282051282
+	Train acc at iteration 19: 0.6682692307692307
+	Train acc at iteration 20: 0.6891025641025641
+	Train acc at iteration 21: 0.7211538461538461
+	Train acc at iteration 22: 0.7227564102564102
+	Train acc at iteration 23: 0.7131410256410257
+	Train acc at iteration 24: 0.75
+	Train acc at iteration 25: 0.7676282051282052
+	Train acc at iteration 26: 0.8798076923076923
+	Train acc at iteration 27: 0.8381410256410257
+	Train acc at iteration 28: 0.8589743589743589
+	Train acc at iteration 29: 0.8509615384615384
+	Train acc at iteration 30: 0.875
+	Train acc at iteration 31: 0.8685897435897436
+	Train acc at iteration 32: 0.8669871794871795
+	Train acc at iteration 33: 0.8814102564102564
+	Train acc at iteration 34: 0.8814102564102564
+	Train acc at iteration 35: 0.8589743589743589
+	Train acc at iteration 36: 0.8525641025641025
+	Train acc at iteration 37: 0.8621794871794872
+	Train acc at iteration 38: 0.8830128205128205
+	Train acc at iteration 39: 0.8782051282051282
+	Train acc at iteration 40: 0.8669871794871795
+	Train acc at iteration 41: 0.8766025641025641
+	Train acc at iteration 42: 0.8557692307692307
+	Train acc at iteration 43: 0.8685897435897436
+	Train acc at iteration 44: 0.8653846153846154
+	Train acc at iteration 45: 0.8685897435897436
+	Train acc at iteration 46: 0.875
+	Train acc at iteration 47: 0.8782051282051282
+	Train acc at iteration 48: 0.875
+	Train acc at iteration 49: 0.8830128205128205
+Val acc before epoch 151: 0.7978723404255319
+Warm optimizer lr: 100
+Val acc before epoch 152: 0.2553191489361702
+Warm optimizer lr: 100
+Val acc before epoch 153: 0.26595744680851063
+Warm optimizer lr: 100
+Val acc before epoch 154: 0.2765957446808511
+Warm optimizer lr: 100
+Val acc before epoch 155: 0.30851063829787234
+Warm optimizer lr: 100
+Val acc before epoch 156: 0.35106382978723405
+Warm optimizer lr: 100
+Val acc before epoch 157: 0.3617021276595745
+Warm optimizer lr: 100
+Val acc before epoch 158: 0.4148936170212766
+Warm optimizer lr: 100
+Val acc before epoch 159: 0.39361702127659576
+Warm optimizer lr: 100
+Val acc before epoch 160: 0.46808510638297873
+Warm optimizer lr: 100
+Val acc before epoch 161: 0.40425531914893614
+Warm optimizer lr: 80.0
+Val acc before epoch 162: 0.4787234042553192
+Warm optimizer lr: 80.0
+Val acc before epoch 163: 0.4574468085106383
+Warm optimizer lr: 80.0
+Val acc before epoch 164: 0.46808510638297873
+Warm optimizer lr: 80.0
+Val acc before epoch 165: 0.5
+Warm optimizer lr: 80.0
+Val acc before epoch 166: 0.4787234042553192
+Warm optimizer lr: 80.0
+Val acc before epoch 167: 0.5212765957446809
+Warm optimizer lr: 80.0
+Val acc before epoch 168: 0.5319148936170213
+Warm optimizer lr: 80.0
+Val acc before epoch 169: 0.5212765957446809
+Warm optimizer lr: 80.0
+Val acc before epoch 170: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 171: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 172: 0.5851063829787234
+Warm optimizer lr: 80.0
+Val acc before epoch 173: 0.6170212765957447
+Warm optimizer lr: 80.0
+Val acc before epoch 174: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 175: 0.6063829787234043
+Warm optimizer lr: 80.0
+Val acc before epoch 176: 0.6808510638297872
+Warm optimizer lr: 80.0
+Val acc before epoch 177: 0.6595744680851063
+Warm optimizer lr: 80.0
+Val acc before epoch 178: 0.6808510638297872
+Warm optimizer lr: 80.0
+Val acc before epoch 179: 0.6702127659574468
+Warm optimizer lr: 80.0
+Val acc before epoch 180: 0.6914893617021277
+Warm optimizer lr: 80.0
+Val acc before epoch 181: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 182: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 183: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 184: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 185: 0.6382978723404256
+Warm optimizer lr: 64.0
+Val acc before epoch 186: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 187: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 188: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 189: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 190: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 191: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 192: 0.8191489361702128
+Warm optimizer lr: 64.0
+Val acc before epoch 193: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 194: 0.7340425531914894
+Warm optimizer lr: 64.0
+Val acc before epoch 195: 0.7978723404255319
+Warm optimizer lr: 64.0
+Val acc before epoch 196: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 197: 0.7340425531914894
+Warm optimizer lr: 64.0
+Val acc before epoch 198: 0.7872340425531915
+Warm optimizer lr: 64.0
+Val acc before epoch 199: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 200: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 201: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 202: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 203: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 204: 0.7127659574468085
+Warm optimizer lr: 51.2
+Val acc before epoch 205: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 206: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 207: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 208: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 209: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 210: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 211: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 212: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 213: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 214: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 215: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 216: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 217: 0.7127659574468085
+Warm optimizer lr: 51.2
+Val acc before epoch 218: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 219: 0.8297872340425532
+Warm optimizer lr: 51.2
+Val acc before epoch 220: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 221: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 222: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 223: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 224: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 225: 0.723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 226: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 227: 0.7446808510638298
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 228: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 229: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 230: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 231: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 232: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 233: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 234: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 235: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 236: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 237: 0.851063829787234
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 238: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 239: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 240: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 241: 0.7872340425531915
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 242: 0.8191489361702128
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 243: 0.7659574468085106
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 244: 0.8191489361702128
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 245: 0.8297872340425532
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 246: 0.776595744680851
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 247: 0.8829787234042553
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 248: 0.7978723404255319
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 249: 0.8404255319148937
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 250: 0.8085106382978723
+Push epoch
+After push, before retraining last layer:
+	Train acc: 0.8637820512820513
+	Cluster: 0.6424551486968995
+	Separation: 0.49966188669204714
+Retraining last layer: 
+	Train acc at iteration 0: 0.8092948717948718
+	Train acc at iteration 1: 0.7980769230769231
+	Train acc at iteration 2: 0.7467948717948718
+	Train acc at iteration 3: 0.7580128205128205
+	Train acc at iteration 4: 0.75
+	Train acc at iteration 5: 0.7580128205128205
+	Train acc at iteration 6: 0.7083333333333334
+	Train acc at iteration 7: 0.7211538461538461
+	Train acc at iteration 8: 0.7564102564102564
+	Train acc at iteration 9: 0.7564102564102564
+	Train acc at iteration 10: 0.7740384615384616
+	Train acc at iteration 11: 0.7163461538461539
+	Train acc at iteration 12: 0.7371794871794872
+	Train acc at iteration 13: 0.780448717948718
+	Train acc at iteration 14: 0.7692307692307693
+	Train acc at iteration 15: 0.8076923076923077
+	Train acc at iteration 16: 0.780448717948718
+	Train acc at iteration 17: 0.7868589743589743
+	Train acc at iteration 18: 0.7916666666666666
+	Train acc at iteration 19: 0.8044871794871795
+	Train acc at iteration 20: 0.7788461538461539
+	Train acc at iteration 21: 0.7788461538461539
+	Train acc at iteration 22: 0.7884615384615384
+	Train acc at iteration 23: 0.7756410256410257
+	Train acc at iteration 24: 0.7964743589743589
+	Train acc at iteration 25: 0.8205128205128205
+	Train acc at iteration 26: 0.8637820512820513
+	Train acc at iteration 27: 0.8605769230769231
+	Train acc at iteration 28: 0.8589743589743589
+	Train acc at iteration 29: 0.8717948717948718
+	Train acc at iteration 30: 0.8573717948717948
+	Train acc at iteration 31: 0.8782051282051282
+	Train acc at iteration 32: 0.8910256410256411
+	Train acc at iteration 33: 0.8589743589743589
+	Train acc at iteration 34: 0.8669871794871795
+	Train acc at iteration 35: 0.8830128205128205
+	Train acc at iteration 36: 0.8894230769230769
+	Train acc at iteration 37: 0.8862179487179487
+	Train acc at iteration 38: 0.9006410256410257
+	Train acc at iteration 39: 0.875
+	Train acc at iteration 40: 0.8910256410256411
+	Train acc at iteration 41: 0.8830128205128205
+	Train acc at iteration 42: 0.8846153846153846
+	Train acc at iteration 43: 0.8974358974358975
+	Train acc at iteration 44: 0.9038461538461539
+	Train acc at iteration 45: 0.8942307692307693
+	Train acc at iteration 46: 0.8782051282051282
+	Train acc at iteration 47: 0.9022435897435898
+	Train acc at iteration 48: 0.8541666666666666
+	Train acc at iteration 49: 0.9102564102564102
+Val acc before epoch 251: 0.8617021276595744
+Warm optimizer lr: 100
+Val acc before epoch 252: 0.2127659574468085
+Warm optimizer lr: 100
+Val acc before epoch 253: 0.23404255319148937
+Warm optimizer lr: 100
+Val acc before epoch 254: 0.18085106382978725
+Warm optimizer lr: 100
+Val acc before epoch 255: 0.30851063829787234
+Warm optimizer lr: 100
+Val acc before epoch 256: 0.26595744680851063
+Warm optimizer lr: 100
+Val acc before epoch 257: 0.2872340425531915
+Warm optimizer lr: 100
+Val acc before epoch 258: 0.2978723404255319
+Warm optimizer lr: 100
+Val acc before epoch 259: 0.32978723404255317
+Warm optimizer lr: 100
+Val acc before epoch 260: 0.3191489361702128
+Warm optimizer lr: 100
+Val acc before epoch 261: 0.3829787234042553
+Warm optimizer lr: 100
+Val acc before epoch 262: 0.3617021276595745
+Warm optimizer lr: 80.0
+Val acc before epoch 263: 0.425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 264: 0.425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 265: 0.425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 266: 0.43617021276595747
+Warm optimizer lr: 80.0
+Val acc before epoch 267: 0.43617021276595747
+Warm optimizer lr: 80.0
+Val acc before epoch 268: 0.43617021276595747
+Warm optimizer lr: 80.0
+Val acc before epoch 269: 0.5212765957446809
+Warm optimizer lr: 80.0
+Val acc before epoch 270: 0.43617021276595747
+Warm optimizer lr: 80.0
+Val acc before epoch 271: 0.44680851063829785
+Warm optimizer lr: 80.0
+Val acc before epoch 272: 0.5319148936170213
+Warm optimizer lr: 80.0
+Val acc before epoch 273: 0.4787234042553192
+Warm optimizer lr: 80.0
+Val acc before epoch 274: 0.5106382978723404
+Warm optimizer lr: 80.0
+Val acc before epoch 275: 0.5638297872340425
+Warm optimizer lr: 80.0
+Val acc before epoch 276: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 277: 0.5851063829787234
+Warm optimizer lr: 80.0
+Val acc before epoch 278: 0.6063829787234043
+Warm optimizer lr: 80.0
+Val acc before epoch 279: 0.648936170212766
+Warm optimizer lr: 80.0
+Val acc before epoch 280: 0.5851063829787234
+Warm optimizer lr: 80.0
+Val acc before epoch 281: 0.6276595744680851
+Warm optimizer lr: 80.0
+Val acc before epoch 282: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 283: 0.6276595744680851
+Warm optimizer lr: 64.0
+Val acc before epoch 284: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 285: 0.5531914893617021
+Warm optimizer lr: 64.0
+Val acc before epoch 286: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 287: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 288: 0.648936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 289: 0.6702127659574468
+Warm optimizer lr: 64.0
+Val acc before epoch 290: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 291: 0.7021276595744681
+Warm optimizer lr: 64.0
+Val acc before epoch 292: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 293: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 294: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 295: 0.7021276595744681
+Warm optimizer lr: 64.0
+Val acc before epoch 296: 0.7021276595744681
+Warm optimizer lr: 64.0
+Val acc before epoch 297: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 298: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 299: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 300: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 301: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 302: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 303: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 304: 0.6914893617021277
+Warm optimizer lr: 51.2
+Val acc before epoch 305: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 306: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 307: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 308: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 309: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 310: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 311: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 312: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 313: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 314: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 315: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 316: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 317: 0.8297872340425532
+Warm optimizer lr: 51.2
+Val acc before epoch 318: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 319: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 320: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 321: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 322: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 323: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 324: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 325: 0.7446808510638298
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 326: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 327: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 328: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 329: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 330: 0.8617021276595744
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 331: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 332: 0.7553191489361702
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 333: 0.7446808510638298
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 334: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 335: 0.8617021276595744
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 336: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 337: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 338: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 339: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 340: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 341: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 342: 0.8617021276595744
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 343: 0.851063829787234
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 344: 0.8085106382978723
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 345: 0.7340425531914894
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 346: 0.8404255319148937
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 347: 0.8404255319148937
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 348: 0.7659574468085106
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 349: 0.8085106382978723
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 350: 0.8297872340425532
+Push epoch
+After push, before retraining last layer:
+	Train acc: 0.8621794871794872
+	Cluster: 0.6490200996398926
+	Separation: 0.5029543519020081
+Retraining last layer: 
+	Train acc at iteration 0: 0.8349358974358975
+	Train acc at iteration 1: 0.8253205128205128
+	Train acc at iteration 2: 0.7852564102564102
+	Train acc at iteration 3: 0.7884615384615384
+	Train acc at iteration 4: 0.7788461538461539
+	Train acc at iteration 5: 0.7836538461538461
+	Train acc at iteration 6: 0.7836538461538461
+	Train acc at iteration 7: 0.7772435897435898
+	Train acc at iteration 8: 0.7708333333333334
+	Train acc at iteration 9: 0.7596153846153846
+	Train acc at iteration 10: 0.7596153846153846
+	Train acc at iteration 11: 0.7980769230769231
+	Train acc at iteration 12: 0.8060897435897436
+	Train acc at iteration 13: 0.7852564102564102
+	Train acc at iteration 14: 0.7868589743589743
+	Train acc at iteration 15: 0.7836538461538461
+	Train acc at iteration 16: 0.7996794871794872
+	Train acc at iteration 17: 0.7852564102564102
+	Train acc at iteration 18: 0.8141025641025641
+	Train acc at iteration 19: 0.8237179487179487
+	Train acc at iteration 20: 0.8125
+	Train acc at iteration 21: 0.7836538461538461
+	Train acc at iteration 22: 0.7948717948717948
+	Train acc at iteration 23: 0.7788461538461539
+	Train acc at iteration 24: 0.8125
+	Train acc at iteration 25: 0.8301282051282052
+	Train acc at iteration 26: 0.8637820512820513
+	Train acc at iteration 27: 0.8862179487179487
+	Train acc at iteration 28: 0.8910256410256411
+	Train acc at iteration 29: 0.8685897435897436
+	Train acc at iteration 30: 0.8637820512820513
+	Train acc at iteration 31: 0.8733974358974359
+	Train acc at iteration 32: 0.8621794871794872
+	Train acc at iteration 33: 0.8814102564102564
+	Train acc at iteration 34: 0.8653846153846154
+	Train acc at iteration 35: 0.8894230769230769
+	Train acc at iteration 36: 0.8878205128205128
+	Train acc at iteration 37: 0.8766025641025641
+	Train acc at iteration 38: 0.8830128205128205
+	Train acc at iteration 39: 0.8653846153846154
+	Train acc at iteration 40: 0.8589743589743589
+	Train acc at iteration 41: 0.8958333333333334
+	Train acc at iteration 42: 0.875
+	Train acc at iteration 43: 0.8477564102564102
+	Train acc at iteration 44: 0.8990384615384616
+	Train acc at iteration 45: 0.8814102564102564
+	Train acc at iteration 46: 0.8894230769230769
+	Train acc at iteration 47: 0.8942307692307693
+	Train acc at iteration 48: 0.8846153846153846
+	Train acc at iteration 49: 0.8701923076923077
+Val acc before epoch 351: 0.7872340425531915
+Warm optimizer lr: 100
+Val acc before epoch 352: 0.1595744680851064
+Warm optimizer lr: 100
+Val acc before epoch 353: 0.1702127659574468
+Warm optimizer lr: 100
+Val acc before epoch 354: 0.22340425531914893
+Warm optimizer lr: 100
+Val acc before epoch 355: 0.22340425531914893
+Warm optimizer lr: 100
+Val acc before epoch 356: 0.2553191489361702
+Warm optimizer lr: 100
+Val acc before epoch 357: 0.2553191489361702
+Warm optimizer lr: 100
+Val acc before epoch 358: 0.30851063829787234
+Warm optimizer lr: 100
+Val acc before epoch 359: 0.2765957446808511
+Warm optimizer lr: 100
+Val acc before epoch 360: 0.2872340425531915
+Warm optimizer lr: 100
+Val acc before epoch 361: 0.35106382978723405
+Warm optimizer lr: 100
+Val acc before epoch 362: 0.35106382978723405
+Warm optimizer lr: 100
+Val acc before epoch 363: 0.3617021276595745
+Warm optimizer lr: 80.0
+Val acc before epoch 364: 0.425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 365: 0.46808510638297873
+Warm optimizer lr: 80.0
+Val acc before epoch 366: 0.46808510638297873
+Warm optimizer lr: 80.0
+Val acc before epoch 367: 0.5
+Warm optimizer lr: 80.0
+Val acc before epoch 368: 0.5
+Warm optimizer lr: 80.0
+Val acc before epoch 369: 0.4574468085106383
+Warm optimizer lr: 80.0
+Val acc before epoch 370: 0.4574468085106383
+Warm optimizer lr: 80.0
+Val acc before epoch 371: 0.5
+Warm optimizer lr: 80.0
+Val acc before epoch 372: 0.5
+Warm optimizer lr: 80.0
+Val acc before epoch 373: 0.46808510638297873
+Warm optimizer lr: 80.0
+Val acc before epoch 374: 0.5319148936170213
+Warm optimizer lr: 80.0
+Val acc before epoch 375: 0.5425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 376: 0.5638297872340425
+Warm optimizer lr: 80.0
+Val acc before epoch 377: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 378: 0.5425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 379: 0.5851063829787234
+Warm optimizer lr: 80.0
+Val acc before epoch 380: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 381: 0.5106382978723404
+Warm optimizer lr: 80.0
+Val acc before epoch 382: 0.6382978723404256
+Warm optimizer lr: 80.0
+Val acc before epoch 383: 0.5638297872340425
+Warm optimizer lr: 64.0
+Val acc before epoch 384: 0.5851063829787234
+Warm optimizer lr: 64.0
+Val acc before epoch 385: 0.5425531914893617
+Warm optimizer lr: 64.0
+Val acc before epoch 386: 0.5425531914893617
+Warm optimizer lr: 64.0
+Val acc before epoch 387: 0.648936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 388: 0.5957446808510638
+Warm optimizer lr: 64.0
+Val acc before epoch 389: 0.648936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 390: 0.6063829787234043
+Warm optimizer lr: 64.0
+Val acc before epoch 391: 0.648936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 392: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 393: 0.6170212765957447
+Warm optimizer lr: 64.0
+Val acc before epoch 394: 0.5851063829787234
+Warm optimizer lr: 64.0
+Val acc before epoch 395: 0.7021276595744681
+Warm optimizer lr: 64.0
+Val acc before epoch 396: 0.6382978723404256
+Warm optimizer lr: 64.0
+Val acc before epoch 397: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 398: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 399: 0.6702127659574468
+Warm optimizer lr: 64.0
+Val acc before epoch 400: 0.5851063829787234
+Warm optimizer lr: 64.0
+Val acc before epoch 401: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 402: 0.6170212765957447
+Warm optimizer lr: 64.0
+Val acc before epoch 403: 0.6382978723404256
+Warm optimizer lr: 51.2
+Val acc before epoch 404: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 405: 0.6914893617021277
+Warm optimizer lr: 51.2
+Val acc before epoch 406: 0.6276595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 407: 0.6382978723404256
+Warm optimizer lr: 51.2
+Val acc before epoch 408: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 409: 0.7021276595744681
+Warm optimizer lr: 51.2
+Val acc before epoch 410: 0.7021276595744681
+Warm optimizer lr: 51.2
+Val acc before epoch 411: 0.6808510638297872
+Warm optimizer lr: 51.2
+Val acc before epoch 412: 0.6808510638297872
+Warm optimizer lr: 51.2
+Val acc before epoch 413: 0.7127659574468085
+Warm optimizer lr: 51.2
+Val acc before epoch 414: 0.6808510638297872
+Warm optimizer lr: 51.2
+Val acc before epoch 415: 0.7021276595744681
+Warm optimizer lr: 51.2
+Val acc before epoch 416: 0.7127659574468085
+Warm optimizer lr: 51.2
+Val acc before epoch 417: 0.6702127659574468
+Warm optimizer lr: 51.2
+Val acc before epoch 418: 0.648936170212766
+Warm optimizer lr: 51.2
+Val acc before epoch 419: 0.6808510638297872
+Warm optimizer lr: 51.2
+Val acc before epoch 420: 0.6595744680851063
+Warm optimizer lr: 51.2
+Val acc before epoch 421: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 422: 0.7127659574468085
+Warm optimizer lr: 51.2
+Val acc before epoch 423: 0.6914893617021277
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 424: 0.7446808510638298
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 425: 0.7340425531914894
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 426: 0.7340425531914894
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 427: 0.7340425531914894
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 428: 0.723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 429: 0.7021276595744681
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 430: 0.7340425531914894
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 431: 0.7553191489361702
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 432: 0.7021276595744681
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 433: 0.7127659574468085
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 434: 0.723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 435: 0.7127659574468085
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 436: 0.7340425531914894
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 437: 0.7340425531914894
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 438: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 439: 0.723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 440: 0.7340425531914894
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 441: 0.7021276595744681
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 442: 0.6808510638297872
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 443: 0.7872340425531915
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 444: 0.7340425531914894
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 445: 0.723404255319149
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 446: 0.776595744680851
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 447: 0.7446808510638298
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 448: 0.7659574468085106
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 449: 0.7340425531914894
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 450: 0.7446808510638298
+Push epoch
+After push, before retraining last layer:
+	Train acc: 0.8525641025641025
+	Cluster: 0.6442803382873535
+	Separation: 0.5039423406124115
+Retraining last layer: 
+	Train acc at iteration 0: 0.8509615384615384
+	Train acc at iteration 1: 0.8221153846153846
+	Train acc at iteration 2: 0.8028846153846154
+	Train acc at iteration 3: 0.7884615384615384
+	Train acc at iteration 4: 0.8237179487179487
+	Train acc at iteration 5: 0.7692307692307693
+	Train acc at iteration 6: 0.7884615384615384
+	Train acc at iteration 7: 0.7916666666666666
+	Train acc at iteration 8: 0.7900641025641025
+	Train acc at iteration 9: 0.8125
+	Train acc at iteration 10: 0.8044871794871795
+	Train acc at iteration 11: 0.8125
+	Train acc at iteration 12: 0.8285256410256411
+	Train acc at iteration 13: 0.8125
+	Train acc at iteration 14: 0.7980769230769231
+	Train acc at iteration 15: 0.8301282051282052
+	Train acc at iteration 16: 0.8157051282051282
+	Train acc at iteration 17: 0.7980769230769231
+	Train acc at iteration 18: 0.7772435897435898
+	Train acc at iteration 19: 0.7868589743589743
+	Train acc at iteration 20: 0.8092948717948718
+	Train acc at iteration 21: 0.8173076923076923
+	Train acc at iteration 22: 0.7788461538461539
+	Train acc at iteration 23: 0.8189102564102564
+	Train acc at iteration 24: 0.8012820512820513
+	Train acc at iteration 25: 0.8012820512820513
+	Train acc at iteration 26: 0.8814102564102564
+	Train acc at iteration 27: 0.8621794871794872
+	Train acc at iteration 28: 0.8717948717948718
+	Train acc at iteration 29: 0.8685897435897436
+	Train acc at iteration 30: 0.8653846153846154
+	Train acc at iteration 31: 0.875
+	Train acc at iteration 32: 0.8557692307692307
+	Train acc at iteration 33: 0.8557692307692307
+	Train acc at iteration 34: 0.8846153846153846
+	Train acc at iteration 35: 0.8589743589743589
+	Train acc at iteration 36: 0.8782051282051282
+	Train acc at iteration 37: 0.8846153846153846
+	Train acc at iteration 38: 0.8733974358974359
+	Train acc at iteration 39: 0.8653846153846154
+	Train acc at iteration 40: 0.8846153846153846
+	Train acc at iteration 41: 0.8958333333333334
+	Train acc at iteration 42: 0.8653846153846154
+	Train acc at iteration 43: 0.8637820512820513
+	Train acc at iteration 44: 0.8605769230769231
+	Train acc at iteration 45: 0.8509615384615384
+	Train acc at iteration 46: 0.8541666666666666
+	Train acc at iteration 47: 0.8637820512820513
+	Train acc at iteration 48: 0.8782051282051282
+	Train acc at iteration 49: 0.8830128205128205
+Val acc before epoch 451: 0.776595744680851
+Warm optimizer lr: 100
+Val acc before epoch 452: 0.1276595744680851
+Warm optimizer lr: 100
+Val acc before epoch 453: 0.1276595744680851
+Warm optimizer lr: 100
+Val acc before epoch 454: 0.18085106382978725
+Warm optimizer lr: 100
+Val acc before epoch 455: 0.18085106382978725
+Warm optimizer lr: 100
+Val acc before epoch 456: 0.2553191489361702
+Warm optimizer lr: 100
+Val acc before epoch 457: 0.2553191489361702
+Warm optimizer lr: 100
+Val acc before epoch 458: 0.2978723404255319
+Warm optimizer lr: 100
+Val acc before epoch 459: 0.3404255319148936
+Warm optimizer lr: 100
+Val acc before epoch 460: 0.3829787234042553
+Warm optimizer lr: 100
+Val acc before epoch 461: 0.39361702127659576
+Warm optimizer lr: 100
+Val acc before epoch 462: 0.39361702127659576
+Warm optimizer lr: 100
+Val acc before epoch 463: 0.3617021276595745
+Warm optimizer lr: 100
+Val acc before epoch 464: 0.43617021276595747
+Warm optimizer lr: 80.0
+Val acc before epoch 465: 0.44680851063829785
+Warm optimizer lr: 80.0
+Val acc before epoch 466: 0.4787234042553192
+Warm optimizer lr: 80.0
+Val acc before epoch 467: 0.44680851063829785
+Warm optimizer lr: 80.0
+Val acc before epoch 468: 0.48936170212765956
+Warm optimizer lr: 80.0
+Val acc before epoch 469: 0.48936170212765956
+Warm optimizer lr: 80.0
+Val acc before epoch 470: 0.48936170212765956
+Warm optimizer lr: 80.0
+Val acc before epoch 471: 0.5425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 472: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 473: 0.4787234042553192
+Warm optimizer lr: 80.0
+Val acc before epoch 474: 0.48936170212765956
+Warm optimizer lr: 80.0
+Val acc before epoch 475: 0.6063829787234043
+Warm optimizer lr: 80.0
+Val acc before epoch 476: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 477: 0.46808510638297873
+Warm optimizer lr: 80.0
+Val acc before epoch 478: 0.6382978723404256
+Warm optimizer lr: 80.0
+Val acc before epoch 479: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 480: 0.6382978723404256
+Warm optimizer lr: 80.0
+Val acc before epoch 481: 0.5851063829787234
+Warm optimizer lr: 80.0
+Val acc before epoch 482: 0.6276595744680851
+Warm optimizer lr: 80.0
+Val acc before epoch 483: 0.648936170212766
+Warm optimizer lr: 80.0
+Val acc before epoch 484: 0.6382978723404256
+Warm optimizer lr: 64.0
+Val acc before epoch 485: 0.7021276595744681
+Warm optimizer lr: 64.0
+Val acc before epoch 486: 0.574468085106383
+Warm optimizer lr: 64.0
+Val acc before epoch 487: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 488: 0.648936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 489: 0.6063829787234043
+Warm optimizer lr: 64.0
+Val acc before epoch 490: 0.648936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 491: 0.6276595744680851
+Warm optimizer lr: 64.0
+Val acc before epoch 492: 0.648936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 493: 0.7021276595744681
+Warm optimizer lr: 64.0
+Val acc before epoch 494: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 495: 0.648936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 496: 0.6276595744680851
+Warm optimizer lr: 64.0
+Val acc before epoch 497: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 498: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 499: 0.6702127659574468
+Warm optimizer lr: 64.0
+Val acc before epoch 500: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 501: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 502: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 503: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 504: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 505: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 506: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 507: 0.648936170212766
+Warm optimizer lr: 51.2
+Val acc before epoch 508: 0.6595744680851063
+Warm optimizer lr: 51.2
+Val acc before epoch 509: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 510: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 511: 0.6914893617021277
+Warm optimizer lr: 51.2
+Val acc before epoch 512: 0.7127659574468085
+Warm optimizer lr: 51.2
+Val acc before epoch 513: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 514: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 515: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 516: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 517: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 518: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 519: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 520: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 521: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 522: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 523: 0.7127659574468085
+Warm optimizer lr: 51.2
+Val acc before epoch 524: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 525: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 526: 0.7446808510638298
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 527: 0.7340425531914894
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 528: 0.7127659574468085
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 529: 0.723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 530: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 531: 0.7553191489361702
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 532: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 533: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 534: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 535: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 536: 0.7446808510638298
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 537: 0.7553191489361702
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 538: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 539: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 540: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 541: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 542: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 543: 0.7553191489361702
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 544: 0.7872340425531915
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 545: 0.776595744680851
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 546: 0.8191489361702128
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 547: 0.7872340425531915
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 548: 0.723404255319149
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 549: 0.8404255319148937
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 550: 0.8617021276595744
+Push epoch
+After push, before retraining last layer:
+	Train acc: 0.8669871794871795
+	Cluster: 0.6488275647163391
+	Separation: 0.5049326241016387
+Retraining last layer: 
+	Train acc at iteration 0: 0.8413461538461539
+	Train acc at iteration 1: 0.8060897435897436
+	Train acc at iteration 2: 0.8253205128205128
+	Train acc at iteration 3: 0.8221153846153846
+	Train acc at iteration 4: 0.8237179487179487
+	Train acc at iteration 5: 0.8076923076923077
+	Train acc at iteration 6: 0.8333333333333334
+	Train acc at iteration 7: 0.8173076923076923
+	Train acc at iteration 8: 0.8205128205128205
+	Train acc at iteration 9: 0.7980769230769231
+	Train acc at iteration 10: 0.8157051282051282
+	Train acc at iteration 11: 0.8157051282051282
+	Train acc at iteration 12: 0.8108974358974359
+	Train acc at iteration 13: 0.8012820512820513
+	Train acc at iteration 14: 0.7900641025641025
+	Train acc at iteration 15: 0.7836538461538461
+	Train acc at iteration 16: 0.8157051282051282
+	Train acc at iteration 17: 0.782051282051282
+	Train acc at iteration 18: 0.8076923076923077
+	Train acc at iteration 19: 0.8253205128205128
+	Train acc at iteration 20: 0.8076923076923077
+	Train acc at iteration 21: 0.8237179487179487
+	Train acc at iteration 22: 0.8157051282051282
+	Train acc at iteration 23: 0.7980769230769231
+	Train acc at iteration 24: 0.8237179487179487
+	Train acc at iteration 25: 0.8189102564102564
+	Train acc at iteration 26: 0.8269230769230769
+	Train acc at iteration 27: 0.8413461538461539
+	Train acc at iteration 28: 0.8605769230769231
+	Train acc at iteration 29: 0.8701923076923077
+	Train acc at iteration 30: 0.844551282051282
+	Train acc at iteration 31: 0.8573717948717948
+	Train acc at iteration 32: 0.8397435897435898
+	Train acc at iteration 33: 0.844551282051282
+	Train acc at iteration 34: 0.8637820512820513
+	Train acc at iteration 35: 0.8205128205128205
+	Train acc at iteration 36: 0.8621794871794872
+	Train acc at iteration 37: 0.8621794871794872
+	Train acc at iteration 38: 0.8381410256410257
+	Train acc at iteration 39: 0.8573717948717948
+	Train acc at iteration 40: 0.8493589743589743
+	Train acc at iteration 41: 0.8477564102564102
+	Train acc at iteration 42: 0.8541666666666666
+	Train acc at iteration 43: 0.8637820512820513
+	Train acc at iteration 44: 0.8589743589743589
+	Train acc at iteration 45: 0.8413461538461539
+	Train acc at iteration 46: 0.8685897435897436
+	Train acc at iteration 47: 0.8541666666666666
+	Train acc at iteration 48: 0.8717948717948718
+	Train acc at iteration 49: 0.8557692307692307
+Val acc before epoch 551: 0.8297872340425532
+Warm optimizer lr: 100
+Val acc before epoch 552: 0.11702127659574468
+Warm optimizer lr: 100
+Val acc before epoch 553: 0.13829787234042554
+Warm optimizer lr: 100
+Val acc before epoch 554: 0.1595744680851064
+Warm optimizer lr: 100
+Val acc before epoch 555: 0.20212765957446807
+Warm optimizer lr: 100
+Val acc before epoch 556: 0.22340425531914893
+Warm optimizer lr: 100
+Val acc before epoch 557: 0.2127659574468085
+Warm optimizer lr: 100
+Val acc before epoch 558: 0.26595744680851063
+Warm optimizer lr: 100
+Val acc before epoch 559: 0.26595744680851063
+Warm optimizer lr: 100
+Val acc before epoch 560: 0.2978723404255319
+Warm optimizer lr: 100
+Val acc before epoch 561: 0.39361702127659576
+Warm optimizer lr: 100
+Val acc before epoch 562: 0.3617021276595745
+Warm optimizer lr: 100
+Val acc before epoch 563: 0.35106382978723405
+Warm optimizer lr: 100
+Val acc before epoch 564: 0.3404255319148936
+Warm optimizer lr: 100
+Val acc before epoch 565: 0.3723404255319149
+Warm optimizer lr: 80.0
+Val acc before epoch 566: 0.43617021276595747
+Warm optimizer lr: 80.0
+Val acc before epoch 567: 0.46808510638297873
+Warm optimizer lr: 80.0
+Val acc before epoch 568: 0.48936170212765956
+Warm optimizer lr: 80.0
+Val acc before epoch 569: 0.425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 570: 0.46808510638297873
+Warm optimizer lr: 80.0
+Val acc before epoch 571: 0.5319148936170213
+Warm optimizer lr: 80.0
+Val acc before epoch 572: 0.425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 573: 0.46808510638297873
+Warm optimizer lr: 80.0
+Val acc before epoch 574: 0.48936170212765956
+Warm optimizer lr: 80.0
+Val acc before epoch 575: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 576: 0.48936170212765956
+Warm optimizer lr: 80.0
+Val acc before epoch 577: 0.5638297872340425
+Warm optimizer lr: 80.0
+Val acc before epoch 578: 0.6063829787234043
+Warm optimizer lr: 80.0
+Val acc before epoch 579: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 580: 0.5319148936170213
+Warm optimizer lr: 80.0
+Val acc before epoch 581: 0.5319148936170213
+Warm optimizer lr: 80.0
+Val acc before epoch 582: 0.6063829787234043
+Warm optimizer lr: 80.0
+Val acc before epoch 583: 0.6063829787234043
+Warm optimizer lr: 80.0
+Val acc before epoch 584: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 585: 0.5851063829787234
+Warm optimizer lr: 64.0
+Val acc before epoch 586: 0.5851063829787234
+Warm optimizer lr: 64.0
+Val acc before epoch 587: 0.6276595744680851
+Warm optimizer lr: 64.0
+Val acc before epoch 588: 0.574468085106383
+Warm optimizer lr: 64.0
+Val acc before epoch 589: 0.648936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 590: 0.5957446808510638
+Warm optimizer lr: 64.0
+Val acc before epoch 591: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 592: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 593: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 594: 0.6170212765957447
+Warm optimizer lr: 64.0
+Val acc before epoch 595: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 596: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 597: 0.6382978723404256
+Warm optimizer lr: 64.0
+Val acc before epoch 598: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 599: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 600: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 601: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 602: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 603: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 604: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 605: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 606: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 607: 0.7021276595744681
+Warm optimizer lr: 51.2
+Val acc before epoch 608: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 609: 0.6702127659574468
+Warm optimizer lr: 51.2
+Val acc before epoch 610: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 611: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 612: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 613: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 614: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 615: 0.8191489361702128
+Warm optimizer lr: 51.2
+Val acc before epoch 616: 0.6914893617021277
+Warm optimizer lr: 51.2
+Val acc before epoch 617: 0.8404255319148937
+Warm optimizer lr: 51.2
+Val acc before epoch 618: 0.8297872340425532
+Warm optimizer lr: 51.2
+Val acc before epoch 619: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 620: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 621: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 622: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 623: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 624: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 625: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 626: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 627: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 628: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 629: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 630: 0.7021276595744681
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 631: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 632: 0.7553191489361702
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 633: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 634: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 635: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 636: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 637: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 638: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 639: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 640: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 641: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 642: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 643: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 644: 0.851063829787234
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 645: 0.851063829787234
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 646: 0.8085106382978723
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 647: 0.851063829787234
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 648: 0.851063829787234
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 649: 0.8191489361702128
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 650: 0.776595744680851
+Push epoch
+After push, before retraining last layer:
+	Train acc: 0.875
+	Cluster: 0.6517205238342285
+	Separation: 0.5059208154678345
+Retraining last layer: 
+	Train acc at iteration 0: 0.8205128205128205
+	Train acc at iteration 1: 0.8076923076923077
+	Train acc at iteration 2: 0.8092948717948718
+	Train acc at iteration 3: 0.8157051282051282
+	Train acc at iteration 4: 0.8012820512820513
+	Train acc at iteration 5: 0.8397435897435898
+	Train acc at iteration 6: 0.8157051282051282
+	Train acc at iteration 7: 0.8173076923076923
+	Train acc at iteration 8: 0.8076923076923077
+	Train acc at iteration 9: 0.8076923076923077
+	Train acc at iteration 10: 0.8108974358974359
+	Train acc at iteration 11: 0.8381410256410257
+	Train acc at iteration 12: 0.8317307692307693
+	Train acc at iteration 13: 0.8365384615384616
+	Train acc at iteration 14: 0.8221153846153846
+	Train acc at iteration 15: 0.7996794871794872
+	Train acc at iteration 16: 0.8028846153846154
+	Train acc at iteration 17: 0.8237179487179487
+	Train acc at iteration 18: 0.8125
+	Train acc at iteration 19: 0.8221153846153846
+	Train acc at iteration 20: 0.8157051282051282
+	Train acc at iteration 21: 0.7996794871794872
+	Train acc at iteration 22: 0.8509615384615384
+	Train acc at iteration 23: 0.8461538461538461
+	Train acc at iteration 24: 0.8333333333333334
+	Train acc at iteration 25: 0.8493589743589743
+	Train acc at iteration 26: 0.8557692307692307
+	Train acc at iteration 27: 0.8413461538461539
+	Train acc at iteration 28: 0.8493589743589743
+	Train acc at iteration 29: 0.842948717948718
+	Train acc at iteration 30: 0.8637820512820513
+	Train acc at iteration 31: 0.8589743589743589
+	Train acc at iteration 32: 0.8589743589743589
+	Train acc at iteration 33: 0.8573717948717948
+	Train acc at iteration 34: 0.8653846153846154
+	Train acc at iteration 35: 0.8701923076923077
+	Train acc at iteration 36: 0.8525641025641025
+	Train acc at iteration 37: 0.8461538461538461
+	Train acc at iteration 38: 0.8525641025641025
+	Train acc at iteration 39: 0.8766025641025641
+	Train acc at iteration 40: 0.8477564102564102
+	Train acc at iteration 41: 0.8413461538461539
+	Train acc at iteration 42: 0.8557692307692307
+	Train acc at iteration 43: 0.8461538461538461
+	Train acc at iteration 44: 0.8397435897435898
+	Train acc at iteration 45: 0.8701923076923077
+	Train acc at iteration 46: 0.8509615384615384
+	Train acc at iteration 47: 0.8493589743589743
+	Train acc at iteration 48: 0.8413461538461539
+	Train acc at iteration 49: 0.8573717948717948
+Val acc before epoch 651: 0.7446808510638298
+Warm optimizer lr: 100
+Val acc before epoch 652: 0.1595744680851064
+Warm optimizer lr: 100
+Val acc before epoch 653: 0.20212765957446807
+Warm optimizer lr: 100
+Val acc before epoch 654: 0.18085106382978725
+Warm optimizer lr: 100
+Val acc before epoch 655: 0.2765957446808511
+Warm optimizer lr: 100
+Val acc before epoch 656: 0.24468085106382978
+Warm optimizer lr: 100
+Val acc before epoch 657: 0.22340425531914893
+Warm optimizer lr: 100
+Val acc before epoch 658: 0.3191489361702128
+Warm optimizer lr: 100
+Val acc before epoch 659: 0.32978723404255317
+Warm optimizer lr: 100
+Val acc before epoch 660: 0.35106382978723405
+Warm optimizer lr: 100
+Val acc before epoch 661: 0.39361702127659576
+Warm optimizer lr: 100
+Val acc before epoch 662: 0.3723404255319149
+Warm optimizer lr: 100
+Val acc before epoch 663: 0.39361702127659576
+Warm optimizer lr: 100
+Val acc before epoch 664: 0.4787234042553192
+Warm optimizer lr: 100
+Val acc before epoch 665: 0.48936170212765956
+Warm optimizer lr: 100
+Val acc before epoch 666: 0.48936170212765956
+Warm optimizer lr: 80.0
+Val acc before epoch 667: 0.5106382978723404
+Warm optimizer lr: 80.0
+Val acc before epoch 668: 0.5212765957446809
+Warm optimizer lr: 80.0
+Val acc before epoch 669: 0.5425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 670: 0.5
+Warm optimizer lr: 80.0
+Val acc before epoch 671: 0.5638297872340425
+Warm optimizer lr: 80.0
+Val acc before epoch 672: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 673: 0.5851063829787234
+Warm optimizer lr: 80.0
+Val acc before epoch 674: 0.648936170212766
+Warm optimizer lr: 80.0
+Val acc before epoch 675: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 676: 0.6276595744680851
+Warm optimizer lr: 80.0
+Val acc before epoch 677: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 678: 0.6382978723404256
+Warm optimizer lr: 80.0
+Val acc before epoch 679: 0.6063829787234043
+Warm optimizer lr: 80.0
+Val acc before epoch 680: 0.6276595744680851
+Warm optimizer lr: 80.0
+Val acc before epoch 681: 0.6702127659574468
+Warm optimizer lr: 80.0
+Val acc before epoch 682: 0.6914893617021277
+Warm optimizer lr: 80.0
+Val acc before epoch 683: 0.7021276595744681
+Warm optimizer lr: 80.0
+Val acc before epoch 684: 0.7127659574468085
+Warm optimizer lr: 80.0
+Val acc before epoch 685: 0.7553191489361702
+Warm optimizer lr: 80.0
+Val acc before epoch 686: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 687: 0.6702127659574468
+Warm optimizer lr: 64.0
+Val acc before epoch 688: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 689: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 690: 0.7021276595744681
+Warm optimizer lr: 64.0
+Val acc before epoch 691: 0.6702127659574468
+Warm optimizer lr: 64.0
+Val acc before epoch 692: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 693: 0.7340425531914894
+Warm optimizer lr: 64.0
+Val acc before epoch 694: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 695: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 696: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 697: 0.7021276595744681
+Warm optimizer lr: 64.0
+Val acc before epoch 698: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 699: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 700: 0.776595744680851
+Warm optimizer lr: 64.0
+Val acc before epoch 701: 0.8085106382978723
+Warm optimizer lr: 64.0
+Val acc before epoch 702: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 703: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 704: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 705: 0.7659574468085106
+Warm optimizer lr: 64.0
+Val acc before epoch 706: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 707: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 708: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 709: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 710: 0.8191489361702128
+Warm optimizer lr: 51.2
+Val acc before epoch 711: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 712: 0.8191489361702128
+Warm optimizer lr: 51.2
+Val acc before epoch 713: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 714: 0.8191489361702128
+Warm optimizer lr: 51.2
+Val acc before epoch 715: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 716: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 717: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 718: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 719: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 720: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 721: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 722: 0.851063829787234
+Warm optimizer lr: 51.2
+Val acc before epoch 723: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 724: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 725: 0.8085106382978723
+Warm optimizer lr: 51.2
+Val acc before epoch 726: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 727: 0.8723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 728: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 729: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 730: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 731: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 732: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 733: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 734: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 735: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 736: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 737: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 738: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 739: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 740: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 741: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 742: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 743: 0.8723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 744: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 745: 0.8723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 746: 0.8085106382978723
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 747: 0.851063829787234
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 748: 0.8617021276595744
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 749: 0.8085106382978723
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 750: 0.8297872340425532
+Push epoch
+After push, before retraining last layer:
+	Train acc: 0.8493589743589743
+	Cluster: 0.6489550232887268
+	Separation: 0.5075569450855255
+Retraining last layer: 
+	Train acc at iteration 0: 0.8301282051282052
+	Train acc at iteration 1: 0.8333333333333334
+	Train acc at iteration 2: 0.7852564102564102
+	Train acc at iteration 3: 0.8141025641025641
+	Train acc at iteration 4: 0.8285256410256411
+	Train acc at iteration 5: 0.8317307692307693
+	Train acc at iteration 6: 0.8237179487179487
+	Train acc at iteration 7: 0.7980769230769231
+	Train acc at iteration 8: 0.7932692307692307
+	Train acc at iteration 9: 0.8381410256410257
+	Train acc at iteration 10: 0.7996794871794872
+	Train acc at iteration 11: 0.8253205128205128
+	Train acc at iteration 12: 0.7900641025641025
+	Train acc at iteration 13: 0.8253205128205128
+	Train acc at iteration 14: 0.8028846153846154
+	Train acc at iteration 15: 0.7932692307692307
+	Train acc at iteration 16: 0.8189102564102564
+	Train acc at iteration 17: 0.780448717948718
+	Train acc at iteration 18: 0.8189102564102564
+	Train acc at iteration 19: 0.8253205128205128
+	Train acc at iteration 20: 0.8301282051282052
+	Train acc at iteration 21: 0.8365384615384616
+	Train acc at iteration 22: 0.8044871794871795
+	Train acc at iteration 23: 0.7932692307692307
+	Train acc at iteration 24: 0.8076923076923077
+	Train acc at iteration 25: 0.8349358974358975
+	Train acc at iteration 26: 0.8253205128205128
+	Train acc at iteration 27: 0.8333333333333334
+	Train acc at iteration 28: 0.8461538461538461
+	Train acc at iteration 29: 0.8669871794871795
+	Train acc at iteration 30: 0.8413461538461539
+	Train acc at iteration 31: 0.8653846153846154
+	Train acc at iteration 32: 0.842948717948718
+	Train acc at iteration 33: 0.8509615384615384
+	Train acc at iteration 34: 0.8493589743589743
+	Train acc at iteration 35: 0.8461538461538461
+	Train acc at iteration 36: 0.8589743589743589
+	Train acc at iteration 37: 0.8669871794871795
+	Train acc at iteration 38: 0.8573717948717948
+	Train acc at iteration 39: 0.8509615384615384
+	Train acc at iteration 40: 0.8701923076923077
+	Train acc at iteration 41: 0.844551282051282
+	Train acc at iteration 42: 0.8413461538461539
+	Train acc at iteration 43: 0.8685897435897436
+	Train acc at iteration 44: 0.8301282051282052
+	Train acc at iteration 45: 0.8621794871794872
+	Train acc at iteration 46: 0.844551282051282
+	Train acc at iteration 47: 0.8557692307692307
+	Train acc at iteration 48: 0.8493589743589743
+	Train acc at iteration 49: 0.8493589743589743
+Val acc before epoch 751: 0.8617021276595744
+Warm optimizer lr: 100
+Val acc before epoch 752: 0.2127659574468085
+Warm optimizer lr: 100
+Val acc before epoch 753: 0.24468085106382978
+Warm optimizer lr: 100
+Val acc before epoch 754: 0.24468085106382978
+Warm optimizer lr: 100
+Val acc before epoch 755: 0.30851063829787234
+Warm optimizer lr: 100
+Val acc before epoch 756: 0.30851063829787234
+Warm optimizer lr: 100
+Val acc before epoch 757: 0.2872340425531915
+Warm optimizer lr: 100
+Val acc before epoch 758: 0.3404255319148936
+Warm optimizer lr: 100
+Val acc before epoch 759: 0.4148936170212766
+Warm optimizer lr: 100
+Val acc before epoch 760: 0.40425531914893614
+Warm optimizer lr: 100
+Val acc before epoch 761: 0.39361702127659576
+Warm optimizer lr: 100
+Val acc before epoch 762: 0.3829787234042553
+Warm optimizer lr: 100
+Val acc before epoch 763: 0.4787234042553192
+Warm optimizer lr: 100
+Val acc before epoch 764: 0.44680851063829785
+Warm optimizer lr: 100
+Val acc before epoch 765: 0.5851063829787234
+Warm optimizer lr: 100
+Val acc before epoch 766: 0.5212765957446809
+Warm optimizer lr: 100
+Val acc before epoch 767: 0.44680851063829785
+Warm optimizer lr: 80.0
+Val acc before epoch 768: 0.5319148936170213
+Warm optimizer lr: 80.0
+Val acc before epoch 769: 0.5212765957446809
+Warm optimizer lr: 80.0
+Val acc before epoch 770: 0.5106382978723404
+Warm optimizer lr: 80.0
+Val acc before epoch 771: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 772: 0.6170212765957447
+Warm optimizer lr: 80.0
+Val acc before epoch 773: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 774: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 775: 0.6595744680851063
+Warm optimizer lr: 80.0
+Val acc before epoch 776: 0.574468085106383
+Warm optimizer lr: 80.0
+Val acc before epoch 777: 0.6276595744680851
+Warm optimizer lr: 80.0
+Val acc before epoch 778: 0.6382978723404256
+Warm optimizer lr: 80.0
+Val acc before epoch 779: 0.6063829787234043
+Warm optimizer lr: 80.0
+Val acc before epoch 780: 0.6170212765957447
+Warm optimizer lr: 80.0
+Val acc before epoch 781: 0.6382978723404256
+Warm optimizer lr: 80.0
+Val acc before epoch 782: 0.7021276595744681
+Warm optimizer lr: 80.0
+Val acc before epoch 783: 0.7127659574468085
+Warm optimizer lr: 80.0
+Val acc before epoch 784: 0.7340425531914894
+Warm optimizer lr: 80.0
+Val acc before epoch 785: 0.7127659574468085
+Warm optimizer lr: 80.0
+Val acc before epoch 786: 0.6170212765957447
+Warm optimizer lr: 80.0
+Val acc before epoch 787: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 788: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 789: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 790: 0.7021276595744681
+Warm optimizer lr: 64.0
+Val acc before epoch 791: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 792: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 793: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 794: 0.7340425531914894
+Warm optimizer lr: 64.0
+Val acc before epoch 795: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 796: 0.7340425531914894
+Warm optimizer lr: 64.0
+Val acc before epoch 797: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 798: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 799: 0.7659574468085106
+Warm optimizer lr: 64.0
+Val acc before epoch 800: 0.7340425531914894
+Warm optimizer lr: 64.0
+Val acc before epoch 801: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 802: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 803: 0.7340425531914894
+Warm optimizer lr: 64.0
+Val acc before epoch 804: 0.7659574468085106
+Warm optimizer lr: 64.0
+Val acc before epoch 805: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 806: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 807: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 808: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 809: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 810: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 811: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 812: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 813: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 814: 0.6914893617021277
+Warm optimizer lr: 51.2
+Val acc before epoch 815: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 816: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 817: 0.8085106382978723
+Warm optimizer lr: 51.2
+Val acc before epoch 818: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 819: 0.851063829787234
+Warm optimizer lr: 51.2
+Val acc before epoch 820: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 821: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 822: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 823: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 824: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 825: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 826: 0.8191489361702128
+Warm optimizer lr: 51.2
+Val acc before epoch 827: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 828: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 829: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 830: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 831: 0.8617021276595744
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 832: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 833: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 834: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 835: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 836: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 837: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 838: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 839: 0.851063829787234
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 840: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 841: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 842: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 843: 0.8723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 844: 0.8617021276595744
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 845: 0.851063829787234
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 846: 0.8723404255319149
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 847: 0.8404255319148937
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 848: 0.8404255319148937
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 849: 0.7659574468085106
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 850: 0.851063829787234
+Push epoch
+After push, before retraining last layer:
+	Train acc: 0.8573717948717948
+	Cluster: 0.6463171362876892
+	Separation: 0.5041761338710785
+Retraining last layer: 
+	Train acc at iteration 0: 0.8349358974358975
+	Train acc at iteration 1: 0.8333333333333334
+	Train acc at iteration 2: 0.8397435897435898
+	Train acc at iteration 3: 0.842948717948718
+	Train acc at iteration 4: 0.8205128205128205
+	Train acc at iteration 5: 0.8108974358974359
+	Train acc at iteration 6: 0.8092948717948718
+	Train acc at iteration 7: 0.7916666666666666
+	Train acc at iteration 8: 0.8173076923076923
+	Train acc at iteration 9: 0.8060897435897436
+	Train acc at iteration 10: 0.8189102564102564
+	Train acc at iteration 11: 0.7900641025641025
+	Train acc at iteration 12: 0.7996794871794872
+	Train acc at iteration 13: 0.7948717948717948
+	Train acc at iteration 14: 0.7852564102564102
+	Train acc at iteration 15: 0.7964743589743589
+	Train acc at iteration 16: 0.7836538461538461
+	Train acc at iteration 17: 0.7980769230769231
+	Train acc at iteration 18: 0.7676282051282052
+	Train acc at iteration 19: 0.7884615384615384
+	Train acc at iteration 20: 0.7884615384615384
+	Train acc at iteration 21: 0.8173076923076923
+	Train acc at iteration 22: 0.8108974358974359
+	Train acc at iteration 23: 0.8108974358974359
+	Train acc at iteration 24: 0.8173076923076923
+	Train acc at iteration 25: 0.8381410256410257
+	Train acc at iteration 26: 0.8253205128205128
+	Train acc at iteration 27: 0.8493589743589743
+	Train acc at iteration 28: 0.8509615384615384
+	Train acc at iteration 29: 0.8365384615384616
+	Train acc at iteration 30: 0.8397435897435898
+	Train acc at iteration 31: 0.842948717948718
+	Train acc at iteration 32: 0.8397435897435898
+	Train acc at iteration 33: 0.8477564102564102
+	Train acc at iteration 34: 0.8173076923076923
+	Train acc at iteration 35: 0.8509615384615384
+	Train acc at iteration 36: 0.8525641025641025
+	Train acc at iteration 37: 0.8349358974358975
+	Train acc at iteration 38: 0.8285256410256411
+	Train acc at iteration 39: 0.8477564102564102
+	Train acc at iteration 40: 0.844551282051282
+	Train acc at iteration 41: 0.8557692307692307
+	Train acc at iteration 42: 0.8173076923076923
+	Train acc at iteration 43: 0.8541666666666666
+	Train acc at iteration 44: 0.8285256410256411
+	Train acc at iteration 45: 0.8365384615384616
+	Train acc at iteration 46: 0.8493589743589743
+	Train acc at iteration 47: 0.8493589743589743
+	Train acc at iteration 48: 0.8493589743589743
+	Train acc at iteration 49: 0.8365384615384616
+Val acc before epoch 851: 0.7340425531914894
+Warm optimizer lr: 100
+Val acc before epoch 852: 0.11702127659574468
+Warm optimizer lr: 100
+Val acc before epoch 853: 0.14893617021276595
+Warm optimizer lr: 100
+Val acc before epoch 854: 0.13829787234042554
+Warm optimizer lr: 100
+Val acc before epoch 855: 0.26595744680851063
+Warm optimizer lr: 100
+Val acc before epoch 856: 0.2978723404255319
+Warm optimizer lr: 100
+Val acc before epoch 857: 0.2765957446808511
+Warm optimizer lr: 100
+Val acc before epoch 858: 0.2978723404255319
+Warm optimizer lr: 100
+Val acc before epoch 859: 0.3191489361702128
+Warm optimizer lr: 100
+Val acc before epoch 860: 0.32978723404255317
+Warm optimizer lr: 100
+Val acc before epoch 861: 0.44680851063829785
+Warm optimizer lr: 100
+Val acc before epoch 862: 0.40425531914893614
+Warm optimizer lr: 100
+Val acc before epoch 863: 0.44680851063829785
+Warm optimizer lr: 100
+Val acc before epoch 864: 0.4574468085106383
+Warm optimizer lr: 100
+Val acc before epoch 865: 0.40425531914893614
+Warm optimizer lr: 100
+Val acc before epoch 866: 0.46808510638297873
+Warm optimizer lr: 100
+Val acc before epoch 867: 0.43617021276595747
+Warm optimizer lr: 100
+Val acc before epoch 868: 0.5319148936170213
+Warm optimizer lr: 80.0
+Val acc before epoch 869: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 870: 0.5425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 871: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 872: 0.4574468085106383
+Warm optimizer lr: 80.0
+Val acc before epoch 873: 0.5638297872340425
+Warm optimizer lr: 80.0
+Val acc before epoch 874: 0.5531914893617021
+Warm optimizer lr: 80.0
+Val acc before epoch 875: 0.5851063829787234
+Warm optimizer lr: 80.0
+Val acc before epoch 876: 0.6276595744680851
+Warm optimizer lr: 80.0
+Val acc before epoch 877: 0.5638297872340425
+Warm optimizer lr: 80.0
+Val acc before epoch 878: 0.6170212765957447
+Warm optimizer lr: 80.0
+Val acc before epoch 879: 0.648936170212766
+Warm optimizer lr: 80.0
+Val acc before epoch 880: 0.6595744680851063
+Warm optimizer lr: 80.0
+Val acc before epoch 881: 0.6808510638297872
+Warm optimizer lr: 80.0
+Val acc before epoch 882: 0.648936170212766
+Warm optimizer lr: 80.0
+Val acc before epoch 883: 0.6170212765957447
+Warm optimizer lr: 80.0
+Val acc before epoch 884: 0.648936170212766
+Warm optimizer lr: 80.0
+Val acc before epoch 885: 0.6595744680851063
+Warm optimizer lr: 80.0
+Val acc before epoch 886: 0.6914893617021277
+Warm optimizer lr: 80.0
+Val acc before epoch 887: 0.6595744680851063
+Warm optimizer lr: 80.0
+Val acc before epoch 888: 0.5851063829787234
+Warm optimizer lr: 64.0
+Val acc before epoch 889: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 890: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 891: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 892: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 893: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 894: 0.6702127659574468
+Warm optimizer lr: 64.0
+Val acc before epoch 895: 0.7127659574468085
+Warm optimizer lr: 64.0
+Val acc before epoch 896: 0.6702127659574468
+Warm optimizer lr: 64.0
+Val acc before epoch 897: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 898: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 899: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 900: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 901: 0.7021276595744681
+Warm optimizer lr: 64.0
+Val acc before epoch 902: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 903: 0.6702127659574468
+Warm optimizer lr: 64.0
+Val acc before epoch 904: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 905: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 906: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 907: 0.7659574468085106
+Warm optimizer lr: 64.0
+Val acc before epoch 908: 0.6914893617021277
+Warm optimizer lr: 51.2
+Val acc before epoch 909: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 910: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 911: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 912: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 913: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 914: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 915: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 916: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 917: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 918: 0.7446808510638298
+Warm optimizer lr: 51.2
+Val acc before epoch 919: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 920: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 921: 0.723404255319149
+Warm optimizer lr: 51.2
+Val acc before epoch 922: 0.8085106382978723
+Warm optimizer lr: 51.2
+Val acc before epoch 923: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 924: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 925: 0.7340425531914894
+Warm optimizer lr: 51.2
+Val acc before epoch 926: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 927: 0.7553191489361702
+Warm optimizer lr: 51.2
+Val acc before epoch 928: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 929: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 930: 0.7021276595744681
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 931: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 932: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 933: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 934: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 935: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 936: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 937: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 938: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 939: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 940: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 941: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 942: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 943: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 944: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 945: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 946: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 947: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 948: 0.7446808510638298
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 949: 0.776595744680851
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 950: 0.8085106382978723
+Push epoch
+After push, before retraining last layer:
+	Train acc: 0.8413461538461539
+	Cluster: 0.6424444437026977
+	Separation: 0.5048703074455261
+Retraining last layer: 
+	Train acc at iteration 0: 0.8365384615384616
+	Train acc at iteration 1: 0.8301282051282052
+	Train acc at iteration 2: 0.8141025641025641
+	Train acc at iteration 3: 0.8125
+	Train acc at iteration 4: 0.8060897435897436
+	Train acc at iteration 5: 0.8060897435897436
+	Train acc at iteration 6: 0.7948717948717948
+	Train acc at iteration 7: 0.8108974358974359
+	Train acc at iteration 8: 0.7980769230769231
+	Train acc at iteration 9: 0.8141025641025641
+	Train acc at iteration 10: 0.8157051282051282
+	Train acc at iteration 11: 0.8237179487179487
+	Train acc at iteration 12: 0.7980769230769231
+	Train acc at iteration 13: 0.8253205128205128
+	Train acc at iteration 14: 0.7980769230769231
+	Train acc at iteration 15: 0.8189102564102564
+	Train acc at iteration 16: 0.8076923076923077
+	Train acc at iteration 17: 0.8189102564102564
+	Train acc at iteration 18: 0.8141025641025641
+	Train acc at iteration 19: 0.8237179487179487
+	Train acc at iteration 20: 0.8301282051282052
+	Train acc at iteration 21: 0.8173076923076923
+	Train acc at iteration 22: 0.8189102564102564
+	Train acc at iteration 23: 0.8108974358974359
+	Train acc at iteration 24: 0.8237179487179487
+	Train acc at iteration 25: 0.844551282051282
+	Train acc at iteration 26: 0.8349358974358975
+	Train acc at iteration 27: 0.8173076923076923
+	Train acc at iteration 28: 0.8221153846153846
+	Train acc at iteration 29: 0.8381410256410257
+	Train acc at iteration 30: 0.8413461538461539
+	Train acc at iteration 31: 0.8365384615384616
+	Train acc at iteration 32: 0.8269230769230769
+	Train acc at iteration 33: 0.8333333333333334
+	Train acc at iteration 34: 0.8669871794871795
+	Train acc at iteration 35: 0.8349358974358975
+	Train acc at iteration 36: 0.8349358974358975
+	Train acc at iteration 37: 0.8413461538461539
+	Train acc at iteration 38: 0.8237179487179487
+	Train acc at iteration 39: 0.8541666666666666
+	Train acc at iteration 40: 0.8525641025641025
+	Train acc at iteration 41: 0.8285256410256411
+	Train acc at iteration 42: 0.8285256410256411
+	Train acc at iteration 43: 0.844551282051282
+	Train acc at iteration 44: 0.8509615384615384
+	Train acc at iteration 45: 0.8477564102564102
+	Train acc at iteration 46: 0.8237179487179487
+	Train acc at iteration 47: 0.8509615384615384
+	Train acc at iteration 48: 0.8349358974358975
+	Train acc at iteration 49: 0.8830128205128205
+Val acc before epoch 951: 0.7872340425531915
+Warm optimizer lr: 100
+Val acc before epoch 952: 0.14893617021276595
+Warm optimizer lr: 100
+Val acc before epoch 953: 0.1276595744680851
+Warm optimizer lr: 100
+Val acc before epoch 954: 0.24468085106382978
+Warm optimizer lr: 100
+Val acc before epoch 955: 0.1702127659574468
+Warm optimizer lr: 100
+Val acc before epoch 956: 0.2872340425531915
+Warm optimizer lr: 100
+Val acc before epoch 957: 0.3191489361702128
+Warm optimizer lr: 100
+Val acc before epoch 958: 0.3404255319148936
+Warm optimizer lr: 100
+Val acc before epoch 959: 0.43617021276595747
+Warm optimizer lr: 100
+Val acc before epoch 960: 0.40425531914893614
+Warm optimizer lr: 100
+Val acc before epoch 961: 0.4148936170212766
+Warm optimizer lr: 100
+Val acc before epoch 962: 0.425531914893617
+Warm optimizer lr: 100
+Val acc before epoch 963: 0.4787234042553192
+Warm optimizer lr: 100
+Val acc before epoch 964: 0.44680851063829785
+Warm optimizer lr: 100
+Val acc before epoch 965: 0.48936170212765956
+Warm optimizer lr: 100
+Val acc before epoch 966: 0.5106382978723404
+Warm optimizer lr: 100
+Val acc before epoch 967: 0.5106382978723404
+Warm optimizer lr: 100
+Val acc before epoch 968: 0.5851063829787234
+Warm optimizer lr: 100
+Val acc before epoch 969: 0.5106382978723404
+Warm optimizer lr: 80.0
+Val acc before epoch 970: 0.5425531914893617
+Warm optimizer lr: 80.0
+Val acc before epoch 971: 0.6063829787234043
+Warm optimizer lr: 80.0
+Val acc before epoch 972: 0.6170212765957447
+Warm optimizer lr: 80.0
+Val acc before epoch 973: 0.5638297872340425
+Warm optimizer lr: 80.0
+Val acc before epoch 974: 0.6382978723404256
+Warm optimizer lr: 80.0
+Val acc before epoch 975: 0.5106382978723404
+Warm optimizer lr: 80.0
+Val acc before epoch 976: 0.6595744680851063
+Warm optimizer lr: 80.0
+Val acc before epoch 977: 0.6170212765957447
+Warm optimizer lr: 80.0
+Val acc before epoch 978: 0.5957446808510638
+Warm optimizer lr: 80.0
+Val acc before epoch 979: 0.6595744680851063
+Warm optimizer lr: 80.0
+Val acc before epoch 980: 0.6595744680851063
+Warm optimizer lr: 80.0
+Val acc before epoch 981: 0.6382978723404256
+Warm optimizer lr: 80.0
+Val acc before epoch 982: 0.6808510638297872
+Warm optimizer lr: 80.0
+Val acc before epoch 983: 0.7127659574468085
+Warm optimizer lr: 80.0
+Val acc before epoch 984: 0.7340425531914894
+Warm optimizer lr: 80.0
+Val acc before epoch 985: 0.6382978723404256
+Warm optimizer lr: 80.0
+Val acc before epoch 986: 0.648936170212766
+Warm optimizer lr: 80.0
+Val acc before epoch 987: 0.7021276595744681
+Warm optimizer lr: 80.0
+Val acc before epoch 988: 0.7553191489361702
+Warm optimizer lr: 80.0
+Val acc before epoch 989: 0.648936170212766
+Warm optimizer lr: 64.0
+Val acc before epoch 990: 0.6808510638297872
+Warm optimizer lr: 64.0
+Val acc before epoch 991: 0.7872340425531915
+Warm optimizer lr: 64.0
+Val acc before epoch 992: 0.7340425531914894
+Warm optimizer lr: 64.0
+Val acc before epoch 993: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 994: 0.6595744680851063
+Warm optimizer lr: 64.0
+Val acc before epoch 995: 0.6702127659574468
+Warm optimizer lr: 64.0
+Val acc before epoch 996: 0.7340425531914894
+Warm optimizer lr: 64.0
+Val acc before epoch 997: 0.723404255319149
+Warm optimizer lr: 64.0
+Val acc before epoch 998: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 999: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 1000: 0.6914893617021277
+Warm optimizer lr: 64.0
+Val acc before epoch 1001: 0.7340425531914894
+Warm optimizer lr: 64.0
+Val acc before epoch 1002: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 1003: 0.7553191489361702
+Warm optimizer lr: 64.0
+Val acc before epoch 1004: 0.8191489361702128
+Warm optimizer lr: 64.0
+Val acc before epoch 1005: 0.7659574468085106
+Warm optimizer lr: 64.0
+Val acc before epoch 1006: 0.7446808510638298
+Warm optimizer lr: 64.0
+Val acc before epoch 1007: 0.8085106382978723
+Warm optimizer lr: 64.0
+Val acc before epoch 1008: 0.7659574468085106
+Warm optimizer lr: 64.0
+Val acc before epoch 1009: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 1010: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 1011: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 1012: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 1013: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 1014: 0.8191489361702128
+Warm optimizer lr: 51.2
+Val acc before epoch 1015: 0.8191489361702128
+Warm optimizer lr: 51.2
+Val acc before epoch 1016: 0.851063829787234
+Warm optimizer lr: 51.2
+Val acc before epoch 1017: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 1018: 0.776595744680851
+Warm optimizer lr: 51.2
+Val acc before epoch 1019: 0.8085106382978723
+Warm optimizer lr: 51.2
+Val acc before epoch 1020: 0.8085106382978723
+Warm optimizer lr: 51.2
+Val acc before epoch 1021: 0.8404255319148937
+Warm optimizer lr: 51.2
+Val acc before epoch 1022: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 1023: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 1024: 0.7659574468085106
+Warm optimizer lr: 51.2
+Val acc before epoch 1025: 0.7978723404255319
+Warm optimizer lr: 51.2
+Val acc before epoch 1026: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 1027: 0.7872340425531915
+Warm optimizer lr: 51.2
+Val acc before epoch 1028: 0.8085106382978723
+Warm optimizer lr: 51.2
+Val acc before epoch 1029: 0.7978723404255319
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1030: 0.851063829787234
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1031: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1032: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1033: 0.7659574468085106
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1034: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1035: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1036: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1037: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1038: 0.851063829787234
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1039: 0.8829787234042553
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1040: 0.851063829787234
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1041: 0.776595744680851
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1042: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1043: 0.8191489361702128
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1044: 0.7872340425531915
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1045: 0.8404255319148937
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1046: 0.8085106382978723
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1047: 0.851063829787234
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1048: 0.8297872340425532
+Warm optimizer lr: 40.96000000000001
+Val acc before epoch 1049: 0.776595744680851
+Warm optimizer lr: 32.76800000000001
+Val acc before epoch 1050: 0.8085106382978723
+Getting final validation and test accuracy after training.
+Computing and storing results metrics
+Final val macro f1-score: 0.7280701754385965
+Final val micro accuracy: 0.8191489361702128
+Final test macro f1-score: 0.6593537414965985
+Final test micro accuracy: 0.7446808510638298
+Final validation:
+	Cluster: 0.19498522579669952
+	Separation: 0.12247635051608086
+Final test:
+	Cluster: 0.1821485012769699
+	Separation: 0.12079210579395294
+Saved Results
+Finished search.
