@@ -410,7 +410,7 @@ for trial in range(1):
     # manual search 3/13/24
     # These two are also hyperparameters. Feel free to add more values to try.
     num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
-    ptype_length = [21, 25, 29] #[17, 19, 21, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    ptype_length = [29] #[21, 25, 29] #[17, 19, 21, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
@@ -424,13 +424,13 @@ for trial in range(1):
         'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
-        'warm_ptype_lr':            [0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
+        'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
         'last_layer_lr':            [0.05], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [15], # 17 #random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [200], #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'num_pushes':               [0], # 3-5?
-        'last_layer_epochs':        [50], # 50
+        'last_layer_epochs':        [200], # 50
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
