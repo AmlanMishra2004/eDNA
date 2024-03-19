@@ -427,10 +427,10 @@ for trial in range(1):
         'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
         'last_layer_lr':            [0.05], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_gap':                 [15], # 17 #random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [200], #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [0], # 3-5?
-        'last_layer_epochs':        [200], # 50
+        'push_gap':                 [150], # 17 #random.randint(10, 20)# 1_000_000 # not set
+        'push_start':               [50], #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'num_pushes':               [1], # 3-5?
+        'last_layer_epochs':        [50], # 50
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -438,6 +438,7 @@ for trial in range(1):
             'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
         }]
     }
+    # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']
 
     # Generate all combinations of hyperparameters
     combinations = list(itertools.product(*hyperparameters.values()))

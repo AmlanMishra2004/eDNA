@@ -2,7 +2,8 @@ import matplotlib.pyplot as plt
 import re
 
 # Open the file
-with open('out.1831432.log', 'r') as file:
+# with open('out.1831432.log', 'r') as file: # 9
+with open('out.1832475.log', 'r') as file: # just one
     data = file.read()
 
 # Split the data into different combinations
