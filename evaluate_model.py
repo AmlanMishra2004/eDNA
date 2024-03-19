@@ -41,7 +41,7 @@ import utils
 
 # random.seed(1327)
 
-def evaluate(model, train, test, k_folds, k_iters, epochs, oversample, 
+def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
              optimizer, loss_function, early_stopper, batch_size,
              confidence_threshold, config, track_fold_epochs,
              track_test_epochs, num_classes, results_file_name='results.csv'):
@@ -116,11 +116,11 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     # weighted average precision for the validation set of the first fold.
 
     fold_val_metrics = {
-        'precision': [],    # TP / TP+FP
-        'recall': [],       # TP / TP+FN     measures the proportion of actual positives that are correctly identified
-        'f1': [],           # 2 * precision*recall / precision+recall
-        'acc': [],          # TP+TN / TP+FP+TN+FN
-        'balanced_acc': [], # avg. recall on each class
+        'precision': [],  # TP / TP+FP
+        'recall': [],  # TP / TP+FN     measures the proportion of actual positives that are correctly identified
+        'f1': [],  # 2 * precision*recall / precision+recall
+        'acc': [],  # TP+TN / TP+FP+TN+FN
+        'balanced_acc': [],  # avg. recall on each class
         'epochs_taken': []
     }
 
@@ -146,7 +146,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
 
     skf = StratifiedKFold(n_splits=k_folds, shuffle=True, random_state=1327)
     for fold, (train_indexes, val_indexes) in enumerate(
-        skf.split(train[config['seq_col']], train[config['species_col']])
+            skf.split(train[config['seq_col']], train[config['species_col']])
     ):
         if fold >= k_iters:
             break
@@ -162,6 +162,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
                 config['species_col'],
                 config['verbose']
             )
+        print(train_fold[config['species_col']])
         train_dataset = Sequence_Data(
             X=train_fold[config['seq_col']],
             y=train_fold[config['species_col']],
@@ -179,7 +180,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
             encoding_mode=config['encoding_mode'],
             seq_len=config['seq_target_length'])
         trainloader = DataLoader(
-            train_dataset, 
+            train_dataset,
             batch_size=batch_size,
             shuffle=True)
         valloader = DataLoader(
@@ -187,12 +188,12 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
             batch_size=batch_size,
             shuffle=False)
 
-        model.reset_params() # Ensure weights are cleared from the prev. fold.
+        model.reset_params()  # Ensure weights are cleared from the prev. fold.
         if early_stopper:
             early_stopper.reset()
 
         for epoch in range(epochs):
-            
+
             # TRAINING
             model.train()  # Sets the model to training mode.
             train_correct = 0
@@ -215,7 +216,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
                 optimizer.step()  # Performs optimization.
                 _, predicted = torch.max(outputs, 1)
 
-                total_loss += loss                 
+                total_loss += loss
                 train_correct += (predicted == labels).sum().item()
 
             if track_fold_epochs:
@@ -223,9 +224,9 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
                 learn_fold_train_accuracies[fold].append(train_acc)
                 avg_loss = total_loss / len(trainloader.dataset)
                 learn_fold_train_losses[fold].append(avg_loss)
-        
+
             # VALIDATION
-            model.eval() # Sets the model to evaluation mode.
+            model.eval()  # Sets the model to evaluation mode.
             val_correct = 0
             total_loss = 0
             count = 0
@@ -261,22 +262,22 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
                           "threshold. Putting validation accuracy at 1.00")
                     val_acc = 1
                 else:
-                    val_acc = val_correct/count
+                    val_acc = val_correct / count
             elif not confidence_threshold:
-                val_acc = val_correct/len(valloader.dataset)     
-            
+                val_acc = val_correct / len(valloader.dataset)
+
             if track_fold_epochs:
                 learn_fold_val_accuracies[fold].append(val_acc)
                 avg_loss = total_loss / len(valloader.dataset)
                 learn_fold_val_losses[fold].append(avg_loss)
-            
+
             if early_stopper:
                 early_stopper(val_acc)
                 if early_stopper.stop:
                     if config['verbose']:
                         print(f"Early stopping\n")
-                    print(f"Fold {fold+1}, Epoch {epoch+1}/{epochs}, "
-                          f"Validation Accuracy: {val_acc*100}%")
+                    print(f"Fold {fold + 1}, Epoch {epoch + 1}/{epochs}, "
+                          f"Validation Accuracy: {val_acc * 100}%")
                     if confidence_threshold:
                         fold_val_metrics = utils.add_metrics_to_dict(
                             confident_labels,
@@ -294,19 +295,19 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
                             fold_val_metrics
                         )
                     break
-            
+
             # If the model has trained for all of its epochs without triggering
             # early stopping, then record metrics just like in early stopping.
-                
-            if epoch+1 == epochs:
+
+            if epoch + 1 == epochs:
                 print(f"Finished training for full number of epochs.\n")
-                print(f"Fold {fold+1}, Epoch {epoch+1}/{epochs}, "
-                      f"Validation Accuracy: {val_acc*100}%\n")
+                print(f"Fold {fold + 1}, Epoch {epoch + 1}/{epochs}, "
+                      f"Validation Accuracy: {val_acc * 100}%\n")
                 if confidence_threshold:
                     fold_val_metrics = utils.add_metrics_to_dict(
                         confident_labels,
                         confident_predictions,
-                        epoch+1,
+                        epoch + 1,
                         val_acc,
                         fold_val_metrics
                     )
@@ -314,19 +315,19 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
                     fold_val_metrics = utils.add_metrics_to_dict(
                         labels,
                         predicted,
-                        epoch+1,
+                        epoch + 1,
                         val_acc,
                         fold_val_metrics
                     )
-            
+
     # EVALUATION
-            
+
     if track_test_epochs:
-        learn_train_accuracies = [[] for _ in range(k_iters)] 
-        learn_train_losses = [[] for _ in range(k_iters)] 
-            
-    # First, retrain on the entire train dataset.
-        
+        learn_train_accuracies = [[] for _ in range(k_iters)]
+        learn_train_losses = [[] for _ in range(k_iters)]
+
+        # First, retrain on the entire train dataset.
+
     X_train_full = train.copy()
     if oversample:
         X_train_full = utils.oversample_underrepresented_species(
@@ -344,14 +345,14 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         seq_len=config['seq_target_length'])
     test_dataset = Sequence_Data(
         X=test[config['seq_col']],
-        y=test[config['species_col']], 
+        y=test[config['species_col']],
         insertions=config['testRandomInsertions'],
         deletions=config['testRandomDeletions'],
         mutation_rate=config['testMutationRate'],
         encoding_mode=config['encoding_mode'],
         seq_len=config['seq_target_length'])
     trainloader = DataLoader(
-        train_dataset, 
+        train_dataset,
         batch_size=batch_size,
         shuffle=True)
     testloader = DataLoader(
@@ -359,11 +360,9 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         batch_size=batch_size,
         shuffle=False)
 
-    model.reset_params() # Ensure weights are cleared from previous training.
+    model.reset_params()  # Ensure weights are cleared from previous training.
     if early_stopper:
         early_stopper.reset()
-
-    
 
     if k_iters == 0:
         train_epochs = epochs
@@ -372,7 +371,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         train_epochs = int(sum(epochs_taken) / len(epochs_taken))
 
     for epoch in tqdm(range(train_epochs)):
-        
+
         # TRAINING
         model.train()  # Sets the model to training mode.
         train_correct = 0
@@ -397,14 +396,14 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         # Since one can't use the test set for early stopping, simply train
         # for the average number of epochs taken during the k folds. Or, if you
         # want to risk overfitting, uncomment below.
-            
+
         # if early_stopper:
         #         early_stopper(train_acc)
         #         if early_stopper.stop:
         #             print(f"Early stopping\n")
         #             break
 
-    model.eval() # Set the model to evaluation mode.
+    model.eval()  # Set the model to evaluation mode.
     all_test_targets = []
     all_test_predictions = []
     all_test_outputs = []
@@ -423,19 +422,19 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
             if confidence_threshold:
                 confident_predictions = predicted[
                     max_probs > confidence_threshold
-                ]
+                    ]
                 confident_labels = labels[
                     max_probs > confidence_threshold
-                ]
+                    ]
                 # The total number of examples we are considering is no
                 # longer the length of the trainloader.
-                test_total += len(confident_predictions) 
+                test_total += len(confident_predictions)
                 comparison = confident_predictions == confident_labels
                 test_correct += comparison.sum().item()
-                test_acc = test_correct/test_total
+                test_acc = test_correct / test_total
             else:
                 test_correct += (predicted == targets).sum().item()
-                test_acc = test_correct/len(testloader.dataset)
+                test_acc = test_correct / len(testloader.dataset)
 
             # Record the actual values, predictions, & confidence percentages.
             all_test_targets.extend(targets.view(-1).tolist())
@@ -459,29 +458,29 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
 
     test_acc = accuracy_score(all_test_targets, all_test_predictions)
     test_m_precision = precision_score(all_test_targets,
-                                     all_test_predictions,
-                                     average="macro",
-                                     zero_division=1)
+                                       all_test_predictions,
+                                       average="macro",
+                                       zero_division=1)
     test_w_precision = precision_score(all_test_targets,
-                                     all_test_predictions,
-                                     average="weighted",
-                                     zero_division=1)
+                                       all_test_predictions,
+                                       average="weighted",
+                                       zero_division=1)
     test_m_recall = recall_score(all_test_targets,
-                               all_test_predictions,
-                               average="macro",
-                               zero_division=1)
+                                 all_test_predictions,
+                                 average="macro",
+                                 zero_division=1)
     test_w_recall = recall_score(all_test_targets,
-                               all_test_predictions,
-                               average="weighted",
-                               zero_division=1)
+                                 all_test_predictions,
+                                 average="weighted",
+                                 zero_division=1)
     test_m_f1 = f1_score(all_test_targets,
-                       all_test_predictions,
-                       average="macro",
-                       zero_division=1)
+                         all_test_predictions,
+                         average="macro",
+                         zero_division=1)
     test_w_f1 = f1_score(all_test_targets,
-                       all_test_predictions,
-                       average="weighted",
-                       zero_division=1)
+                         all_test_predictions,
+                         average="weighted",
+                         zero_division=1)
     test_bal_acc = balanced_accuracy_score(all_test_targets,
                                            all_test_predictions)
     all_targets_one_hot = label_binarize(
@@ -507,15 +506,18 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         avg_val_epochs_taken = sum(fold_val_metrics['epochs_taken']) / k_iters
 
         val_metrics = {
-        'Metric': ['Micro Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1 Score', 'Weighted F1 Score','Balanced Accuracy', 'Epochs Taken'],
-        'Value': [avg_val_acc, avg_val_m_precision, avg_val_m_recall, avg_val_m_f1, avg_val_w_f1, avg_val_balanced_acc, avg_val_epochs_taken]
+            'Metric': ['Micro Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1 Score', 'Weighted F1 Score',
+                       'Balanced Accuracy', 'Epochs Taken'],
+            'Value': [avg_val_acc, avg_val_m_precision, avg_val_m_recall, avg_val_m_f1, avg_val_w_f1,
+                      avg_val_balanced_acc, avg_val_epochs_taken]
         }
         print(f"Avg. of Validation Metrics over {k_folds} folds, {k_iters} iters.")
         print(tabulate(val_metrics, headers='keys', tablefmt='pretty'))
 
     # Test Metrics
     test_metrics = {
-        'Metric': ['Micro Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1 Score', 'Weighted F1 Score', 'Balanced Accuracy', 'Macro OVR ROC-AUC'],
+        'Metric': ['Micro Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1 Score', 'Weighted F1 Score',
+                   'Balanced Accuracy', 'Macro OVR ROC-AUC'],
         'Value': [test_acc, test_m_precision, test_m_recall, test_m_f1, test_w_f1, test_bal_acc, roc_auc]
     }
     print("\nTest Metrics")
@@ -532,10 +534,10 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         # scores were averaged to get the final number. Weighted averaging 
         # divides by the number of examples in each class.
         'val_macro_f1-score': avg_val_m_f1,
-        'val_macro_recall': avg_val_m_recall, 
+        'val_macro_recall': avg_val_m_recall,
         'val_micro_accuracy': avg_val_acc,
         'val_macro_precision': avg_val_m_precision,
-        'val_weighted_precision': avg_val_w_precision, 
+        'val_weighted_precision': avg_val_w_precision,
         'val_weighted_recall': avg_val_w_recall,
         'val_weighted_f1-score': avg_val_w_f1,
         'val_balanced_accuracy': avg_val_balanced_acc,
@@ -545,7 +547,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         'test_macro_recall': test_m_recall,
         'test_micro_accuracy': test_acc,
         'test_macro_precision': test_m_precision,
-        'test_weighted_precision': test_w_precision, 
+        'test_weighted_precision': test_w_precision,
         'test_weighted_recall': test_w_recall,
         'test_weighted_f1-score': test_w_f1,
         'test_balanced_accuracy': test_bal_acc,
@@ -578,7 +580,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         'reverse_complements': config['addRevComplements'],
         'k_folds': k_folds,
         'k_iters': k_iters,
-        'encoding_mode': config['encoding_mode'], 
+        'encoding_mode': config['encoding_mode'],
         'test_split': config['test_split'],
         'load_existing_train_test': config['load_existing_train_test']
     }
@@ -588,23 +590,23 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     # except:
     #     raise (ValueError, "Ending execution since you are probably evaluating a model,"
     #            "not performing a grid search. Skipping saving the model.")
-    
+
     # TEMPORARILY
     now = datetime.now()
     timestamp = now.strftime("%Y%m%d_%H%M%S")
-    torch.save(model.state_dict(),f'best_model_{timestamp}.pt')
+    torch.save(model.state_dict(), f'best_model_{timestamp}.pt')
 
     return -1, -1
 
     # add the variable number of layers to the results
-    for layer in range(1, len(input_channels)+1):
-        results[f'layer{layer}_input_channels'] = input_channels[layer-1]
-        results[f'layer{layer}_output_channels'] = output_channels[layer-1]
-        results[f'layer{layer}_conv_kernel'] = conv_kernels[layer-1]
-        results[f'layer{layer}_stride'] = strides[layer-1]
-        results[f'layer{layer}_padding'] = paddings[layer-1]
-        results[f'layer{layer}_dropout'] = dropouts[layer-1]
-        results[f'layer{layer}_pool_kernel'] = pool_kernels[layer-1]
+    for layer in range(1, len(input_channels) + 1):
+        results[f'layer{layer}_input_channels'] = input_channels[layer - 1]
+        results[f'layer{layer}_output_channels'] = output_channels[layer - 1]
+        results[f'layer{layer}_conv_kernel'] = conv_kernels[layer - 1]
+        results[f'layer{layer}_stride'] = strides[layer - 1]
+        results[f'layer{layer}_padding'] = paddings[layer - 1]
+        results[f'layer{layer}_dropout'] = dropouts[layer - 1]
+        results[f'layer{layer}_pool_kernel'] = pool_kernels[layer - 1]
 
     # These results are for a single model architecture with a single set of
     # hyperparameters and a single trial.
@@ -614,7 +616,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         model=model,
         filename=results_file_name
     )
-    
+
     # # Graph results. NOTE: After reworking evaluate() on 12/26, I did not
     # # verify that this worked, since I haven't been needing it.
     # # Turn the lists of tensors into lists of lists on the CPU.
@@ -634,7 +636,8 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     # utils.graph_train_vs_test(train_accuracies, val_accuracies, "Accuracy")
     # utils.graph_train_vs_test(train_losses, val_losses, "Loss")
 
-    return test_acc, epoch+1
+    return test_acc, epoch + 1
+
 
 if __name__ == '__main__':
     """Loads in and preprocesses data, then trains and evaluates models.
@@ -666,10 +669,10 @@ if __name__ == '__main__':
     # and test csv (that are presumably already processed). For my train and 
     # test file, all semutations have been added, so no need for online augmentation.Whether set or not, it still must be truncated/padded and turned intovectors.
     run_my_model = True
-    run_arch_search = False     # search through architectures, in addition to lr, batch size
+    run_arch_search = False  # search through architectures, in addition to lr, batch size
     run_autokeras = False
     run_baselines = False
-    
+
     num_classes = 156
 
     print(f"Loading and processing data")
@@ -677,48 +680,61 @@ if __name__ == '__main__':
     config = {
         # IUPAC ambiguity codes represent if we are unsure if a base is one of
         # several options. For example, 'M' means it is either 'A' or 'C'.
-        'iupac': {'a':'t', 't':'a', 'c':'g', 'g':'c',
-                'r':'y', 'y':'r', 'k':'m', 'm':'k', 
-                'b':'v', 'd':'h', 'h':'d', 'v':'b',
-                's':'w', 'w':'s', 'n':'n', 'z':'z'},
+        'iupac': {'a': 't', 't': 'a', 'c': 'g', 'g': 'c',
+                  'r': 'y', 'y': 'r', 'k': 'm', 'm': 'k',
+                  'b': 'v', 'd': 'h', 'h': 'd', 'v': 'b',
+                  's': 'w', 'w': 's', 'n': 'n', 'z': 'z'},
         'data_path': './datasets/v4_combined_reference_sequences.csv',
         'train_path': './datasets/train.csv',
         'test_path': './datasets/test.csv',
-        'sep': ';',                       # separator character in the csv file
-        'species_col': 'species_cat',     # name of column containing species
-        'seq_col': 'seq',                 # name of column containing sequences
-        'seq_count_thresh': 2,            # ex. keep species with >1 sequences
-        'test_split': 0.3,                # ex. .3 means 30% test, 70% train
-        'trainRandomInsertions': [0,2],   # ex. between 0 and 2 per sequence
-        'trainRandomDeletions': [0,2],    # ex. between 0 and 2 per sequence
-        'trainMutationRate': 0.05,        # n*100% chance for a base to flip
-        'oversample': True,              # whether or not to oversample train # OVERRIDDEN IN ARCH SEARCH
-        'encoding_mode': 'probability',   # 'probability' or 'random'
+        'sep': ',',  # separator character in the csv file
+        'species_col': 'Species',  # name of column containing species
+        'seq_col': 'Sequence',  # name of column containing sequences
+        'seq_count_thresh': 2,  # ex. keep species with >1 sequences
+        'test_split': 0.3,  # ex. .3 means 30% test, 70% train
+        'trainRandomInsertions': [0, 2],  # ex. between 0 and 2 per sequence
+        'trainRandomDeletions': [0, 2],  # ex. between 0 and 2 per sequence
+        'trainMutationRate': 0.05,  # n*100% chance for a base to flip
+        'oversample': True,  # whether or not to oversample train # OVERRIDDEN IN ARCH SEARCH
+        'encoding_mode': 'probability',  # 'probability' or 'random'
         # Whether or not applying on raw unlabeled data or "clean" ref db data.
         'applying_on_raw_data': False,
         # Whether or not to augment the test set.
         'augment_test_data': True,
-        'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files
+        'load_existing_train_test': True,
+        # use the same train/test split as Zurich, already saved in two different csv files
         'verbose': False
     }
     if config['applying_on_raw_data']:
-        config['seq_target_length'] = 150 # POSSIBLY OVERRIDDEN IN ARCH SEARCH
-        config['addTagAndPrimer'] = True 
+        config['seq_target_length'] = 150  # POSSIBLY OVERRIDDEN IN ARCH SEARCH
+        config['addTagAndPrimer'] = True
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
-        config['seq_target_length'] = 70 # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
+        config['seq_target_length'] = 70  # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
         config['addTagAndPrimer'] = False
         config['addRevComplements'] = False
     if config['augment_test_data']:
-        config['testRandomInsertions'] = [1,1]
-        config['testRandomDeletions'] = [1,1]
+        config['testRandomInsertions'] = [1, 1]
+        config['testRandomDeletions'] = [1, 1]
         config['testMutationRate'] = 0.02
     elif not config['augment_test_data']:
-        config['testRandomInsertions'] = [0,0]
-        config['testRandomDeletions'] = [0,0]
+        config['testRandomInsertions'] = [0, 0]
+        config['testRandomDeletions'] = [0, 0]
         config['testMutationRate'] = 0
 
-    cols = ['species','family', 'genus', 'order']
+    cols = ['species', 'family', 'genus', 'order']
+
+    df = pd.read_csv(config['train_path'], sep=config['sep'])
+    le = LabelEncoder()
+    df[config['species_col']] = le.fit_transform(df[config['species_col']])
+    dump(le, './datasets/label_encoder.joblib')
+    train, test = utils.stratified_split(
+        df,
+        config['species_col'],
+        config['test_split']
+    )
+    print(test)
+    # utils.print_descriptive_stats(df, cols)
 
     if not config['load_existing_train_test']:
         df = pd.read_csv(config['data_path'], sep=config['sep'])
@@ -739,7 +755,7 @@ if __name__ == '__main__':
                 df,
                 config['seq_col'],
                 config['iupac'],
-                'n'*10,
+                'n' * 10,
                 'acaccgcccgtcactct',
                 'cttccggtacacttaccatg',
                 config['verbose']
@@ -774,7 +790,7 @@ if __name__ == '__main__':
         test = pd.read_csv(config['test_path'], sep=',')
 
     if run_arch_search:
-        
+
         # If you want to see the format of the data will be fed into the model,
         # uncomment the code below.
         # torch.set_printoptions(threshold=sys.maxsize)
@@ -790,7 +806,7 @@ if __name__ == '__main__':
         # print("Shape of labels: ", ex_labels.shape)
 
         start_time = time.time()
-        
+
         # The lines below set up the parameters for grid search.
 
         # num_trials sets the number of times each model with each set of
@@ -802,14 +818,12 @@ if __name__ == '__main__':
         # SEARCH 1: 12/31/23
         learning_rates = [0.0005, 0.007, 0.001, 0.002]
         # SEARCH 2: 1/3/24
-        learning_rates = [0.0008, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008] # expanded both ends       
-
+        learning_rates = [0.0008, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008]  # expanded both ends
 
         # SEARCH 1: 12/31/23
         batch_sizes = [16, 32, 64]
         # SEARCH 2: 1/3/24
         batch_sizes = [10, 16, 32, 48, 64]
-
 
         epochs = 10_000
         # Zurich called the confidence_threshold 'binzarization threshold', and
@@ -818,11 +832,11 @@ if __name__ == '__main__':
         confidence_threshold = None
         early_stopper = utils.EarlyStopping(
             patience=5,
-            min_pct_improvement=1, # previously 20 epochs, 0.1%
+            min_pct_improvement=1,  # previously 20 epochs, 0.1%
             verbose=False
         )
         k_folds = 5
-        k_iters = 5 # Should be int [0 - k_folds]. Set to 0 to skip validation.
+        k_iters = 5  # Should be int [0 - k_folds]. Set to 0 to skip validation.
 
         # Grid search: Evaluates each model with a combination of
         # hyperparameters for a certain number of trials.
@@ -847,16 +861,15 @@ if __name__ == '__main__':
         padding_lengths = [0, 1, 2]
         dropout_rates = [0, 0.2, 0.4, 0.6]
         pool_kernel_sizes = [0, 2, 3]
-        
 
         # SEARCH 2: Jan. 3, 2024
         num_cnn_layers = [1, 2]
 
-        num_channels = [64, 128, 196, 256, 342, 512, 612] # shifted up
-        conv_kernel_sizes = [5, 6, 7, 8, 9] # middle taken
+        num_channels = [64, 128, 196, 256, 342, 512, 612]  # shifted up
+        conv_kernel_sizes = [5, 6, 7, 8, 9]  # middle taken
         stride_lengths = [1, 2]
         padding_lengths = [0, 1, 2]
-        dropout_rates = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8] # expanded
+        dropout_rates = [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8]  # expanded
         pool_kernel_sizes = [0, 2, 3]
 
         # 2/3/24
@@ -868,12 +881,12 @@ if __name__ == '__main__':
         stride_lengths = [1]
         padding_lengths = [3]
         dropout_rates = [0.5]
-        pool_kernel_sizes = [-1] # ALWAYS kernel=2, stride=2
+        pool_kernel_sizes = [-1]  # ALWAYS kernel=2, stride=2
 
         # 15.5 hrs = 930 minutes for 4320 architectures = ~0.215 minutes per model. actual number of models explored: 2427
         num_explorations = 10_000
         for iteration in range(num_explorations):
-            print(f"\n\nIteration {iteration+1}/{num_explorations}\n\n")
+            print(f"\n\nIteration {iteration + 1}/{num_explorations}\n\n")
 
             # randomly select the model archictecture
             batch_size = random.sample(batch_sizes, 1)[0]
@@ -914,35 +927,35 @@ if __name__ == '__main__':
             # differentiate rows, then check if a matching row exists.
 
             combination = {
-                    'model_name': 'VariableCNN',
-                    'k_folds': k_folds,
-                    'k_iters': k_iters,
-                    'confidence_threshold': confidence_threshold,
-                    'seq_count_threshold': config['seq_count_thresh'],
-                    'seq_len': config['seq_target_length'],
-                    'test_insertions': config['testRandomInsertions'],
-                    'test_deletions': config['testRandomDeletions'],
-                    'test_mutation_rate': config['testMutationRate'],
-                    'tag_and_primer': config['addTagAndPrimer'],
-                    'reverse_complements': config['addRevComplements'],
-                    'encoding_mode': config['encoding_mode'],
-                    'test_split': config['test_split'],
-                    'load_existing_train_test': config['load_existing_train_test']
+                'model_name': 'VariableCNN',
+                'k_folds': k_folds,
+                'k_iters': k_iters,
+                'confidence_threshold': confidence_threshold,
+                'seq_count_threshold': config['seq_count_thresh'],
+                'seq_len': config['seq_target_length'],
+                'test_insertions': config['testRandomInsertions'],
+                'test_deletions': config['testRandomDeletions'],
+                'test_mutation_rate': config['testMutationRate'],
+                'tag_and_primer': config['addTagAndPrimer'],
+                'reverse_complements': config['addRevComplements'],
+                'encoding_mode': config['encoding_mode'],
+                'test_split': config['test_split'],
+                'load_existing_train_test': config['load_existing_train_test']
             }
-            for layer in range(1, len(input_channels)+1):
-                combination[f'layer{layer}_input_channels'] = input_channels[layer-1]
-                combination[f'layer{layer}_output_channels'] = output_channels[layer-1]
-                combination[f'layer{layer}_conv_kernel'] = conv_kernels[layer-1]
-                combination[f'layer{layer}_stride'] = strides[layer-1]
-                combination[f'layer{layer}_padding'] = paddings[layer-1]
-                combination[f'layer{layer}_dropout'] = dropouts[layer-1]
-                combination[f'layer{layer}_pool_kernel'] = pool_kernels[layer-1]
+            for layer in range(1, len(input_channels) + 1):
+                combination[f'layer{layer}_input_channels'] = input_channels[layer - 1]
+                combination[f'layer{layer}_output_channels'] = output_channels[layer - 1]
+                combination[f'layer{layer}_conv_kernel'] = conv_kernels[layer - 1]
+                combination[f'layer{layer}_stride'] = strides[layer - 1]
+                combination[f'layer{layer}_padding'] = paddings[layer - 1]
+                combination[f'layer{layer}_dropout'] = dropouts[layer - 1]
+                combination[f'layer{layer}_pool_kernel'] = pool_kernels[layer - 1]
 
             # if you want to allow searching identical architecture/
             # hyperparameter combinations, then uncomment this function call
             if utils.check_hyperparam_originality(combination, results_file_name) != -1:
                 print(f"Model architecture has already been explored. "
-                    f"Exploring next random hyperparameter combination.")
+                      f"Exploring next random hyperparameter combination.")
                 continue
 
             # Create the model. If the model parameters are incompatible,
@@ -956,18 +969,18 @@ if __name__ == '__main__':
                     paddings,
                     dropouts,
                     pool_kernels,
-                    nn.LeakyReLU, # could include this in search
-                    input_length = config['seq_target_length'],
-                    num_classes = num_classes
+                    nn.LeakyReLU,  # could include this in search
+                    input_length=config['seq_target_length'],
+                    num_classes=num_classes
                 )
             except:
                 print("Model parameters are incompatible. Exploring next "
-                    "random hyperparameter combination.")
+                      "random hyperparameter combination.")
                 continue
             model.to('cuda')
 
             for trial in range(num_trials):
-                print(f"\nTraining {model.name}, Trial {trial+1}")
+                print(f"\nTraining {model.name}, Trial {trial + 1}")
 
                 # To try to get the first batch to prove it is the same as Zurich
                 # first_batch = next(iter(trainloader))
@@ -979,31 +992,31 @@ if __name__ == '__main__':
 
                 evaluate(
                     model,
-                    train = train,
-                    test = test,
-                    k_folds = k_folds,
-                    k_iters = k_iters,
-                    epochs = epochs,
-                    oversample = oversample,
-                    optimizer = torch.optim.Adam(
+                    train=train,
+                    test=test,
+                    k_folds=k_folds,
+                    k_iters=k_iters,
+                    epochs=epochs,
+                    oversample=oversample,
+                    optimizer=torch.optim.Adam(
                         model.parameters(),
                         lr=lr,
                         betas=(0.9, 0.999),
                         eps=1e-07,
-                        weight_decay=0.01, # was 0, go smaller (to 0.0005) if performance is bad
+                        weight_decay=0.01,  # was 0, go smaller (to 0.0005) if performance is bad
                         amsgrad=False),
-                    loss_function = nn.CrossEntropyLoss(),
-                    early_stopper = early_stopper,
-                    batch_size = batch_size,
-                    confidence_threshold = confidence_threshold,
-                    config = config,
-                    track_fold_epochs = False,
-                    track_test_epochs = False,
-                    num_classes = num_classes,
+                    loss_function=nn.CrossEntropyLoss(),
+                    early_stopper=early_stopper,
+                    batch_size=batch_size,
+                    confidence_threshold=confidence_threshold,
+                    config=config,
+                    track_fold_epochs=False,
+                    track_test_epochs=False,
+                    num_classes=num_classes,
                     results_file_name=results_file_name
                 )
-                
-                print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
+
+                print(f"Total search runtime: {round((time.time() - start_time) / 60, 1)} minutes")
 
     if run_my_model:
 
@@ -1083,9 +1096,7 @@ if __name__ == '__main__':
 
         small_best_updated = models.Small_Best_Updated()
 
-        
         # small_best.load_state_dict(torch.load(model_path))
-
 
         # Code for loading in all of the weights EXCEPT for
         # the linear layer of a model, and training only the 
@@ -1110,11 +1121,11 @@ if __name__ == '__main__':
         #         param.requires_grad = False
 
         start_time = time.time()
-        
+
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
         num_trials = 1
-        learning_rates = [0.002, 0.001, 0.0001] # 0.002 for 12-31 and small best, 0.005 for large best
+        learning_rates = [0.002, 0.001, 0.0001]  # 0.002 for 12-31 and small best, 0.005 for large best
         # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
         # learning_rates = [0.0005, 0.007, 0.001, 0.002]
@@ -1123,21 +1134,21 @@ if __name__ == '__main__':
         # learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 
         #                   0.01, 0.05]
 
-        batch_sizes = [64] # 16 for 12-31, 64 for large and small best
+        batch_sizes = [64]  # 16 for 12-31, 64 for large and small best
         # batch_sizes = [16, 32, 64]
 
         early_stopper = utils.EarlyStopping(
             patience=20,
-            min_pct_improvement=.1, # previously 20 epochs, 0.1%
+            min_pct_improvement=.1,  # previously 20 epochs, 0.1%
             verbose=False
         )
         k_folds = 5
-        k_iters = 5 # Should be int [0 - k_folds]. Set to 0 to skip validation.
+        k_iters = 5  # Should be int [0 - k_folds]. Set to 0 to skip validation.
 
         oversample_options = [True]
         # oversample_options = [True, False]
 
-        weight_decays = [0.01, 0.001, 0.0001, 0] # 4: 0.002, 0: 97.8, 94.2
+        weight_decays = [0.01, 0.001, 0.0001, 0]  # 4: 0.002, 0: 97.8, 94.2
         # I explored weight decays only for the top small_best model. found 0 to be best for 0.002 lr
 
         # This list holds all of the models that will be trained and evaluated.
@@ -1150,7 +1161,7 @@ if __name__ == '__main__':
             model.to('cuda')
 
         print(f"Evaluation for Personal Model(s):\n"
-                f"{[f'{model.name}' for model in models]}")
+              f"{[f'{model.name}' for model in models]}")
 
         start_time = time.time()
 
@@ -1160,7 +1171,7 @@ if __name__ == '__main__':
                     for weight_decay in weight_decays:
                         for trial in range(num_trials):
                             for oversample in oversample_options:
-                                print(f"\nTraining {model.name}, Trial {trial+1}")
+                                print(f"\nTraining {model.name}, Trial {trial + 1}")
 
                                 # To try to get the first batch to prove it is the same as Zurich
                                 # first_batch = next(iter(trainloader))
@@ -1172,31 +1183,31 @@ if __name__ == '__main__':
 
                                 evaluate(
                                     model,
-                                    train = train,
-                                    test = test,
-                                    k_folds = k_folds,
-                                    k_iters = k_iters,
-                                    epochs = 10_000, #14, # 18
-                                    oversample = oversample,
-                                    optimizer = torch.optim.Adam(
+                                    train=train,
+                                    test=test,
+                                    k_folds=k_folds,
+                                    k_iters=k_iters,
+                                    epochs=10_000,  # 14, # 18
+                                    oversample=oversample,
+                                    optimizer=torch.optim.Adam(
                                         model.parameters(),
                                         lr=lr,
                                         betas=(0.9, 0.999),
                                         eps=1e-07,
                                         weight_decay=weight_decay,
                                         amsgrad=False),
-                                    loss_function = nn.CrossEntropyLoss(),
-                                    early_stopper = early_stopper,
-                                    batch_size = batch_size,
-                                    confidence_threshold = None,
-                                    config = config,
-                                    track_fold_epochs = False,
-                                    track_test_epochs = False,
-                                    num_classes = num_classes,
+                                    loss_function=nn.CrossEntropyLoss(),
+                                    early_stopper=early_stopper,
+                                    batch_size=batch_size,
+                                    confidence_threshold=None,
+                                    config=config,
+                                    track_fold_epochs=False,
+                                    track_test_epochs=False,
+                                    num_classes=num_classes,
                                     results_file_name='smallbestresults.csv'
                                 )
-                                
-                                print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
+
+                                print(f"Total search runtime: {round((time.time() - start_time) / 60, 1)} minutes")
     if run_autokeras:
 
         # Import statements are included here because 1) Printing "Using
@@ -1206,7 +1217,7 @@ if __name__ == '__main__':
         import autokeras as ak
         from tensorflow.keras.models import load_model
 
-# COMMENTED SINCE train, test already loaded right away
+        # COMMENTED SINCE train, test already loaded right away
         # train = pd.read_csv(config['train_path'], sep=',')
 
         # # Since we are using this only for finding a model, we do not care
@@ -1248,7 +1259,7 @@ if __name__ == '__main__':
         #     config['testRandomDeletions'],
         #     config['testMutationRate']
         # )
-        
+
         # print(f"X_train SHAPE: {X_train.shape}")
         # print(f"y_train SHAPE: {y_train.shape}")
 
@@ -1262,16 +1273,14 @@ if __name__ == '__main__':
 
         pause = input("PAUSE")
 
-
-
         start_time = time.time()
 
         # Initialize and train the classifier
         clf = ak.ImageClassifier(overwrite=False, max_trials=300)
-        clf.fit(X_train, y_train) # optionally, specify epochs=5
+        clf.fit(X_train, y_train)  # optionally, specify epochs=5
 
         # Export as a Keras model then save it.
-        model = clf.export_model() 
+        model = clf.export_model()
         now = datetime.now().strftime("%Y%m%d_%H%M%S")
         try:
             model.save(f"saved_models/image_model_ak_{now}", save_format="tf")
@@ -1289,7 +1298,7 @@ if __name__ == '__main__':
         predicted_labels = np.argmax(results, axis=1)
         accuracy = np.mean(predicted_labels == y_test)
         print(f"Image test accuracy: {accuracy}")
-        print(f"Image ak took {round((time.time() - start_time)/60,1)}"
+        print(f"Image ak took {round((time.time() - start_time) / 60, 1)}"
               " seconds to run.")
 
         # I tried using AutoKeras StructuredDataClassifier to see if it would
@@ -1371,7 +1380,7 @@ if __name__ == '__main__':
         train = pd.read_csv(config['train_path'], sep=',')
         test = pd.read_csv(config['test_path'], sep=',')
 
-        mutation_options = {'a':'cgt', 'c':'agt', 'g':'act', 't':'acg'}
+        mutation_options = {'a': 'cgt', 'c': 'agt', 'g': 'act', 't': 'acg'}
         # Defaultdict returns 'acgt' if a key is not present in the dictionary.
         mutation_options = defaultdict(lambda: 'acgt', mutation_options)
 
@@ -1439,12 +1448,12 @@ if __name__ == '__main__':
         #     lambda x: utils.sequence_to_array(x, config['encoding_mode'])
         # )
 
-        X_train = train.loc[:,[config['seq_col']]].values
+        X_train = train.loc[:, [config['seq_col']]].values
         # X_train_vectorized = train_vectorized.loc[:,[config['seq_col']]].values
-        y_train = train.loc[:,[config['species_col']]].values
-        X_test = test.loc[:,[config['seq_col']]].values
+        y_train = train.loc[:, [config['species_col']]].values
+        X_test = test.loc[:, [config['seq_col']]].values
         # X_test_vectorized = test_vectorized.loc[:,[config['seq_col']]].values
-        y_test = test.loc[:,[config['species_col']]].values
+        y_test = test.loc[:, [config['species_col']]].values
 
         # Remove the inner lists for each element.
         X_train = X_train.ravel()
@@ -1467,7 +1476,6 @@ if __name__ == '__main__':
         print(f"First two entries in X_test:\n{X_test[:2]}")
         print(f"First two entries in y_train:\n{y_train[:2]}")
         print(f"First two entries in y_test:\n{y_test[:2]}")
-
 
         # Create the k-mer feature tables (X_train and X_test)
 
@@ -1499,7 +1507,7 @@ if __name__ == '__main__':
             print("Creating k-mer feature table for k-mer=10 (expect ~30 mins)...")
             ft_10 = utils.create_feature_table(X_train, 10)
             # takes ~17 mins. 1048576
-            
+
             ft_3_test = utils.create_feature_table(X_test, 3)
             ft_5_test = utils.create_feature_table(X_test, 5)
             ft_8_test = utils.create_feature_table(X_test, 8)
@@ -1566,7 +1574,7 @@ if __name__ == '__main__':
 
             kmer_lengths = [3, 5, 8, 10]
             neighbors = [1, 3, 5, 7, 9]
-            
+
             # In order to use raw data you would have to flatten it, which
             # would make it difficult for KNN since there would be 0s in the 
             # padding.
@@ -1621,7 +1629,7 @@ if __name__ == '__main__':
 
         except FileNotFoundError:
             print("Training decision tree models. (expect ~3 minutes)")
-            
+
             dt_3 = tree.DecisionTreeClassifier(random_state=1327)
             dt_3.fit(ft_3, y_train)
             dump(dt_3, './datasets/dt3.joblib')
@@ -1648,7 +1656,7 @@ if __name__ == '__main__':
 
         except FileNotFoundError:
             print("Training support vector machine models. (expect ~25 mins)")
-            
+
             svm_3 = svm.SVC(kernel='linear', decision_function_shape='ovo')
             svm_3.fit(ft_3, y_train)
             dump(svm_3, './datasets/svm3.joblib')
@@ -1675,7 +1683,7 @@ if __name__ == '__main__':
 
         except FileNotFoundError:
             print("Training logistic regression models. (expect ~? mins)")
-            
+
             lr_3 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
             lr_3.fit(ft_3, y_train)
             dump(lr_3, './datasets/lr3.joblib')
@@ -1780,7 +1788,7 @@ if __name__ == '__main__':
             abdt10_15_3 = load('./datasets/abdt10_15_3.joblib')
             abdt10_30_3 = load('./datasets/abdt10_30_3.joblib')
             abdt10_45_3 = load('./datasets/abdt10_45_3.joblib')
-            
+
             abdt3_15_8 = load('./datasets/abdt3_15_8.joblib')
             abdt3_30_8 = load('./datasets/abdt3_30_8.joblib')
             abdt3_45_8 = load('./datasets/abdt3_45_8.joblib')
@@ -1828,7 +1836,8 @@ if __name__ == '__main__':
             print("Training feature set 3")
             for n_estimators in [15, 30, 45]:
                 for max_depth in [3, 8, 18]:
-                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
+                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators,
+                                               random_state=1327)
                     model.fit(ft_3, y_train)
                     dump(model, f'./datasets/abdt3_{n_estimators}_{max_depth}.joblib')
 
@@ -1836,7 +1845,8 @@ if __name__ == '__main__':
             print("Training feature set 5")
             for n_estimators in [15, 30, 45]:
                 for max_depth in [3, 8, 18]:
-                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
+                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators,
+                                               random_state=1327)
                     model.fit(ft_5, y_train)
                     dump(model, f'./datasets/abdt5_{n_estimators}_{max_depth}.joblib')
 
@@ -1844,7 +1854,8 @@ if __name__ == '__main__':
             print("Training feature set 8")
             for n_estimators in [15, 30, 45]:
                 for max_depth in [3, 8, 18]:
-                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
+                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators,
+                                               random_state=1327)
                     model.fit(ft_8, y_train)
                     dump(model, f'./datasets/abdt8_{n_estimators}_{max_depth}.joblib')
 
@@ -1852,10 +1863,11 @@ if __name__ == '__main__':
             print("Training feature set 10")
             for n_estimators in [15, 30, 45]:
                 for max_depth in [3, 8, 18]:
-                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
+                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators,
+                                               random_state=1327)
                     model.fit(ft_10, y_train)
                     dump(model, f'./datasets/abdt10_{n_estimators}_{max_depth}.joblib')
-            
+
             # abdt_3 = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=15, random_state=1327)
             # abdt_3.fit(ft_3, y_train)
             # dump(abdt_3, './datasets/abdt3.joblib')
@@ -1871,7 +1883,7 @@ if __name__ == '__main__':
             # abdt_10 = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=15, random_state=1327)
             # abdt_10.fit(ft_10, y_train)
             # dump(abdt_10, './datasets/abdt10.joblib')
-                    
+
         # Multiclass XGBoost models follow the format: xgb_<k-mer length>
         try:
             print("Searching for pretrained XGBoost models...")
@@ -1882,7 +1894,7 @@ if __name__ == '__main__':
 
         except FileNotFoundError:
             print("Training XGBoost models. (expect ~? mins)")
-            
+
             xgb_3 = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
             xgb_3.fit(ft_3, y_train)
             dump(xgb_3, './datasets/xgb3.joblib')
@@ -1901,12 +1913,14 @@ if __name__ == '__main__':
             # xgb_10.fit(ft_10, y_train)
             # dump(xgb_10, './datasets/xgb10.joblib')
 
-        from sklearn.metrics import accuracy_score, f1_score, balanced_accuracy_score, precision_score, recall_score, roc_auc_score
+        from sklearn.metrics import accuracy_score, f1_score, balanced_accuracy_score, precision_score, recall_score, \
+            roc_auc_score
+
 
         def evaluate_baseline(model, name, X_test, y_test, X_train, y_train):
             # Predictions for test set
             test_predictions = model.predict(X_test)
-            
+
             # Metrics for test set
             test_accuracy = accuracy_score(y_test, test_predictions)
             test_macro_f1 = f1_score(y_test, test_predictions, average="macro", zero_division=1)
@@ -1920,10 +1934,10 @@ if __name__ == '__main__':
                 test_roc_auc = roc_auc_score(y_test, model.predict_proba(X_test), multi_class="ovr", average="macro")
             except:
                 test_roc_auc = -1
-            
+
             # Predictions for train set
             train_predictions = model.predict(X_train)
-            
+
             # Metrics for train set
             train_accuracy = accuracy_score(y_train, train_predictions)
             train_macro_f1 = f1_score(y_train, train_predictions, average="macro", zero_division=1)
@@ -1943,10 +1957,10 @@ if __name__ == '__main__':
                 'name': name,
 
                 'train_macro_f1-score': train_macro_f1,
-                'train_macro_recall': train_macro_recall, 
+                'train_macro_recall': train_macro_recall,
                 'train_micro_accuracy': train_accuracy,
                 'train_macro_precision': train_macro_precision,
-                'train_weighted_precision': train_weighted_precision, 
+                'train_weighted_precision': train_weighted_precision,
                 'train_weighted_recall': train_weighted_recall,
                 'train_weighted_f1-score': train_weighted_f1,
                 'train_balanced_accuracy': train_bal_acc,
@@ -1956,13 +1970,13 @@ if __name__ == '__main__':
                 'test_macro_recall': test_macro_recall,
                 'test_micro_accuracy': test_accuracy,
                 'test_macro_precision': test_macro_precision,
-                'test_weighted_precision': test_weighted_precision, 
+                'test_weighted_precision': test_weighted_precision,
                 'test_weighted_recall': test_weighted_recall,
                 'test_weighted_f1-score': test_weighted_f1,
                 'test_balanced_accuracy': test_bal_acc,
                 'test_macro_ovr_roc_auc_score': test_roc_auc,
             }
-            
+
             return results
 
 
@@ -1977,103 +1991,103 @@ if __name__ == '__main__':
             # ,(knnraw_5,"knnraw_5",X_test_vectorized,y_test,X_train_vectorized,y_train)
             # ,(knnraw_7,"knnraw_7",X_test_vectorized,y_test,X_train_vectorized,y_train)
             # ,(knnraw_9,"knnraw_9",X_test_vectorized,y_test,X_train_vectorized,y_train)
-            (knn3_1,"knn3_1",ft_3_test,y_test,ft_3,y_train)
-            ,(knn3_3,"knn3_3",ft_3_test,y_test,ft_3,y_train)
-            ,(knn3_5,"knn3_5",ft_3_test,y_test,ft_3,y_train)
-            ,(knn3_7,"knn3_7",ft_3_test,y_test,ft_3,y_train)
-            ,(knn3_9,"knn3_9",ft_3_test,y_test,ft_3,y_train)
-            ,(knn5_1,"knn5_1",ft_5_test,y_test,ft_5,y_train)
-            ,(knn5_3,"knn5_3",ft_5_test,y_test,ft_5,y_train)
-            ,(knn5_5,"knn5_5",ft_5_test,y_test,ft_5,y_train)
-            ,(knn5_7,"knn5_7",ft_5_test,y_test,ft_5,y_train)
-            ,(knn5_9,"knn5_9",ft_5_test,y_test,ft_5,y_train)
-            ,(knn8_1,"knn8_1",ft_8_test,y_test,ft_8,y_train)
-            ,(knn8_3,"knn8_3",ft_8_test,y_test,ft_8,y_train)
-            ,(knn8_5,"knn8_5",ft_8_test,y_test,ft_8,y_train)
-            ,(knn8_7,"knn8_7",ft_8_test,y_test,ft_8,y_train)
-            ,(knn8_9,"knn8_9",ft_8_test,y_test,ft_8,y_train)
-            ,(knn10_1,"knn10_1",ft_10_test,y_test,ft_10,y_train)
-            ,(knn10_3,"knn10_3",ft_10_test,y_test,ft_10,y_train)
-            ,(knn10_5,"knn10_5",ft_10_test,y_test,ft_10,y_train)
-            ,(knn10_7,"knn10_7",ft_10_test,y_test,ft_10,y_train)
-            ,(knn10_9,"knn10_9",ft_10_test,y_test,ft_10,y_train)
+            (knn3_1, "knn3_1", ft_3_test, y_test, ft_3, y_train)
+            , (knn3_3, "knn3_3", ft_3_test, y_test, ft_3, y_train)
+            , (knn3_5, "knn3_5", ft_3_test, y_test, ft_3, y_train)
+            , (knn3_7, "knn3_7", ft_3_test, y_test, ft_3, y_train)
+            , (knn3_9, "knn3_9", ft_3_test, y_test, ft_3, y_train)
+            , (knn5_1, "knn5_1", ft_5_test, y_test, ft_5, y_train)
+            , (knn5_3, "knn5_3", ft_5_test, y_test, ft_5, y_train)
+            , (knn5_5, "knn5_5", ft_5_test, y_test, ft_5, y_train)
+            , (knn5_7, "knn5_7", ft_5_test, y_test, ft_5, y_train)
+            , (knn5_9, "knn5_9", ft_5_test, y_test, ft_5, y_train)
+            , (knn8_1, "knn8_1", ft_8_test, y_test, ft_8, y_train)
+            , (knn8_3, "knn8_3", ft_8_test, y_test, ft_8, y_train)
+            , (knn8_5, "knn8_5", ft_8_test, y_test, ft_8, y_train)
+            , (knn8_7, "knn8_7", ft_8_test, y_test, ft_8, y_train)
+            , (knn8_9, "knn8_9", ft_8_test, y_test, ft_8, y_train)
+            , (knn10_1, "knn10_1", ft_10_test, y_test, ft_10, y_train)
+            , (knn10_3, "knn10_3", ft_10_test, y_test, ft_10, y_train)
+            , (knn10_5, "knn10_5", ft_10_test, y_test, ft_10, y_train)
+            , (knn10_7, "knn10_7", ft_10_test, y_test, ft_10, y_train)
+            , (knn10_9, "knn10_9", ft_10_test, y_test, ft_10, y_train)
 
-            ,(nb_3, "nb_3", ft_3_test, y_test, ft_3, y_train)
-            ,(nb_5, "nb_5", ft_5_test, y_test, ft_5, y_train)
-            ,(nb_8, "nb_8", ft_8_test, y_test, ft_8, y_train)
-            ,(nb_10, "nb_10", ft_10_test, y_test, ft_10, y_train)
+            , (nb_3, "nb_3", ft_3_test, y_test, ft_3, y_train)
+            , (nb_5, "nb_5", ft_5_test, y_test, ft_5, y_train)
+            , (nb_8, "nb_8", ft_8_test, y_test, ft_8, y_train)
+            , (nb_10, "nb_10", ft_10_test, y_test, ft_10, y_train)
 
-            ,(rf3_15, "rf3_15", ft_3_test, y_test, ft_3, y_train)
-            ,(rf3_30, "rf3_30", ft_3_test, y_test, ft_3, y_train)
-            ,(rf3_45, "rf3_45", ft_3_test, y_test, ft_3, y_train)
-            ,(rf5_15, "rf5_15", ft_5_test, y_test, ft_5, y_train)
-            ,(rf5_30, "rf5_30", ft_5_test, y_test, ft_5, y_train)
-            ,(rf5_45, "rf5_45", ft_5_test, y_test, ft_5, y_train)
-            ,(rf8_15, "rf8_15", ft_8_test, y_test, ft_8, y_train)
-            ,(rf8_30, "rf8_30", ft_8_test, y_test, ft_8, y_train)
-            ,(rf8_45, "rf8_45", ft_8_test, y_test, ft_8, y_train)
-            ,(rf10_15, "rf10_15", ft_10_test, y_test, ft_10, y_train)
-            ,(rf10_30, "rf10_30", ft_10_test, y_test, ft_10, y_train)
-            ,(rf10_45, "rf10_45", ft_10_test, y_test, ft_10, y_train)
+            , (rf3_15, "rf3_15", ft_3_test, y_test, ft_3, y_train)
+            , (rf3_30, "rf3_30", ft_3_test, y_test, ft_3, y_train)
+            , (rf3_45, "rf3_45", ft_3_test, y_test, ft_3, y_train)
+            , (rf5_15, "rf5_15", ft_5_test, y_test, ft_5, y_train)
+            , (rf5_30, "rf5_30", ft_5_test, y_test, ft_5, y_train)
+            , (rf5_45, "rf5_45", ft_5_test, y_test, ft_5, y_train)
+            , (rf8_15, "rf8_15", ft_8_test, y_test, ft_8, y_train)
+            , (rf8_30, "rf8_30", ft_8_test, y_test, ft_8, y_train)
+            , (rf8_45, "rf8_45", ft_8_test, y_test, ft_8, y_train)
+            , (rf10_15, "rf10_15", ft_10_test, y_test, ft_10, y_train)
+            , (rf10_30, "rf10_30", ft_10_test, y_test, ft_10, y_train)
+            , (rf10_45, "rf10_45", ft_10_test, y_test, ft_10, y_train)
 
-            ,(dt_3, "dt_3", ft_3_test, y_test, ft_3, y_train)
-            ,(dt_5, "dt_5", ft_5_test, y_test, ft_5, y_train)
-            ,(dt_8, "dt_8", ft_8_test, y_test, ft_8, y_train)
-            ,(dt_10, "dt_10", ft_10_test, y_test, ft_10, y_train)
+            , (dt_3, "dt_3", ft_3_test, y_test, ft_3, y_train)
+            , (dt_5, "dt_5", ft_5_test, y_test, ft_5, y_train)
+            , (dt_8, "dt_8", ft_8_test, y_test, ft_8, y_train)
+            , (dt_10, "dt_10", ft_10_test, y_test, ft_10, y_train)
 
-            ,(svm_3, "svm_3", ft_3_test, y_test, ft_3, y_train)
-            ,(svm_5, "svm_5", ft_5_test, y_test, ft_5, y_train)
-            ,(svm_8, "svm_8", ft_8_test, y_test, ft_8, y_train)
-            ,(svm_10, "svm_10", ft_10_test, y_test, ft_10, y_train)
+            , (svm_3, "svm_3", ft_3_test, y_test, ft_3, y_train)
+            , (svm_5, "svm_5", ft_5_test, y_test, ft_5, y_train)
+            , (svm_8, "svm_8", ft_8_test, y_test, ft_8, y_train)
+            , (svm_10, "svm_10", ft_10_test, y_test, ft_10, y_train)
 
-            ,(lr_3, "lr_3", ft_3_test, y_test, ft_3, y_train)
-            ,(lr_5, "lr_5", ft_5_test, y_test, ft_5, y_train)
-            ,(lr_8, "lr_8", ft_8_test, y_test, ft_8, y_train)
+            , (lr_3, "lr_3", ft_3_test, y_test, ft_3, y_train)
+            , (lr_5, "lr_5", ft_5_test, y_test, ft_5, y_train)
+            , (lr_8, "lr_8", ft_8_test, y_test, ft_8, y_train)
             # ,(lr_10, "lr_10", ft_10_test, y_test, ft_10, y_train)
 
-            ,(xgb_3, "xgb_3", ft_3_test, y_test, ft_3, y_train)
-            ,(xgb_5, "xgb_5", ft_5_test, y_test, ft_5, y_train)
-            ,(xgb_8, "xgb_8", ft_8_test, y_test, ft_8, y_train)
+            , (xgb_3, "xgb_3", ft_3_test, y_test, ft_3, y_train)
+            , (xgb_5, "xgb_5", ft_5_test, y_test, ft_5, y_train)
+            , (xgb_8, "xgb_8", ft_8_test, y_test, ft_8, y_train)
             # ,(xgb_10, "xgb_10", ft_10_test, y_test, ft_10, y_train)
 
-            ,(abdt3_15_3, "abdt3_15_3", ft_3_test, y_test, ft_3, y_train)
-            ,(abdt3_30_3, "abdt3_30_3", ft_3_test, y_test, ft_3, y_train)
-            ,(abdt3_45_3, "abdt3_45_3", ft_3_test, y_test, ft_3, y_train)
-            ,(abdt5_15_3, "abdt5_15_3", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt5_30_3, "abdt5_30_3", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt5_45_3, "abdt5_45_3", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt8_15_3, "abdt8_15_3", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_30_3, "abdt8_30_3", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_45_3, "abdt8_45_3", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt10_15_3, "abdt10_15_3", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_30_3, "abdt10_30_3", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_45_3, "abdt10_45_3", ft_10_test, y_test, ft_10, y_train)
-        
-            ,(abdt3_15_8, "abdt3_15_8", ft_3_test, y_test, ft_3, y_train)
-            ,(abdt3_30_8, "abdt3_30_8", ft_3_test, y_test, ft_3, y_train)
-            ,(abdt3_45_8, "abdt3_45_8", ft_3_test, y_test, ft_3, y_train)
-            ,(abdt5_15_8, "abdt5_15_8", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt5_30_8, "abdt5_30_8", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt5_45_8, "abdt5_45_8", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt8_15_8, "abdt8_15_8", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_30_8, "abdt8_30_8", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_45_8, "abdt8_45_8", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt10_15_8, "abdt10_15_8", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_30_8, "abdt10_30_8", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_45_8, "abdt10_45_8", ft_10_test, y_test, ft_10, y_train)
+            , (abdt3_15_3, "abdt3_15_3", ft_3_test, y_test, ft_3, y_train)
+            , (abdt3_30_3, "abdt3_30_3", ft_3_test, y_test, ft_3, y_train)
+            , (abdt3_45_3, "abdt3_45_3", ft_3_test, y_test, ft_3, y_train)
+            , (abdt5_15_3, "abdt5_15_3", ft_5_test, y_test, ft_5, y_train)
+            , (abdt5_30_3, "abdt5_30_3", ft_5_test, y_test, ft_5, y_train)
+            , (abdt5_45_3, "abdt5_45_3", ft_5_test, y_test, ft_5, y_train)
+            , (abdt8_15_3, "abdt8_15_3", ft_8_test, y_test, ft_8, y_train)
+            , (abdt8_30_3, "abdt8_30_3", ft_8_test, y_test, ft_8, y_train)
+            , (abdt8_45_3, "abdt8_45_3", ft_8_test, y_test, ft_8, y_train)
+            , (abdt10_15_3, "abdt10_15_3", ft_10_test, y_test, ft_10, y_train)
+            , (abdt10_30_3, "abdt10_30_3", ft_10_test, y_test, ft_10, y_train)
+            , (abdt10_45_3, "abdt10_45_3", ft_10_test, y_test, ft_10, y_train)
 
-            ,(abdt3_15_18, "abdt3_15_18", ft_3_test, y_test, ft_3, y_train)
-            ,(abdt3_30_18, "abdt3_30_18", ft_3_test, y_test, ft_3, y_train)
-            ,(abdt3_45_18, "abdt3_45_18", ft_3_test, y_test, ft_3, y_train)
-            ,(abdt5_15_18, "abdt5_15_18", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt5_30_18, "abdt5_30_18", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt5_45_18, "abdt5_45_18", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt8_15_18, "abdt8_15_18", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_30_18, "abdt8_30_18", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_45_18, "abdt8_45_18", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt10_15_18, "abdt10_15_18", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_30_18, "abdt10_30_18", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_45_18, "abdt10_45_18", ft_10_test, y_test, ft_10, y_train)
+            , (abdt3_15_8, "abdt3_15_8", ft_3_test, y_test, ft_3, y_train)
+            , (abdt3_30_8, "abdt3_30_8", ft_3_test, y_test, ft_3, y_train)
+            , (abdt3_45_8, "abdt3_45_8", ft_3_test, y_test, ft_3, y_train)
+            , (abdt5_15_8, "abdt5_15_8", ft_5_test, y_test, ft_5, y_train)
+            , (abdt5_30_8, "abdt5_30_8", ft_5_test, y_test, ft_5, y_train)
+            , (abdt5_45_8, "abdt5_45_8", ft_5_test, y_test, ft_5, y_train)
+            , (abdt8_15_8, "abdt8_15_8", ft_8_test, y_test, ft_8, y_train)
+            , (abdt8_30_8, "abdt8_30_8", ft_8_test, y_test, ft_8, y_train)
+            , (abdt8_45_8, "abdt8_45_8", ft_8_test, y_test, ft_8, y_train)
+            , (abdt10_15_8, "abdt10_15_8", ft_10_test, y_test, ft_10, y_train)
+            , (abdt10_30_8, "abdt10_30_8", ft_10_test, y_test, ft_10, y_train)
+            , (abdt10_45_8, "abdt10_45_8", ft_10_test, y_test, ft_10, y_train)
+
+            , (abdt3_15_18, "abdt3_15_18", ft_3_test, y_test, ft_3, y_train)
+            , (abdt3_30_18, "abdt3_30_18", ft_3_test, y_test, ft_3, y_train)
+            , (abdt3_45_18, "abdt3_45_18", ft_3_test, y_test, ft_3, y_train)
+            , (abdt5_15_18, "abdt5_15_18", ft_5_test, y_test, ft_5, y_train)
+            , (abdt5_30_18, "abdt5_30_18", ft_5_test, y_test, ft_5, y_train)
+            , (abdt5_45_18, "abdt5_45_18", ft_5_test, y_test, ft_5, y_train)
+            , (abdt8_15_18, "abdt8_15_18", ft_8_test, y_test, ft_8, y_train)
+            , (abdt8_30_18, "abdt8_30_18", ft_8_test, y_test, ft_8, y_train)
+            , (abdt8_45_18, "abdt8_45_18", ft_8_test, y_test, ft_8, y_train)
+            , (abdt10_15_18, "abdt10_15_18", ft_10_test, y_test, ft_10, y_train)
+            , (abdt10_30_18, "abdt10_30_18", ft_10_test, y_test, ft_10, y_train)
+            , (abdt10_45_18, "abdt10_45_18", ft_10_test, y_test, ft_10, y_train)
         ]
         names = [ele[1] for ele in models_to_evaluate]
         print(f"Evaluating models: {names}")
@@ -2088,10 +2102,8 @@ if __name__ == '__main__':
             warnings.filterwarnings('default', category=FutureWarning)
 
         results_df.to_csv('baseline_results.csv', index=False)
-        print(f"Baselines took {(baseline_start_time - time.time())/60} "
+        print(f"Baselines took {(baseline_start_time - time.time()) / 60} "
               f"minutes to run.")
-
-
 
 # OLD CODE THAT CREATED A GRID FOR ARCHITECTURE SEARCH
 """
