@@ -3,7 +3,8 @@ import re
 
 # Open the file
 # with open('out.1831432.log', 'r') as file: # 9
-with open('out.1832475.log', 'r') as file: # just one
+# with open('out.1832475.log', 'r') as file: # the single best of the 9
+with open('out.1832553.log ', 'r') as file: # the single best, looking at push_gap
     data = file.read()
 
 # Split the data into different combinations
