@@ -439,7 +439,39 @@ for trial in range(1):
     #     }]
     # }
 
-    # 3/23/24 finding good warm lr, no pushes
+    # # 3/23/24 finding good warm lr, no pushes
+    # # These two are also hyperparameters. Feel free to add more values to try.
+    # num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
+    # ptype_length = [29] #[21, 25, 29] #[17, 19, 21, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    # hyperparameters = {
+    #     # comments after the line indicate jon's original settings
+    #     # if the settings were not applicable, I write "not set".
+
+    #     'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
+    #     'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+    #     'joint_weight_decay':       [-1], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+    #     'gamma':                    [.8, 0.5], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+    #     'warm_lr_step_size':        [20*train.shape[0]//config['train_batch_size']], #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
+    #     'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
+    #     'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+    #     'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
+    #     'l1_weight':                [1e-3],
+    #     'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
+    #     'last_layer_lr':            [0.05], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+    #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
+    #     'push_gap':                 [-1], # 17 #random.randint(10, 20)# 1_000_000 # not set
+    #     'push_start':               [200], #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+    #     'num_pushes':               [0], # 3-5?
+    #     'last_layer_epochs':        [0], # 50
+    #     # BELOW IS UNUSED
+    #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+    #     'joint_optimizer_lrs': [{ # learning rates for the different stages
+    #         'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
+    #         'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
+    #     }]
+    # }
+
+    # 3/23/24 getting last layer lr and epochs
     # These two are also hyperparameters. Feel free to add more values to try.
     num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
     ptype_length = [29] #[21, 25, 29] #[17, 19, 21, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
@@ -449,20 +481,20 @@ for trial in range(1):
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
         'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
-        'joint_weight_decay':       [0], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-        'gamma':                    [.8, 0.5], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'joint_weight_decay':       [-1], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+        'gamma':                    [.8], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'warm_lr_step_size':        [20*train.shape[0]//config['train_batch_size']], #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
         'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
-        'warm_ptype_lr':            [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_lr':            [0.05], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
+        'last_layer_lr':            [0.5, 0.01, 0.05, 0.01, 0.005, 0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [-1], # 17 #random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [200], #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_start':               [13], #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'num_pushes':               [0], # 3-5?
-        'last_layer_epochs':        [0], # 50
+        'last_layer_epochs':        [150], # 50
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -471,6 +503,12 @@ for trial in range(1):
         }]
     }
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']
+    # 1. get warm lr and push_start by having 200 epochs and no push, looking at graphs
+    #       optionally modify push_start and warm_lr_step_size and gamma to improve even more
+    # 2. get last layer lr and epochs by pushing only at the end and having last_layer_epochs=200, looking at graphs (?)
+    #       possibly have different last layer epochs after the first one and after subsequent pushes?
+    # 3. get push_gap by pushing once
+    # 4. 
 
     # Generate all combinations of hyperparameters
     combinations = list(itertools.product(*hyperparameters.values()))
@@ -582,17 +620,17 @@ for trial in range(1):
             #     break
             # if epoch >= 31 or val_acc >= 0.99: 
             if epoch == end_epoch:
-                # print(f"Stopping after epoch {epoch+1}.\n"
-                #     f"Final validation accuracy before push: {val_acc*100}%")
-                # print(f"Pushing prototypes since finished training")
-                # push_prototypes(
-                #     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
-                #     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
-                #     preprocess_input_function=None, # normalize if needed
-                #     root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
-                #     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
-                #     log=log
-                # )
+                print(f"Stopping after epoch {epoch+1}.\n"
+                    f"Final validation accuracy before push: {val_acc*100}%")
+                print(f"Pushing prototypes since finished training")
+                push_prototypes(
+                    pushloader, # pytorch dataloader (must be unnormalized in [0,1])
+                    prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
+                    preprocess_input_function=None, # normalize if needed
+                    root_dir_for_saving_prototypes=None, # if not None, prototypes will be saved here # sam: previously seq_dir
+                    epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
+                    log=log
+                )
                 # # evaluate on train, find aggregate sep and cluster loss for analysis purposes
                 # # print(f"Evaluating after push, before retraining last layer")
                 # train_actual, train_predicted, train_ptype_results = tnt.test(
@@ -608,32 +646,32 @@ for trial in range(1):
                 # print(f"\tSeparation: {train_ptype_results['separation']}")
                 # # print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
 
-                # # After pushing, retrain the last layer to produce good results again.
-                # tnt.last_only(model=ppnet_multi, log=log)
-                # print(f"Retraining last layer")
-                # # Set the last layer lr to the original lr
-                # for param_group in last_layer_optimizer.param_groups:
-                #     param_group['lr'] = params['last_layer_lr']
-                # for i in range(params['last_layer_epochs']):
-                #     if i == 25:
-                #         for param_group in last_layer_optimizer.param_groups:
-                #             param_group['lr'] /= 5
-                #     elif i == 35:
-                #         for param_group in last_layer_optimizer.param_groups:
-                #             param_group['lr'] /= 5
-                #     elif i == 45:
-                #         for param_group in last_layer_optimizer.param_groups:
-                #             param_group['lr'] /= 5
-                #     actual, pred, _ = tnt.train(
-                #         model=ppnet_multi,
-                #         dataloader=trainloader,
-                #         optimizer=last_layer_optimizer,
-                #         class_specific=class_specific,
-                #         coefs=params['coefs'],
-                #         log=log
-                #     )
-                #     acc = np.mean(actual == pred)
-                #     print(f"\tTrain acc at iteration {i}: {acc}", flush=True)
+                # After pushing, retrain the last layer to produce good results again.
+                tnt.last_only(model=ppnet_multi, log=log)
+                print(f"Retraining last layer")
+                # Set the last layer lr to the original lr
+                for param_group in last_layer_optimizer.param_groups:
+                    param_group['lr'] = params['last_layer_lr']
+                for i in range(params['last_layer_epochs']):
+                    # if i == 25:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] *= 0.8 # was /= 5 for all three, 25, 35, 45
+                    # elif i == 35:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] *= 0.8
+                    # elif i == 45:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] *= 0.8
+                    actual, pred, _ = tnt.train(
+                        model=ppnet_multi,
+                        dataloader=trainloader,
+                        optimizer=last_layer_optimizer,
+                        class_specific=class_specific,
+                        coefs=params['coefs'],
+                        log=log
+                    )
+                    acc = np.mean(actual == pred)
+                    print(f"\tTrain acc at iteration {i}: {acc}", flush=True)
 
                 # Get the final model validation and test scores
                 print(f"Getting final validation and test accuracy after training.")

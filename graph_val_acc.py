@@ -5,7 +5,8 @@ import re
 # with open('out.1831432.log', 'r') as file: # 9
 # with open('out.1832475.log', 'r') as file: # the single best of the 9
 # with open('out.1832553.log ', 'r') as file: # the single best, looking at push_gap
-with open('out.1832676.log', 'r') as file: # 10 pushes
+# with open('out.1832676.log', 'r') as file: # 10 pushes
+with open('out.1838072.log', 'r') as file: # fixed initialization, to find warm lr
     data = file.read()
 
 # Split the data into different combinations
