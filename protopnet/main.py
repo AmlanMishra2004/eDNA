@@ -480,21 +480,21 @@ for trial in range(1):
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0.8], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         'joint_weight_decay':       [-1], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-        'gamma':                    [.8], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-        'warm_lr_step_size':        [20*train.shape[0]//config['train_batch_size']], #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
+        'gamma':                    [.2], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'warm_lr_step_size':        [15*train.shape[0]//config['train_batch_size']], #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
         'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
         'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_lr':            [0.5, 0.01, 0.05, 0.01, 0.005, 0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'last_layer_lr':            [-1],#[0.5, 0.01, 0.05, 0.01, 0.005, 0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [-1], # 17 #random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [13], #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_start':               [15*4], # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'num_pushes':               [0], # 3-5?
-        'last_layer_epochs':        [150], # 50
+        'last_layer_epochs':        [0], # 50
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -503,11 +503,11 @@ for trial in range(1):
         }]
     }
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']
-    # 1. get warm lr and push_start by having 200 epochs and no push, looking at graphs
-    #       optionally modify push_start and warm_lr_step_size and gamma to improve even more
-    # 2. get last layer lr and epochs by pushing only at the end and having last_layer_epochs=200, looking at graphs (?)
+    # 1. find a good warm lr and push_start by setting push_start to 200 and last_layer_epochs to 0, looking at graphs
+    #       optionally modify gamma and warm_lr_step_size and gamma to improve even more
+    # 2. find a good last layer lr and epochs by pushing only at the end and having last_layer_epochs=200, looking at graphs (?)
     #       possibly have different last layer epochs after the first one and after subsequent pushes?
-    # 3. get push_gap by pushing once
+    # 3. find a good push_gap by pushing once
     # 4. 
 
     # Generate all combinations of hyperparameters
