@@ -21,17 +21,17 @@ combinations = data.split('Attempting combination')
 # For each combination
 for i in range(1, len(combinations)):
     # Extract the validation accuracies
-    val_accs = re.findall('Val acc before epoch \d+: (\d+\.\d+)', combinations[i])
-
+    accs = re.findall('Val acc before epoch \d+: (\d+\.\d+)|Train acc at iteration \d+: (\d+\.\d+)', combinations[i])
+    accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
     # Convert to floats
-    val_accs = [float(acc) for acc in val_accs]
+    accs = [float(acc) for acc in accs]
 
     # Generate the graph
     plt.figure(figsize=(10, 6))
-    plt.plot(val_accs)
-    plt.title(f'Validation Accuracy for Combination {i}')
+    plt.plot(accs)
+    plt.title(f'Accuracy for Combination {i}')
     plt.xlabel('Epoch')
-    plt.ylabel('Validation Accuracy')
+    plt.ylabel('Validation OR Train Accuracy')
     plt.grid(True)
     plt.show()
 

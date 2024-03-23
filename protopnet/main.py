@@ -673,6 +673,15 @@ for trial in range(1):
                     acc = np.mean(actual == pred)
                     print(f"\tTrain acc at iteration {i}: {acc}", flush=True)
 
+                    val_actual, val_predicted, val_ptype_results  = tnt.test(
+                        model=ppnet_multi,
+                        dataloader=valloader,
+                        class_specific=class_specific,
+                        log=log
+                    )
+                    val_acc = metrics.accuracy_score(val_actual, val_predicted)
+                    print(f"\tVal acc at iteration {i}: {val_acc}", flush=True)
+
                 # Get the final model validation and test scores
                 print(f"Getting final validation and test accuracy after training.")
                 val_actual, val_predicted, val_ptype_results  = tnt.test(
@@ -840,15 +849,15 @@ for trial in range(1):
                 for param_group in last_layer_optimizer.param_groups:
                     param_group['lr'] = params['last_layer_lr']
                 for i in range(params['last_layer_epochs']):
-                    if i == 25:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 5
-                    elif i == 35:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 5
-                    elif i == 45:
-                        for param_group in last_layer_optimizer.param_groups:
-                            param_group['lr'] /= 5
+                    # if i == 25:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] /= 5
+                    # elif i == 35:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] /= 5
+                    # elif i == 45:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] /= 5
                     actual, pred, _ = tnt.train(
                         model=ppnet_multi,
                         dataloader=trainloader,
@@ -859,6 +868,15 @@ for trial in range(1):
                     )
                     acc = np.mean(actual == pred)
                     print(f"\tTrain acc at iteration {i}: {acc}", flush=True)
+
+                    val_actual, val_predicted, val_ptype_results  = tnt.test(
+                        model=ppnet_multi,
+                        dataloader=valloader,
+                        class_specific=class_specific,
+                        log=log
+                    )
+                    val_acc = metrics.accuracy_score(val_actual, val_predicted)
+                    print(f"\tVal acc at iteration {i}: {val_acc}", flush=True)
 
                 # Reset warm lr to original lr
                 for param_group in warm_optimizer.param_groups:
