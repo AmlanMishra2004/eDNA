@@ -60,7 +60,8 @@ class PPNet(nn.Module):
         # initializes all prototype values to [0, 1)
         # prototype_shape is: ex. [156*2, 512+8, 25]
         # [config['num_classes']*ptypes_per_class, num_latent_channels+8, ptype_length]
-        self.prototype_vectors = nn.Parameter(torch.rand(self.prototype_shape),
+        # Note: Changed to randn() instead of rand() since I use leaky relu instead of relu
+        self.prototype_vectors = nn.Parameter(torch.randn(self.prototype_shape),
                                               requires_grad=True)
 
         # do not make this just a tensor,
@@ -70,6 +71,9 @@ class PPNet(nn.Module):
 
         self.last_layer = nn.Linear(self.num_prototypes, self.num_classes,
                                     bias=False) # do not use bias
+        
+        # Initialize the weights of the last layer
+        self.set_last_layer_incorrect_connection(incorrect_strength=-0.5)
 
     def conv_features(self, x):
         '''
@@ -240,6 +244,20 @@ class PPNet(nn.Module):
                         #   self.proto_layer_rf_info,
                           self.num_classes,
                           self.epsilon)
+    
+    def set_last_layer_incorrect_connection(self, incorrect_strength):
+        '''
+        the incorrect strength will be actual strength if -0.5 then input -0.5
+        '''
+        positive_one_weights_locations = torch.t(self.prototype_class_identity)
+        negative_one_weights_locations = 1 - positive_one_weights_locations
+
+        correct_class_connection = 1
+        incorrect_class_connection = incorrect_strength
+        self.last_layer.weight.data.copy_(
+            correct_class_connection * positive_one_weights_locations
+            + incorrect_class_connection * negative_one_weights_locations)
+        
 
 # features: backbone with loaded weights
 # prototype_shape = (num prototypes, input channel, spatial dim, spatial dim)
@@ -328,20 +346,6 @@ def construct_PPNet(features, pretrained=True, sequence_length=60,
     #     distances = F.relu(x2_patch_sum + intermediate_result)
 
     #     return distances
-
-    # UNUSED
-    # def set_last_layer_incorrect_connection(self, incorrect_strength):
-    #     '''
-    #     the incorrect strength will be actual strength if -0.5 then input -0.5
-    #     '''
-    #     positive_one_weights_locations = torch.t(self.prototype_class_identity)
-    #     negative_one_weights_locations = 1 - positive_one_weights_locations
-
-    #     correct_class_connection = 1
-    #     incorrect_class_connection = incorrect_strength
-    #     self.last_layer.weight.data.copy_(
-    #         correct_class_connection * positive_one_weights_locations
-    #         + incorrect_class_connection * negative_one_weights_locations)
 
     # UNUSED
     # def prune_prototypes(self, prototypes_to_prune):
