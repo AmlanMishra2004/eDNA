@@ -489,12 +489,12 @@ for trial in range(1):
         'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
         'l1_weight':                [1e-3],
         'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_lr':            [0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'last_layer_lr':            [0.001], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_gap':                 [-1], # 17 #random.randint(10, 20)# 1_000_000 # not set
+        'push_gap':                 [300], # 17 #random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [15], # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [0], # 3-5?
-        'last_layer_epochs':        [300], # 50
+        'num_pushes':               [1], # 3-5?
+        'last_layer_epochs':        [50], # 50
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -507,7 +507,7 @@ for trial in range(1):
     #       optionally modify gamma and warm_lr_step_size and gamma to improve even more
     # 2. find a good last layer lr and epochs by pushing only at the end and having last_layer_epochs=200, looking at graphs (?)
     #       possibly have different last layer epochs after the first one and after subsequent pushes?
-    # 3. find a good push_gap by pushing once
+    # 3. find a good push_gap by setting it to 300 and seeing how many epochs are necessary
     # 4. 
 
     # Generate all combinations of hyperparameters

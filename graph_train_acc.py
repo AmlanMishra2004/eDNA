@@ -10,7 +10,8 @@ import re
 # with open('out.1832676.log', 'r') as file: # 10 pushes
 
 # with open('out.1838072.log', 'r') as file: # fixed initialization, to find warm lr
-with open('out.1838398.log', 'r') as file: # to find last layer epochs and lr
+# with open('out.1838398.log', 'r') as file: # to find last layer epochs and lr
+# with open('out.1838491.log', 'r') as file: # to find last layer epochs and lr
     data = file.read()
 
 # Split the data into different combinations
