@@ -13,7 +13,8 @@ import re
 # with open('out.1838398.log', 'r') as file: # to find last layer epochs and lr
 # with open('out.1838484.log', 'r') as file: # to find warm lr scheduler
 # with open('out.1838624.log', 'r') as file: # to find push gap
-with open('out.1838708.log', 'r') as file: # to find push gap
+# with open('out.1838708.log', 'r') as file: # to find push gap -> 35 
+with open('out.1838794.log', 'r') as file: # to see if push gap should change -> too many epochs, can't see
     data = file.read()
 
 # Split the data into different combinations
@@ -22,7 +23,7 @@ combinations = data.split('Attempting combination')
 # For each combination
 for i in range(1, len(combinations)):
     # Extract the validation accuracies
-    accs = re.findall('Val acc before epoch \d+: (\d+\.\d+)|Train acc at iteration \d+: (\d+\.\d+)', combinations[i])
+    accs = re.findall('Val acc before epoch \d+: (\d+\.\d+)|Val acc at iteration \d+: (\d+\.\d+)', combinations[i])
     accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
     # Convert to floats
     accs = [float(acc) for acc in accs]
@@ -32,7 +33,7 @@ for i in range(1, len(combinations)):
     plt.plot(accs)
     plt.title(f'Accuracy for Combination {i}')
     plt.xlabel('Epoch')
-    plt.ylabel('Validation OR Train Accuracy')
+    plt.ylabel('Validation Accuracy')
     plt.grid(True)
     plt.show()
 

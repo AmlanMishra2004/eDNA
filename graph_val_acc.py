@@ -12,7 +12,8 @@ import re
 # with open('out.1838072.log', 'r') as file: # fixed initialization, to find warm lr
 # with open('out.1838398.log', 'r') as file: # to find last layer epochs and lr
 # with open('out.1838484.log', 'r') as file: # to find warm lr scheduler
-with open('out.1838624.log', 'r') as file: # to find push gap
+# with open('out.1838624.log', 'r') as file: # to find push gap
+with open('out.1838794.log', 'r') as file: # to see if push gap should change
     data = file.read()
 
 # Split the data into different combinations
