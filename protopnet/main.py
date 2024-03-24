@@ -491,9 +491,9 @@ for trial in range(1):
         'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
         'last_layer_lr':            [0.001], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_gap':                 [35], # 17 #random.randint(10, 20)# 1_000_000 # not set
+        'push_gap':                 [300], # 17 #random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [15], # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [20], # 3-5?
+        'num_pushes':               [1], # 3-5?
         'last_layer_epochs':        [50], # 50
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
