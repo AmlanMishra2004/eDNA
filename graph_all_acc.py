@@ -19,12 +19,13 @@ import numpy as np
 # FIXED WARM LR AFTER PUSH
 # with open('out.1840139.log', 'r') as file: # to find push_gap
 
-def moving_average(a, n=15) :
+def moving_average(a, n=1) :
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
-with open('out.1840698.log', 'r') as file: # to find last layer lr
+# with open('out.1840698.log', 'r') as file: # to find last layer lr
+with open('out.1841514.log', 'r') as file: # to see if accuracy after push goes to 0 regardless of last layer lr
     data = file.read()
 
 # Split the data into different combinations
