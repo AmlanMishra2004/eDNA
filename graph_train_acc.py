@@ -20,7 +20,7 @@ combinations = data.split('Attempting combination')
 # For each combination
 for i in range(1, len(combinations)):
     # Extract the validation accuracies
-    train_accs = re.findall('Train acc at iteration \d+: (\d+\.\d+)', combinations[i])
+    train_accs = re.findall('.*Train acc at iteration \d+: (\d+\.\d+)', combinations[i])
 
     # Convert to floats
     train_accs = [float(acc) for acc in train_accs]

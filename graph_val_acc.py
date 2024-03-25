@@ -22,7 +22,7 @@ combinations = data.split('Attempting combination')
 # For each combination
 for i in range(1, len(combinations)):
     # Extract the validation accuracies
-    val_accs = re.findall('Val acc before epoch \d+: (\d+\.\d+)', combinations[i])
+    val_accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)', combinations[i])
 
     # Convert to floats
     val_accs = [float(acc) for acc in val_accs]
