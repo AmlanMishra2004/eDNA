@@ -14,7 +14,8 @@ import re
 # with open('out.1838484.log', 'r') as file: # to find warm lr scheduler
 # with open('out.1838624.log', 'r') as file: # to find push gap
 # with open('out.1838708.log', 'r') as file: # to find push gap -> 35 
-with open('out.1838794.log', 'r') as file: # to see if push gap should change -> too many epochs, can't see
+# with open('out.1838794.log', 'r') as file: # to see if push gap should change -> too many epochs, can't see
+# with open('out.1840139.log', 'r') as file: # after fixed warm lr after push, to find push_gap
     data = file.read()
 
 # Split the data into different combinations
