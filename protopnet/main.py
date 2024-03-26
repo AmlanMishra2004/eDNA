@@ -488,13 +488,13 @@ for trial in range(1):
         'clst_weight':              [12*-0.8],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [30*0.08],#[10*30*0.08, 1*30*0.08, 0.1*30*0.08], # OG: [30*0.08], go as high as 50x
         'l1_weight':                [0.001], #[10, 1, 0.1, 0.01, 0.001],
-        'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_lr':            [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'warm_ptype_lr':            [0.4], # first layer: 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
+        'last_layer_lr':            [0.001], #[0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_gap':                 [10], # 17 # random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [15], # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [1], # 3-5?
-        'last_layer_epochs':        [300], # 50, 100
+        'push_gap':                 [12], # 17 # random.randint(10, 20)# 1_000_000 # not set
+        'push_start':               [12], # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'num_pushes':               [7], # 3-5?
+        'last_layer_epochs':        [85], # 50, 100
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -872,46 +872,46 @@ for trial in range(1):
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
                 print(f"(Directly after push) Val acc at iteration 0: {val_acc}", flush=flush)
 
-                # # After pushing, retrain the last layer to produce good results again.
-                # tnt.last_only(model=ppnet_multi, log=log)
-                # print(f"Retraining last layer: ")
-                # # # Set the last layer lr to the original lr
-                # # for param_group in last_layer_optimizer.param_groups:
-                # #     param_group['lr'] = params['last_layer_lr']
-
+                # After pushing, retrain the last layer to produce good results again.
+                tnt.last_only(model=ppnet_multi, log=log)
+                print(f"Retraining last layer: ")
+                # # Set the last layer lr to the original lr
                 # for param_group in last_layer_optimizer.param_groups:
-                #         print(f"Last layer lr: {param_group['lr']}")
+                #     param_group['lr'] = params['last_layer_lr']
 
-                # for i in range(params['last_layer_epochs']):
-                #     # if i == 25:
-                #     #     for param_group in last_layer_optimizer.param_groups:
-                #     #         param_group['lr'] /= 5
-                #     # elif i == 35:
-                #     #     for param_group in last_layer_optimizer.param_groups:
-                #     #         param_group['lr'] /= 5
-                #     # elif i == 45:
-                #     #     for param_group in last_layer_optimizer.param_groups:
-                #     #         param_group['lr'] /= 5
+                for param_group in last_layer_optimizer.param_groups:
+                        print(f"Last layer lr: {param_group['lr']}")
 
-                #     actual, pred, _ = tnt.train(
-                #         model=ppnet_multi,
-                #         dataloader=trainloader,
-                #         optimizer=last_layer_optimizer,
-                #         class_specific=class_specific,
-                #         coefs=params['coefs'],
-                #         log=log
-                #     )
-                #     # acc = np.mean(actual == pred)
-                #     # print(f"\tTrain acc at iteration {i}: {acc}", flush=flush)
+                for i in range(params['last_layer_epochs']):
+                    # if i == 25:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] /= 5
+                    # elif i == 35:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] /= 5
+                    # elif i == 45:
+                    #     for param_group in last_layer_optimizer.param_groups:
+                    #         param_group['lr'] /= 5
 
-                #     val_actual, val_predicted, val_ptype_results  = tnt.test(
-                #         model=ppnet_multi,
-                #         dataloader=valloader,
-                #         class_specific=class_specific,
-                #         log=log
-                #     )
-                #     val_acc = metrics.accuracy_score(val_actual, val_predicted)
-                #     print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
+                    actual, pred, _ = tnt.train(
+                        model=ppnet_multi,
+                        dataloader=trainloader,
+                        optimizer=last_layer_optimizer,
+                        class_specific=class_specific,
+                        coefs=params['coefs'],
+                        log=log
+                    )
+                    # acc = np.mean(actual == pred)
+                    # print(f"\tTrain acc at iteration {i}: {acc}", flush=flush)
+
+                    val_actual, val_predicted, val_ptype_results  = tnt.test(
+                        model=ppnet_multi,
+                        dataloader=valloader,
+                        class_specific=class_specific,
+                        log=log
+                    )
+                    val_acc = metrics.accuracy_score(val_actual, val_predicted)
+                    print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
                     
 
                 # # Reset warm lr to original lr
@@ -920,9 +920,9 @@ for trial in range(1):
 
                 # Lower the warm and last_layer lr by half after each push
                 for param_group in warm_optimizer.param_groups:
-                    param_group['lr'] /= 2
-                # for param_group in last_layer_optimizer.param_groups:
-                #     param_group['lr'] /= 2
+                    param_group['lr'] *= 0.7
+                for param_group in last_layer_optimizer.param_groups:
+                    param_group['lr'] *= 0.7
 
             elif epoch < params['num_warm_epochs']:
                 # print(f"Train epoch")
