@@ -648,8 +648,8 @@ for trial in range(1):
                 acc = np.mean(train_actual == train_predicted)
                 print(f"After push, before retraining last layer:")
                 print(f"\tTrain acc: {acc}")
-                print(f"\tCluster: {train_ptype_results['cluster']}")
-                print(f"\tSeparation: {train_ptype_results['separation']}")
+                print(f"\tTrain Cluster: {train_ptype_results['cluster']}")
+                print(f"\tTrainSeparation: {train_ptype_results['separation']}")
                 # print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
 
                 val_actual, val_predicted, val_ptype_results  = tnt.test(
@@ -858,9 +858,18 @@ for trial in range(1):
                 acc = np.mean(train_actual == train_predicted)
                 print(f"After push, before retraining last layer:")
                 print(f"\tTrain acc: {acc}")
-                print(f"\tCluster: {train_ptype_results['cluster']}")
-                print(f"\tSeparation: {train_ptype_results['separation']}")
+                print(f"\tTrain Cluster: {train_ptype_results['cluster']}")
+                print(f"\tTrain Separation: {train_ptype_results['separation']}")
                 # print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
+
+                val_actual, val_predicted, val_ptype_results  = tnt.test(
+                model=ppnet_multi,
+                dataloader=valloader,
+                class_specific=class_specific,
+                log=log
+                )
+                val_acc = metrics.accuracy_score(val_actual, val_predicted)
+                print(f"(After push) Val acc at iteration 0: {val_acc}", flush=flush)
 
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
