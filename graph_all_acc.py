@@ -11,7 +11,7 @@ import numpy as np
 # with open('out.1832676.log', 'r') as file: # 10 pushes
 
 # with open('out.1838072.log', 'r') as file: # fixed initialization, to find warm lr
-# with open('out.1838398.log', 'r') as file: # to find last layer epochs and lr
+# with open('out.1838398.log', 'r') as file: # to find last layer epochs and lr FROM SCRATCH, without warm training first
 # with open('out.1838484.log', 'r') as file: # to find warm lr scheduler
 # with open('out.1838624.log', 'r') as file: # to find push gap
 # with open('out.1838708.log', 'r') as file: # to find push gap -> 35 
@@ -19,13 +19,14 @@ import numpy as np
 # FIXED WARM LR AFTER PUSH
 # with open('out.1840139.log', 'r') as file: # to find push_gap
 
-def moving_average(a, n=1) :
+def moving_average(a, n=50) :
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
 # with open('out.1840698.log', 'r') as file: # to find last layer lr
 # with open('out.1841514.log', 'r') as file: # to see if accuracy after push goes to 0 regardless of last layer lr
+with open('out.1840698.log', 'r') as file: # to look back (do not save)
     data = file.read()
 
 # Split the data into different combinations
