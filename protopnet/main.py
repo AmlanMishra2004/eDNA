@@ -489,7 +489,7 @@ for trial in range(1):
         'sep_weight':               [30*0.08],#[10*30*0.08, 1*30*0.08, 0.1*30*0.08], # OG: [30*0.08], go as high as 50x
         'l1_weight':                [0.001], #[10, 1, 0.1, 0.01, 0.001],
         'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_lr':            [0.01, 0.0075, 0.005, 0.0025, 0.001, 0.00075, 0.0005, 0.00025, 0.0001, 0.000075, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'last_layer_lr':            [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [10], # 17 # random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [15], # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
@@ -872,46 +872,46 @@ for trial in range(1):
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
                 print(f"(Directly after push) Val acc at iteration 0: {val_acc}", flush=flush)
 
-                # After pushing, retrain the last layer to produce good results again.
-                tnt.last_only(model=ppnet_multi, log=log)
-                print(f"Retraining last layer: ")
-                # # Set the last layer lr to the original lr
+                # # After pushing, retrain the last layer to produce good results again.
+                # tnt.last_only(model=ppnet_multi, log=log)
+                # print(f"Retraining last layer: ")
+                # # # Set the last layer lr to the original lr
+                # # for param_group in last_layer_optimizer.param_groups:
+                # #     param_group['lr'] = params['last_layer_lr']
+
                 # for param_group in last_layer_optimizer.param_groups:
-                #     param_group['lr'] = params['last_layer_lr']
+                #         print(f"Last layer lr: {param_group['lr']}")
 
-                for param_group in last_layer_optimizer.param_groups:
-                        print(f"Last layer lr: {param_group['lr']}")
+                # for i in range(params['last_layer_epochs']):
+                #     # if i == 25:
+                #     #     for param_group in last_layer_optimizer.param_groups:
+                #     #         param_group['lr'] /= 5
+                #     # elif i == 35:
+                #     #     for param_group in last_layer_optimizer.param_groups:
+                #     #         param_group['lr'] /= 5
+                #     # elif i == 45:
+                #     #     for param_group in last_layer_optimizer.param_groups:
+                #     #         param_group['lr'] /= 5
 
-                for i in range(params['last_layer_epochs']):
-                    # if i == 25:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] /= 5
-                    # elif i == 35:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] /= 5
-                    # elif i == 45:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] /= 5
+                #     actual, pred, _ = tnt.train(
+                #         model=ppnet_multi,
+                #         dataloader=trainloader,
+                #         optimizer=last_layer_optimizer,
+                #         class_specific=class_specific,
+                #         coefs=params['coefs'],
+                #         log=log
+                #     )
+                #     # acc = np.mean(actual == pred)
+                #     # print(f"\tTrain acc at iteration {i}: {acc}", flush=flush)
 
-                    actual, pred, _ = tnt.train(
-                        model=ppnet_multi,
-                        dataloader=trainloader,
-                        optimizer=last_layer_optimizer,
-                        class_specific=class_specific,
-                        coefs=params['coefs'],
-                        log=log
-                    )
-                    # acc = np.mean(actual == pred)
-                    # print(f"\tTrain acc at iteration {i}: {acc}", flush=flush)
-
-                    val_actual, val_predicted, val_ptype_results  = tnt.test(
-                        model=ppnet_multi,
-                        dataloader=valloader,
-                        class_specific=class_specific,
-                        log=log
-                    )
-                    val_acc = metrics.accuracy_score(val_actual, val_predicted)
-                    print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
+                #     val_actual, val_predicted, val_ptype_results  = tnt.test(
+                #         model=ppnet_multi,
+                #         dataloader=valloader,
+                #         class_specific=class_specific,
+                #         log=log
+                #     )
+                #     val_acc = metrics.accuracy_score(val_actual, val_predicted)
+                #     print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
                     
 
                 # # Reset warm lr to original lr
@@ -921,8 +921,8 @@ for trial in range(1):
                 # Lower the warm and last_layer lr by half after each push
                 for param_group in warm_optimizer.param_groups:
                     param_group['lr'] /= 2
-                for param_group in last_layer_optimizer.param_groups:
-                    param_group['lr'] /= 2
+                # for param_group in last_layer_optimizer.param_groups:
+                #     param_group['lr'] /= 2
 
             elif epoch < params['num_warm_epochs']:
                 # print(f"Train epoch")
