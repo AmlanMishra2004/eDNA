@@ -488,13 +488,13 @@ for trial in range(1):
         'clst_weight':              [12*-0.8],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [30*0.08],#[10*30*0.08, 1*30*0.08, 0.1*30*0.08], # OG: [30*0.08], go as high as 50x
         'l1_weight':                [0.001], #[10, 1, 0.1, 0.01, 0.001],
-        'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_lr':            [0.1, 0.0005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'warm_ptype_lr':            [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15 0.1, 0.95, 0.09, 0.85, 0.08, 0.75, 0.07, 0.65, 0.06, 0.55, 0.05], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
+        'last_layer_lr':            [-1], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [10], # 17 # random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [15], # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [1], # 3-5?
-        'last_layer_epochs':        [10], # 50
+        'push_start':               [30], # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'num_pushes':               [0], # 3-5?
+        'last_layer_epochs':        [0], # 50, 100
         # BELOW IS UNUSED
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_optimizer_lrs': [{ # learning rates for the different stages
@@ -503,6 +503,7 @@ for trial in range(1):
         }]
     }
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']
+
     # 1. find a good warm lr and push_start by setting push_start to 300, last_layer_epochs to 0, and num_pushes to 0, and grid search through different warm_lrs.
     # 1.5. (optionally) modify gamma and warm_lr_step_size and gamma to improve even more, once you find good performance
     # 2. find a good last layer lr by setting last_layer_epochs to 300, with num_pushes at 0 (still using the warm lr and push_gap that you found)
@@ -525,7 +526,7 @@ for trial in range(1):
         print(f"\n\nExploring {combos} hyperparameter combinations for grid search.\n")
     for iter, combination in enumerate(combinations):
         params = dict(zip(hyperparameters.keys(), combination))
-        print(f"\nAttempting combination {iter}/{combos}:")
+        print(f"\nAttempting combination {iter+1}/{combos}:")
         for key, value in params.items():
             print(f"{key}: {value}", flush=True)
         print('\n\n')
