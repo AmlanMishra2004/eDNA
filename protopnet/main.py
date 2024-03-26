@@ -659,7 +659,7 @@ for trial in range(1):
                 log=log
                 )
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
-                print(f"(After push) Val acc at iteration 0: {val_acc}", flush=flush)
+                print(f"(Directly after push) Val acc at iteration 0: {val_acc}", flush=flush)
 
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
@@ -869,7 +869,7 @@ for trial in range(1):
                 log=log
                 )
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
-                print(f"(After push) Val acc at iteration 0: {val_acc}", flush=flush)
+                print(f"(Directly after push) Val acc at iteration 0: {val_acc}", flush=flush)
 
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
