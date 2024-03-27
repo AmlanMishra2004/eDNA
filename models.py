@@ -136,13 +136,13 @@ class VariableCNN(nn.Module):
                           stride[i], padding[i])
             )
             self.conv_layers.append(activation())
-            # if pool_kernel_size[i] > 0:
-            #     self.conv_layers.append(
-            #         nn.MaxPool1d(pool_kernel_size[i])
-            #)
-            self.conv_layers.append(
-                nn.MaxPool1d(kernel_size=2, stride=2)
+            if pool_kernel_size[i] > 0:
+                self.conv_layers.append(
+                    nn.MaxPool1d(pool_kernel_size[i])
             )
+            # self.conv_layers.append(
+            #     nn.MaxPool1d(kernel_size=2, stride=2)
+            # )
             self.conv_layers.append(
                 nn.Dropout(dropout_channels[i])
             )

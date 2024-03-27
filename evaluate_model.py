@@ -710,7 +710,7 @@ if __name__ == '__main__':
         config['addTagAndPrimer'] = True
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
-        config['seq_target_length'] = 16000  # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
+        config['seq_target_length'] = 500  # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
         config['addTagAndPrimer'] = False
         config['addRevComplements'] = False
     if config['augment_test_data']:
@@ -868,13 +868,13 @@ if __name__ == '__main__':
 
         num_channels = [16, 32, 64, 128, 256]
         conv_kernel_sizes = [3, 5, 7, 9, 11]
-        stride_lengths = [1, 2]
+        stride_lengths = [2]
         padding_lengths = [0, 1, 2]
         dropout_rates = [0, 0.2, 0.4, 0.6]
         pool_kernel_sizes = [0, 2, 3]
 
         # SEARCH 2: Jan. 3, 2024
-        num_cnn_layers = [1, 2]
+        num_cnn_layers = [1, 2, 6]
 
         num_channels = [64, 128, 196, 256, 342, 512, 612]  # shifted up
         conv_kernel_sizes = [5, 6, 7, 8, 9]  # middle taken
@@ -889,7 +889,7 @@ if __name__ == '__main__':
         num_cnn_layers = [1]
         num_channels = [512]
         conv_kernel_sizes = [7]
-        stride_lengths = [1]
+        stride_lengths = [1,2]
         padding_lengths = [3]
         dropout_rates = [0.5]
         pool_kernel_sizes = [-1]  # ALWAYS kernel=2, stride=2
@@ -970,6 +970,14 @@ if __name__ == '__main__':
 
             # Create the model. If the model parameters are incompatible,
             # skip to the next combination.
+            print(f"Number of classes: {num_classes}")
+            print(f"Seq target length: {config['seq_target_length']}")
+            print(f"Number of Strides: {strides}")
+            print(f"Number of Input channels: {input_channels}")
+            print(f"Number of Output channels: {output_channels}")
+            print(f"Number of Pool kernels: {pool_kernels}")
+            print(f"Number of Conv kernels: {conv_kernels}")
+            print(f"Number of Paddings: {paddings}")
             try:
                 model = models.VariableCNN(
                     input_channels,
