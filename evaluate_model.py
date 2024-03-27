@@ -21,7 +21,7 @@ import time
 import warnings
 
 from joblib import dump, load
-import numpy as np
+import numpy as npf
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -612,7 +612,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     # hyperparameters and a single trial.
     utils.update_results(
         results,
-        compare_cols='backbone',
+        compare_cols='ppn',
         model=model,
         filename=results_file_name
     )
@@ -668,12 +668,12 @@ if __name__ == '__main__':
     # If set, this will skip the preprocessing and read in an existing train
     # and test csv (that are presumably already processed). For my train and 
     # test file, all semutations have been added, so no need for online augmentation.Whether set or not, it still must be truncated/padded and turned intovectors.
-    run_my_model = True
-    run_arch_search = False  # search through architectures, in addition to lr, batch size
+    run_my_model = False
+    run_arch_search = True  # search through architectures, in addition to lr, batch size
     run_autokeras = False
     run_baselines = False
 
-    num_classes = 156
+    num_classes = 225  # 156
 
     print(f"Loading and processing data")
 
@@ -683,10 +683,10 @@ if __name__ == '__main__':
         'iupac': {'a': 't', 't': 'a', 'c': 'g', 'g': 'c',
                   'r': 'y', 'y': 'r', 'k': 'm', 'm': 'k',
                   'b': 'v', 'd': 'h', 'h': 'd', 'v': 'b',
-                  's': 'w', 'w': 's', 'n': 'n', 'z': 'z'},
-        'data_path': './datasets/v4_combined_reference_sequences.csv',
-        'train_path': './datasets/train.csv',
-        'test_path': './datasets/test.csv',
+                  's': 'w', 'w': 's', 'n': 'n', 'z': 'z'},  #
+        'data_path': './datasets/combined.csv',
+        'train_path': './datasets/train_cleaned.csv',
+        'test_path': './datasets/test_cleaned.csv',
         'sep': ',',  # separator character in the csv file
         'species_col': 'Species',  # name of column containing species
         'seq_col': 'Sequence',  # name of column containing sequences
@@ -706,11 +706,11 @@ if __name__ == '__main__':
         'verbose': False
     }
     if config['applying_on_raw_data']:
-        config['seq_target_length'] = 150  # POSSIBLY OVERRIDDEN IN ARCH SEARCH
+        config['seq_target_length'] = 8494  # TODO: try 1000, 500, 16000, 8494
         config['addTagAndPrimer'] = True
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
-        config['seq_target_length'] = 70  # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
+        config['seq_target_length'] = 16000  # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
         config['addTagAndPrimer'] = False
         config['addRevComplements'] = False
     if config['augment_test_data']:
@@ -722,12 +722,18 @@ if __name__ == '__main__':
         config['testRandomDeletions'] = [0, 0]
         config['testMutationRate'] = 0
 
-    cols = ['species', 'family', 'genus', 'order']
+    cols = ['Species']
 
     df = pd.read_csv(config['train_path'], sep=config['sep'])
     le = LabelEncoder()
     df[config['species_col']] = le.fit_transform(df[config['species_col']])
     dump(le, './datasets/label_encoder.joblib')
+    df = utils.remove_species_with_too_few_sequences(
+        df,
+        config['species_col'],
+        config['seq_count_thresh'],
+        config['verbose']
+    )
     train, test = utils.stratified_split(
         df,
         config['species_col'],
@@ -772,6 +778,8 @@ if __name__ == '__main__':
             config['species_col'],
             config['test_split']
         )
+        train.to_csv('datasets/train_cleaned.csv', index=False)
+        test.to_csv('datasets/test_cleaned.csv', index=False)
 
         # Oversampling is performed for each fold of CV, not before. This
         # prevents duplicates from existing in the train and validation sets.
@@ -789,7 +797,7 @@ if __name__ == '__main__':
         train = pd.read_csv(config['train_path'], sep=',')
         test = pd.read_csv(config['test_path'], sep=',')
 
-    if run_arch_search:
+    if run_arch_search:  # TODO: LR TO EXPLORE
 
         # If you want to see the format of the data will be fed into the model,
         # uncomment the code below.
@@ -835,6 +843,9 @@ if __name__ == '__main__':
             min_pct_improvement=1,  # previously 20 epochs, 0.1%
             verbose=False
         )
+        #######
+        # TODO: Explore k folds and kiters. k is searching folds
+        #######
         k_folds = 5
         k_iters = 5  # Should be int [0 - k_folds]. Set to 0 to skip validation.
 
@@ -853,7 +864,7 @@ if __name__ == '__main__':
         # activations = ["relu", "sigmoid", "leakyrelu"]
 
         # SEARCH 1: Dec. 31, 2023
-        num_cnn_layers = [1, 2, 3, 4]
+        num_cnn_layers = [1]
 
         num_channels = [16, 32, 64, 128, 256]
         conv_kernel_sizes = [3, 5, 7, 9, 11]
@@ -905,7 +916,6 @@ if __name__ == '__main__':
             output_channels = [*channels]
 
             results_file_name = 'results.csv'
-            results_file_name = 'singlemodelresults.csv'
 
             print(f"----Model architecture: ----------")
             print(f"Input channels: {input_channels}")
@@ -953,10 +963,10 @@ if __name__ == '__main__':
 
             # if you want to allow searching identical architecture/
             # hyperparameter combinations, then uncomment this function call
-            if utils.check_hyperparam_originality(combination, results_file_name) != -1:
-                print(f"Model architecture has already been explored. "
-                      f"Exploring next random hyperparameter combination.")
-                continue
+            # if utils.check_hyperparam_originality(combination, results_file_name) != -1:
+            #     print(f"Model architecture has already been explored. "
+            #           f"Exploring next random hyperparameter combination.")
+            #     continue
 
             # Create the model. If the model parameters are incompatible,
             # skip to the next combination.

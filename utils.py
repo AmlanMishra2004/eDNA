@@ -76,6 +76,7 @@ def add_tag_and_primer(data, column, comp, tag, forward_primer, reverse_primer,
         print(f"Tag and primer added shape: {data.shape}")
     return data
 
+
 def add_reverse_complements(data, seq_col, comp, verbose=False):
     """Adds reverse complements of every sequence.
 
@@ -97,11 +98,12 @@ def add_reverse_complements(data, seq_col, comp, verbose=False):
     data_rev = data.copy()
     data_rev[seq_col] = data_rev[seq_col].apply(
         lambda x: ''.join(map(lambda y: comp[y], x[::-1]))
-    ) 
+    )
     new_data = pd.concat([data, data_rev])
     if verbose:
         print(f"Reverse complements added shape: {data.shape}")
     return new_data
+
 
 def remove_species_with_too_few_sequences(df, species_col, seq_count_thresh,
                                           verbose=False):
@@ -128,9 +130,10 @@ def remove_species_with_too_few_sequences(df, species_col, seq_count_thresh,
     df = df[df[species_col].isin(valid_species)]
     if verbose:
         print(f"Removed {orig_num_rows - df.shape[0]} rows while enforcing "
-            f"the {seq_count_thresh} sequence threshold per species.")
+              f"the {seq_count_thresh} sequence threshold per species.")
         print(f"Removed rows shape: {df.shape}")
     return df
+
 
 def oversample_underrepresented_species(df, species_col, verbose=False):
     """
@@ -169,7 +172,7 @@ def oversample_underrepresented_species(df, species_col, verbose=False):
         new_indexes = []
 
         for val in seq_counts.keys():
-            species_indexes = [i for i, j in enumerate(df[species_col])if j == val]
+            species_indexes = [i for i, j in enumerate(df[species_col]) if j == val]
             new_indexes.extend(species_indexes)
             k = round(max_count - seq_counts[val])
             new_indexes.extend(random.choices(species_indexes, k=k))
@@ -178,7 +181,7 @@ def oversample_underrepresented_species(df, species_col, verbose=False):
         if verbose:
             print(f"Oversampled shape: {df.shape}")
         return oversample
-    
+
     elif isinstance(df, pd.Series):
         value_counts = df.value_counts()
         seq_counts = value_counts.to_dict()
@@ -195,6 +198,7 @@ def oversample_underrepresented_species(df, species_col, verbose=False):
         if verbose:
             print(f"Oversampled shape: {df.shape}")
         return oversample
+
 
 def stratified_split(data, species_col, ratio):
     """
@@ -219,25 +223,25 @@ def stratified_split(data, species_col, ratio):
     """
     to_keep = []
     to_hold = []
-    
+
     counts = data[species_col].value_counts()
     # For each species and its frequency (number of rows in data)...
     for t in counts.items():
-
         # Get a list of the indexes of every row for the current species.
-        taxa_list = data[data[species_col]==t[0]][species_col].index.to_list()
+        taxa_list = data[data[species_col] == t[0]][species_col].index.to_list()
         random.shuffle(taxa_list)
 
         # Split the shuffled list of indexes, keeping at least 1 sequence 
         # in the validation set. extend() is like .append(), except it adds
         # items individually.
 
-        split = max(1, round(t[1]*ratio))
+        split = max(1, round(t[1] * ratio))
         to_hold.extend(taxa_list[:split])
         to_keep.extend(taxa_list[split:])
     to_keep = data.loc[to_keep]
     to_hold = data.loc[to_hold]
     return to_keep, to_hold
+
 
 def print_descriptive_stats(data, cols):
     """Prints descriptive statistics for specified columns in a DataFrame.
@@ -270,6 +274,7 @@ def print_descriptive_stats(data, cols):
               f"{range_sequences:>10}")
     print('-' * 60)
 
+
 def plot_species_distribution(df, species_col):
     """Plots the distribution of species in a given DataFrame.
 
@@ -292,6 +297,7 @@ def plot_species_distribution(df, species_col):
     plt.xlabel('Species')
     plt.ylabel('Count')
     plt.show()
+
 
 def sequence_to_array(sequence, mode):
     """Converts an string of DNA bases to a 4 channel numpy array.
@@ -322,28 +328,28 @@ def sequence_to_array(sequence, mode):
     """
     if mode == 'probability':
         mapping = {
-            'a':[1, 0, 0, 0],
-            't':[0, 1, 0, 0],
-            'u':[0, 1, 0, 0], # u = t
-            'c':[0, 0, 1, 0],
-            'g':[0, 0, 0, 1],
+            'a': [1, 0, 0, 0],
+            't': [0, 1, 0, 0],
+            'u': [0, 1, 0, 0],  # u = t
+            'c': [0, 0, 1, 0],
+            'g': [0, 0, 0, 1],
             # two options
-            'y':[0, 0.5, 0.5 ,0],
-            'r':[0.5, 0, 0, 0.5],
-            'w':[0.5, 0.5, 0, 0],
-            's':[0, 0, 0.5, 0.5],
-            'k':[0, 0.5, 0, 0.5],
-            'm':[0.5, 0, 0.5, 0],
+            'y': [0, 0.5, 0.5, 0],
+            'r': [0.5, 0, 0, 0.5],
+            'w': [0.5, 0.5, 0, 0],
+            's': [0, 0, 0.5, 0.5],
+            'k': [0, 0.5, 0, 0.5],
+            'm': [0.5, 0, 0.5, 0],
             # three options
-            'd':[1/3, 1/3, 0, 1/3],
-            'v':[1/3, 0, 1/3, 1/3],
-            'h':[1/3, 1/3, 1/3, 0],
-            'b':[0, 1/3, 1/3, 1/3],
+            'd': [1 / 3, 1 / 3, 0, 1 / 3],
+            'v': [1 / 3, 0, 1 / 3, 1 / 3],
+            'h': [1 / 3, 1 / 3, 1 / 3, 0],
+            'b': [0, 1 / 3, 1 / 3, 1 / 3],
             # four options
-            'x':[0.25, 0.25, 0.25, 0.25],
-            'n':[0.25, 0.25, 0.25, 0.25]
+            'x': [0.25, 0.25, 0.25, 0.25],
+            'n': [0.25, 0.25, 0.25, 0.25]
         }
-        mapping = defaultdict(lambda: [0,0,0,0], mapping)
+        mapping = defaultdict(lambda: [0, 0, 0, 0], mapping)
 
         vector = []
         for base in sequence.lower():
@@ -363,7 +369,7 @@ def sequence_to_array(sequence, mode):
             #           "mapping for sequence {sequence}. Using [0, 0, 0, 0].")
             #     vector.append([0, 0, 0, 0])
         return np.transpose(np.array(vector)).astype(np.float32)
-    
+
     elif mode == 'random':
         output_array = torch.zeros(4, len(sequence))
 
@@ -418,36 +424,36 @@ def sequence_to_array(sequence, mode):
             elif letter == 'V':
                 # A or C or G
                 rand_num = np.random.rand()
-                if rand_num < 1/3:
+                if rand_num < 1 / 3:
                     output_array[0, i] = 1
-                elif 1/3 < rand_num and rand_num < 2/3:
+                elif 1 / 3 < rand_num and rand_num < 2 / 3:
                     output_array[2, i] = 1
                 else:
                     output_array[3, i] = 1
             elif letter == 'H':
                 # A or C or T
                 rand_num = np.random.rand()
-                if rand_num < 1/3:
+                if rand_num < 1 / 3:
                     output_array[0, i] = 1
-                elif 1/3 < rand_num and rand_num < 2/3:
+                elif 1 / 3 < rand_num and rand_num < 2 / 3:
                     output_array[1, i] = 1
                 else:
                     output_array[2, i] = 1
             elif letter == 'D':
                 # A or G or T
                 rand_num = np.random.rand()
-                if rand_num < 1/3:
+                if rand_num < 1 / 3:
                     output_array[0, i] = 1
-                elif 1/3 < rand_num and rand_num < 2/3:
+                elif 1 / 3 < rand_num and rand_num < 2 / 3:
                     output_array[1, i] = 1
                 else:
                     output_array[3, i] = 1
             elif letter == 'B':
                 # C or G or T
                 rand_num = np.random.rand()
-                if rand_num < 1/3:
+                if rand_num < 1 / 3:
                     output_array[1, i] = 1
-                elif 1/3 < rand_num and rand_num < 2/3:
+                elif 1 / 3 < rand_num and rand_num < 2 / 3:
                     output_array[2, i] = 1
                 else:
                     output_array[3, i] = 1
@@ -455,11 +461,11 @@ def sequence_to_array(sequence, mode):
                 # N indicates complete uncertainty
                 # Z indicates padding, that there was no base there
                 rand_num = np.random.rand()
-                if rand_num < 1/4:
+                if rand_num < 1 / 4:
                     output_array[0, i] = 1
-                elif 1/4 < rand_num and rand_num < 2/4:
+                elif 1 / 4 < rand_num and rand_num < 2 / 4:
                     output_array[1, i] = 1
-                elif 2/4 < rand_num and rand_num < 3/4:
+                elif 2 / 4 < rand_num and rand_num < 3 / 4:
                     output_array[2, i] = 1
                 else:
                     output_array[3, i] = 1
@@ -470,8 +476,6 @@ def sequence_to_array(sequence, mode):
         print("SHAPE\n\n\n")
         print(output_array.shape)
         return output_array
-
-
 
 
 # END PREPROCESSING -----------------------------------------------------------
@@ -493,11 +497,12 @@ def add_random_insertions(seq, insertions):
     # print(f"Insertions in the utils function: {insertions}")
     if type(insertions[0]) is list and len(insertions) == 1:
         insertions = insertions[0]
-    insertions = random.randint(insertions[0],insertions[1])
+    insertions = random.randint(insertions[0], insertions[1])
     for i in range(insertions):
         pos = random.sample(range(len(seq) + 1), 1)[0]
         seq = seq[0:pos] + random.sample(['acgt'], 1)[0] + seq[pos:]
     return seq
+
 
 def apply_random_deletions(seq, deletions):
     """Takes a sequence and deletes a random number of bases from it. 
@@ -516,8 +521,9 @@ def apply_random_deletions(seq, deletions):
     deletions = random.randint(deletions[0], deletions[1])
     for i in range(deletions):
         pos = random.sample(range(len(seq) + 1), 1)[0]
-        seq = seq[0:pos] + seq[pos+1:]
+        seq = seq[0:pos] + seq[pos + 1:]
     return seq
+
 
 def apply_random_mutations(seq, mutation_rate, mutation_options):
     """Applies random mutations to a given sequence.
@@ -537,10 +543,10 @@ def apply_random_mutations(seq, mutation_rate, mutation_options):
     """
     # Generate a list of random nums [0-1], the same length of the sequence.
     mutations = np.random.random(len(seq))
-    for idx,char in enumerate(seq):
+    for idx, char in enumerate(seq):
         if mutations[idx] < mutation_rate:
             new_char = random.sample(mutation_options[char], 1)[0]
-            seq = seq[0:idx] + new_char + seq[idx+1:]
+            seq = seq[0:idx] + new_char + seq[idx + 1:]
     return seq
 
 
@@ -584,7 +590,7 @@ def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
             height=1, width=60, channels=4)
     """
     if mutate:
-        mutation_options = {'a':'cgt', 'c':'agt', 'g':'act', 't':'acg'}
+        mutation_options = {'a': 'cgt', 'c': 'agt', 'g': 'act', 't': 'acg'}
         # Defaultdict returns 'acgt' if a key is not present in the dictionary.
         mutation_options = defaultdict(lambda: 'acgt', mutation_options)
 
@@ -651,7 +657,7 @@ def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
     elif not include_height:
         if format == "torch":
             sequences = torch.from_numpy(sequences)
-            labels = torch.tensor(df[species_col].values) # float32 by default
+            labels = torch.tensor(df[species_col].values)  # float32 by default
             return sequences, labels
         elif format == "tf":
             # Convert to (11269, 4, 60) to (11269, 60, 4)
@@ -675,6 +681,7 @@ def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
         else:
             raise ValueError("Framework name is incorrect. Use 'torch' or 'tf'"
                              " or 'np'.")
+
 
 def add_metrics_to_dict(labels, predicted, epoch, val_acc, fold_val_metrics):
     labels = labels.cpu()
@@ -706,7 +713,8 @@ def add_metrics_to_dict(labels, predicted, epoch, val_acc, fold_val_metrics):
     fold_val_metrics['epochs_taken'].append(epoch)
     return fold_val_metrics
 
-# instead of checking and only saving if it is original, prevent it from 
+
+# instead of checking and only saving if it is original, prevent it from
 # training in the first place if the hyperparameters and model have already been explored
 # returns the index (or -1) if a matching row exists
 
@@ -723,12 +731,12 @@ def check_hyperparam_originality(results, compare_cols, filename='results.csv'):
             'load_existing_train_test']
         # find the number of layers
         num_layer_keys = len([key for key in results.keys() if key.startswith('layer')])
-        num_layers = num_layer_keys//7
+        num_layers = num_layer_keys // 7
         if (num_layer_keys % 7) != 0:
             raise ValueError("Unable to correctly determine number of layers used"
-                    " in a model. Please check that there are 7 entries for each "
-                    " layer.")
-        for layer in range(1, num_layers+1):
+                             " in a model. Please check that there are 7 entries for each "
+                             " layer.")
+        for layer in range(1, num_layers + 1):
             unique_columns.append(f'layer{layer}_input_channels')
             unique_columns.append(f'layer{layer}_output_channels')
             unique_columns.append(f'layer{layer}_conv_kernel')
@@ -739,23 +747,23 @@ def check_hyperparam_originality(results, compare_cols, filename='results.csv'):
     elif compare_cols == "ppn":
         unique_columns = [
             'num_ptypes_per_class', 'ptype_length', 'prototype_shape',
-            'ptype_activation_fn', 'add_on_layers_type', 'latent_weight', 
+            'ptype_activation_fn', 'add_on_layers_type', 'latent_weight',
             'joint_features_lr', 'joint_add_on_layers_lr', 'joint_ptypes_lr',
             'warm_add_on_layers_lr', 'warm_ptypes_lr',
-            'last_layer_optimizer_lr', 'weight_decay', 'joint_lr_step_size', 
+            'last_layer_optimizer_lr', 'weight_decay', 'joint_lr_step_size',
             'cross_entropy_weight', 'cluster_weight', 'separation_weight',
             'l1_weight', 'num_warm_epochs',
-            'push_epochs_gap', 'push_start', 'seq_count_thresh', 
+            'push_epochs_gap', 'push_start', 'seq_count_thresh',
             'trainRandomInsertions', 'trainRandomDeletions',
             'trainMutationRate', 'oversample', 'encoding_mode',
             'push_encoding_mode', 'applying_on_raw_data', 'augment_test_data',
-            'load_existing_train_test', 'train_batch_size', 'test_batch_size', 
-            'num_classes', 'seq_target_length', 'addTagAndPrimer', 
-            'addRevComplements', 'val_portion_of_train', 
+            'load_existing_train_test', 'train_batch_size', 'test_batch_size',
+            'num_classes', 'seq_target_length', 'addTagAndPrimer',
+            'addRevComplements', 'val_portion_of_train',
         ]
     else:
         raise ValueError("compare_cols should either be 'backbone' or 'ppn'")
-    
+
     # Load existing results if file exists
     if os.path.isfile(filename):
         # If this raises an error "No columns to parse from file", copy in the 
@@ -769,14 +777,14 @@ def check_hyperparam_originality(results, compare_cols, filename='results.csv'):
 
     def compare_none_and_nan(val1, val2):
         return is_none_or_nan(val1) and is_none_or_nan(val2)
-    
+
     def compare_numbers(num1, num2):
         try:
             if float(num1) == float(num2):
                 return True
         except:
             return False
-    
+
     for index, row in df.iterrows():
         matches = True
         for col in unique_columns:
@@ -799,13 +807,13 @@ def check_hyperparam_originality(results, compare_cols, filename='results.csv'):
     print(f"Time taken to search combination: {time.time() - st} seconds")
     return -1
 
+
 # results: a dict
 # compare_cols: either "backbone" or "ppn", to know which columns
 #   dilineate unique results
 # be careful when comparing existing cells since they contain arrays (and must use .all()) as well as empty cells which are translated as NaN, and NaN != NaN.
 def update_results(results, compare_cols, model=None, filename='results.csv',
                    save_model_dir='saved_models'):
-    
     now = datetime.now()
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     results['datetime'] = timestamp
@@ -818,7 +826,7 @@ def update_results(results, compare_cols, model=None, filename='results.csv',
 
     # delete these three lines and uncomment below if you want to exclude saving duplicate rows
     warnings.filterwarnings('ignore', category=FutureWarning)
-    df = df.append(pd.Series(results), ignore_index=True) 
+    df = df.append(pd.Series(results), ignore_index=True)
     warnings.filterwarnings('default', category=FutureWarning)
     # idx = check_hyperparam_originality(results, compare_cols, filename)
 
@@ -879,8 +887,10 @@ def update_results(results, compare_cols, model=None, filename='results.csv',
             )
     print("Saved Results")
 
+
 def conv1d_output_size(input_length, kernel_size, padding, stride):
     return (input_length - kernel_size + 2 * padding) // stride + 1
+
 
 def make_compatible_for_plotting(data):
     """Converts given data into a format compatible for plotting with
@@ -924,27 +934,28 @@ def make_compatible_for_plotting(data):
                     d.detach().numpy() for d in data]
         else:
             return np.array(data)
-    
+
     # If data is a numpy ndarray, no conversion is needed.
     elif isinstance(data, np.ndarray):
         return data
-    
+
     # If data is a PyTorch tensor, convert it to a numpy array.
     elif torch.is_tensor(data):
         if data.is_cuda:
             return data.cpu().detach().numpy()
         else:
             return data.detach().numpy()
-    
+
     # If data is a TensorFlow tensor, convert it to a numpy array.
     elif isinstance(data, tf.Tensor):
         if data.device.type == 'cuda':
             data = data.cpu()
         return data.numpy()
-    
+
     else:
         raise TypeError("Data type not recognized. Please provide a list,"
                         "numpy ndarray, PyTorch tensor, or TensorFlow tensor.")
+
 
 def graph_train_vs_test(train, test, acc_or_loss):
     """Plots both training and testing metrics over time (epochs).
@@ -963,6 +974,7 @@ def graph_train_vs_test(train, test, acc_or_loss):
     plt.ylabel(acc_or_loss)
     plt.legend()
     plt.show()
+
 
 def graph_metric_over_time(l, training_or_testing, metric):
     """Plots a single given metric over time (epochs).
@@ -983,6 +995,7 @@ def graph_metric_over_time(l, training_or_testing, metric):
     plt.legend()
     plt.show()
 
+
 def graph_roc_curves(all_targets_one_hot, all_outputs, num_classes=156):
     """Plots Receiver Operating Characteristic (ROC) curves for each class.
 
@@ -1000,7 +1013,7 @@ def graph_roc_curves(all_targets_one_hot, all_outputs, num_classes=156):
                                 )
         roc_auc = auc(fpr, tpr)
         plt.plot(fpr, tpr, label='ROC curve (area = %0.2f) for class %i'
-                  % (roc_auc, i))
+                                 % (roc_auc, i))
     plt.plot([0, 1], [0, 1], 'k--')
     plt.xlim([0.0, 1.0])
     plt.ylim([0.0, 1.05])
@@ -1008,6 +1021,7 @@ def graph_roc_curves(all_targets_one_hot, all_outputs, num_classes=156):
     plt.ylabel('True Positive Rate')
     plt.title('Receiver Operating Characteristic for each class')
     plt.show()
+
 
 class EarlyStopping:
     """A class used for adding early stopping to a neural network.
@@ -1060,7 +1074,7 @@ class EarlyStopping:
             self.counter += 1
             if self.verbose:
                 print(f"\nEarlyStopping counter: {self.counter} out of "
-                    f"{self.patience}")
+                      f"{self.patience}")
             if self.counter >= self.patience:
                 self.stop = True
 
@@ -1069,6 +1083,7 @@ class EarlyStopping:
         self.counter = 0
         self.best_acc = 0
         self.stop = False
+
 
 def get_all_kmers(k):
     """
@@ -1079,10 +1094,11 @@ def get_all_kmers(k):
         input: get_all_kmers(2)
         output: ['aa', 'ag', 'at', 'ac', 'ga', 'gg', ... ]
     """
-    all_kmers=[]
-    for i in product('agtc', repeat = k):
+    all_kmers = []
+    for i in product('agtc', repeat=k):
         all_kmers.append(''.join(i))
     return all_kmers
+
 
 def list_kmers(seq, k):
     """
@@ -1093,30 +1109,31 @@ def list_kmers(seq, k):
     """
     kmers = []
     # Calculate how many kmers of length k there are
-    if len(seq)<200:
-        num_kmers=len(seq)-k+1
+    if len(seq) < 200:
+        num_kmers = len(seq) - k + 1
     else:
-        #only for the first 200 letters of the sequence
-        num_kmers = len(seq[:200]) - k + 1 
-    # Loop over the kmer start positions
+        # only for the first 200 letters of the sequence
+        num_kmers = len(seq[:200]) - k + 1
+        # Loop over the kmer start positions
     for i in range(num_kmers):
         # Slice the string to get the kmer
-        kmer = seq[i:i+k]
+        kmer = seq[i:i + k]
         kmers.append(kmer)
     return kmers
 
-def create_feature_table(sequences,k):
+
+def create_feature_table(sequences, k):
     """
     creates a 2D array (or feature table) where each row corresponds to a sequence
     from the input list sequences, and each column corresponds to a possible k-mer
     of length k. The value at a specific row and column is the count of the
     corresponding k-mer in the corresponding sequence.
     """
-    feature_table=[]
+    feature_table = []
     for seq in sequences:
-        cv = CountVectorizer(vocabulary=(get_all_kmers(k))) # lists counts of all words
+        cv = CountVectorizer(vocabulary=(get_all_kmers(k)))  # lists counts of all words
         # representing sequences as sentences with words that are kmers i.e all kmers separated by space
-        features=np.asarray(cv.fit_transform([(" ".join(list_kmers(seq,k)))]).toarray())  
-        features=features.flatten().tolist()
+        features = np.asarray(cv.fit_transform([(" ".join(list_kmers(seq, k)))]).toarray())
+        features = features.flatten().tolist()
         feature_table.append(features)
     return np.asarray(feature_table)
