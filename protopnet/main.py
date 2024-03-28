@@ -490,7 +490,7 @@ for trial in range(1):
         'l1_weight':                [0.001], #[10, 1, 0.1, 0.01, 0.001],
         'warm_ptype_lr':            [0.4], # first layer: 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
         'last_layer_lr':            [0.001], #[0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
-        'last_layer_lr_after_third_push': [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005],
+        'last_layer_lr_after_second_push': [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005],
         'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
         'push_gap':                 [12], # 17 # random.randint(10, 20)# 1_000_000 # not set
         'push_start':               [12], # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
@@ -611,7 +611,7 @@ for trial in range(1):
         # for epoch in tqdm(range(30_000)):
             if epoch == params['push_start'] + params['push_gap']*2:
                 for param_group in last_layer_optimizer.param_groups:
-                    param_group['lr'] = params['last_layer_lr_after_third_push']
+                    param_group['lr'] = params['last_layer_lr_after_second_push']
 
             # Instead of manual lr below, use gamma in settings
             # if epoch == 0:
