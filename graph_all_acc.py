@@ -19,7 +19,7 @@ import numpy as np
 # FIXED WARM LR AFTER PUSH
 # with open('out.1840139.log', 'r') as file: # to find push_gap
 
-def moving_average(a, n=10) :
+def moving_average(a, n=1) :
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
@@ -28,7 +28,8 @@ def moving_average(a, n=10) :
 # with open('out.1841514.log', 'r') as file: # to see if accuracy after push goes to 0 regardless of last layer lr
 # with open('out.1842207.log', 'r') as file: # to find an even better (second round) warm lr
 # with open('out.1842252.log', 'r') as file: # to view last layer lr results
-with open('out.1842260.log', 'r') as file: # to view last layer lr after second push
+# with open('out.1842260.log', 'r') as file: # to view last layer lr after second push
+with open('out.1843172.log', 'r') as file: # to see that learning rates need to change after each push
 # with open('out.1840698.log', 'r') as file: # to look back (do not save)
     data = file.read()
 
@@ -39,9 +40,9 @@ combinations = data.split('Attempting combination')
 plt.figure(figsize=(10, 6))
 
 # For each combination
-# for i in range(1, len(combinations)):
+for i in range(1, len(combinations)):
 # for i in range(4, 9):
-for i in [5,6]:
+# for i in [5,6]:
     # Extract the validation accuracies
     accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i])
     accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
