@@ -25,8 +25,7 @@ echo "==========================================="
 source ../eDNA_env/bin/activate
 cd protopnet
 
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 seq_test.py
-# singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 testScript.py

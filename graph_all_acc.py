@@ -19,7 +19,7 @@ import numpy as np
 # FIXED WARM LR AFTER PUSH
 # with open('out.1840139.log', 'r') as file: # to find push_gap
 
-def moving_average(a, n=8) :
+def moving_average(a, n=10) :
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
@@ -31,62 +31,88 @@ def moving_average(a, n=8) :
 # with open('out.1842260.log', 'r') as file: # to view last layer lr after second push
 # with open('out.1843172.log', 'r') as file: # to see that learning rates need to change after each push
 # with open('out.1845753.log', 'r') as file: # to find best last layer lr after 2 pushes
-with open('out.1845752.log', 'r') as file: # to find prototype length
-# with open('out.1842260.log', 'r') as file: # to look back (do not save)
+with open('out.1838072.log', 'r') as file: # to look back (do not save) 1842207?
     data = file.read()
 
 # Split the data into different combinations
 combinations = data.split('Attempting combination')
-
+del combinations[0]
 # Create the figure
 plt.figure(figsize=(10, 6))
 
-# For each combination
-# for i in range(1, len(combinations)):
-for i in range(5, 10):
-# for i in [1, 3, 5, 7, 9]:
-    # Extract the validation accuracies
-    accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i])
-    accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
-    # Convert to floats
-    accs = [float(acc) for acc in accs]
-    # Apply moving average
-    accs_smooth = moving_average(np.array(accs))
+fancy = False
 
-    # Add to the graph
-    plt.plot(accs_smooth, label=f'Combination {i}')
+if not fancy:
+    # NON FANCY  (for anaylsis)
 
-# Add labels, title, and legend
-plt.title('Smoothed Accuracy for All Combinations')
-plt.xlabel('Epoch')
-plt.ylabel('Validation Accuracy')
-plt.grid(True)
-plt.legend()
+    # new files start at combination 1. these loops should start at 1, they 
+    # correspond directly with the combination number
 
-# Show the graph
-plt.show()
+    # NEW VERSION
+    # # for i in range(1, len(combinations)+1):
+    # for i in range(1,6):
+    # # for i in [1, 8]:
+    #     # Extract the validation accuracies
+    #     accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i-1])
+    #     accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
+    #     # Convert to floats
+    #     accs = [float(acc) for acc in accs]
+    #     # Apply moving average
+    #     accs_smooth = moving_average(np.array(accs))
+    #     # Add to the graph
+    #     plt.plot(accs_smooth, label=f'Combination {i}')
 
+    # OLD VERSION
+    # for i in range(1, len(combinations)+1):
+    # for i in range(9,14):
+    for i in [10]:
+        print(i)
+        # Extract the validation accuracies
+        accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i-1])
+        accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
+        # Convert to floats
+        accs = [float(acc) for acc in accs]
+        # Apply moving average
+        accs_smooth = moving_average(np.array(accs))
+        # Add to the graph
+        plt.plot(accs_smooth, label=f'Combination {i}')
 
-# with open('out.1840698.log', 'r') as file: # to find last layer lr
-#     data = file.read()
+    # Add labels, title, and legend
+    plt.title('Smoothed Accuracy for All Combinations')
+    plt.xlabel('Epoch')
+    plt.ylabel('Validation Accuracy')
+    plt.grid(True)
+    plt.legend()
+    plt.show()
 
-# # Split the data into different combinations
-# combinations = data.split('Attempting combination')
+elif fancy:
+    # FANCY VERSION (for use of creating graphs to put in the thesis)
 
-# # For each combination
-# for i in range(1, len(combinations)):
-#     # Extract the validation accuracies
-#     accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i])
-#     accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
-#     # Convert to floats
-#     accs = [float(acc) for acc in accs]
+    labels = ['0.5', '0.1', '0.05', '0.01', '0.005', '0.001', '0.0005', '0.0001']
+    # [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.95, 0.09, 0.85, 0.08, 0.75, 0.07, 0.65, 0.06, 0.55, 0.05]
 
-#     # Generate the graph
-#     plt.figure(figsize=(10, 6))
-#     plt.plot(accs)
-#     plt.title(f'Accuracy for Combination {i}')
-#     plt.xlabel('Epoch')
-#     plt.ylabel('Validation Accuracy')
-#     plt.grid(True)
-#     plt.show()
+    print(len(combinations))
+    print(len(labels))
+    for i in range(1, len(combinations)+1):
+    # for i in range(0,8):
+    # for i in [0]:
+        print(f"i is {i}")
+        # print(combinations[i])
+        # Extract the validation accuracies
+        accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i])
+        accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
+        # Convert to floats
+        accs = [float(acc) for acc in accs]
+        # Apply moving average
+        accs_smooth = moving_average(np.array(accs))
+        # Add to the graph
+        plt.plot(accs_smooth, label=labels[i])  # Use the corresponding label
 
+    # Add labels, title, and legend
+    plt.title('Comparing Warm Prototype Learning Rates')
+    plt.xlabel('Epoch')
+    plt.ylabel('Validation Accuracy')
+    plt.grid(True)
+    plt.legend()
+    # Show the graph
+    plt.show()

@@ -274,236 +274,68 @@ for trial in range(1):
     however many combinations you want to try, and define the random
     distributions below.
     """
-    # search 2/25/24
-    # # These two are also hyperparameters. Feel free to add more values to try.
-    # num_ptypes_per_class = [2] #random.randint(1, 3) # not set
-    # ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
-    # hyperparameters = {    
-    #     # comments after the line indicate jon's original settings
-    #     # if the settings were not applicable, I write "not set".
-
-    #     'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-    #     'latent_weight':            [0.5, 0.6, 0.7, 0.8, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
-    #     'joint_weight_decay':       [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-    #     'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-    #     'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-    #     'coefs': [{ # weighting of different training losses
-    #         'crs_ent':              1,
-    #         'clst':                 1*12*-0.8,
-    #         'sep':                  1*30*0.08,
-    #         'l1':                   1e-3,
-    #     }],
-    #     'warm_optimizer_lrs': [{
-    #         'prototype_vectors':    0.0007, #random.uniform(0.0001, 0.001) # 4e-2
-    #     }], 
-    #     'last_layer_lr':  [0.00065], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
-    #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-    #     'push_gap':          [10, 12, 14], # 17 #random.randint(10, 20)# 1_000_000 # not set
-    #     'push_start':               [10, 15, 20, 25, 30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-    #     # BELOW IS UNUSED
-    #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-    #     'joint_optimizer_lrs': [{ # learning rates for the different stages
-    #         'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
-    #         'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
-    #     }]
-    # }
-
-    # # search 2/27/24
-    # # These two are also hyperparameters. Feel free to add more values to try.
-    # num_ptypes_per_class = [2] #random.randint(1, 3) # not set
-    # ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
-    # hyperparameters = {    
-    #     # comments after the line indicate jon's original settings
-    #     # if the settings were not applicable, I write "not set".
-
-    #     'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-    #     'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
-    #     'joint_weight_decay':       [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-    #     'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-    #     'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-    #     'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
-    #     'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-    #     'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
-    #     # 'clst_weight':              [1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-    #     # 'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
-    #     'l1_weight':                [1e-3],
-    #     'warm_ptype_lr':            [0.0007], #random.uniform(0.0001, 0.001) # 4e-2 
-    #     'last_layer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
-    #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-    #     'push_gap':                 [11], # 17 #random.randint(10, 20)# 1_000_000 # not set
-    #     'push_start':               [10], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-    #     'num_pushes':               [0,1,2,3],
-    #     # BELOW IS UNUSED
-    #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-    #     'joint_optimizer_lrs': [{ # learning rates for the different stages
-    #         'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
-    #         'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
-    #     }]
-    # }
-
-    # # search 3/2/24
-    # # These two are also hyperparameters. Feel free to add more values to try.
-    # num_ptypes_per_class = [2] #random.randint(1, 3) # not set
-    # ptype_length = [25] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
-    # hyperparameters = {    
-    #     # comments after the line indicate jon's original settings
-    #     # if the settings were not applicable, I write "not set".
-
-    #     'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-    #     'latent_weight':            [0.7, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
-    #     'joint_weight_decay':       [0.0001, 0.001, 0.01, 0.1], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-    #     'gamma':                    [1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-    #     'warm_lr_step_size':        [1_000_000], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-    #     'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
-    #     # 'clst_weight':              [-4*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-    #     # 'sep_weight':               [-4*30*0.08], # OG: 1*30*0.08 go as high as 50x
-    #     'clst_weight':              [1/32*12*-0.8, 1/16*12*-0.8, 1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-    #     'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
-    #     'l1_weight':                [0.1, 0.01, 0.001, 0.0001], # 1e-3
-    #     'warm_ptype_lr':            [0.005, 0.001, 0.0005, 0.0001], #random.uniform(0.0001, 0.001) # 4e-2 
-    #     'last_layer_lr':  [0.005, 0.001, 0.0005, 0.0001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
-    #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-    #     'push_gap':                 [11, 17], # 17 #random.randint(10, 20)# 1_000_000 # not set
-    #     'push_start':               [10, 20, 30], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-    #     'num_pushes':               [0,1,2,3], # [0,1,2,3], # number of push epochs, excluding final push
-    #     # BELOW IS UNUSED
-    #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set
-    #     'joint_optimizer_lrs': [{ # learning rates for the different stages
-    #         'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
-    #         'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
-    #     }]
-    # }
-
-    # # 40k model grid search (expected 600 models) 3/12/24
-    # # These two are also hyperparameters. Feel free to add more values to try.
-    # num_ptypes_per_class = [2,3] #random.randint(1, 3) # not set
-    # ptype_length = [23,25,27] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
-    # hyperparameters = {
-    #     # comments after the line indicate jon's original settings
-    #     # if the settings were not applicable, I write "not set".
-
-    #     'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-    #     'latent_weight':            [0.6, 0.7, 0.8, 0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
-    #     'joint_weight_decay':       [0.065], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-    #     'gamma':                    [.1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-    #     'warm_lr_step_size':        [10], # try 14? #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-    #     'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
-    #     # 'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-    #     # 'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
-    #     'clst_weight':              [1/8*12*-0.8, 1/4*12*-0.8, 1/2*12*-0.8, 12*-0.8, 2*12*-0.8, 4*12*-0.8, 8*12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-    #     'sep_weight':               [1/8*30*0.08, 1/4*30*0.08, 1/2*30*0.08, 1*30*0.08, 2*30*0.08, 4*30*0.08, 8*30*0.08], # OG: 1*30*0.08 go as high as 50x
-    #     'l1_weight':                [1e-3],
-    #     'warm_ptype_lr':            [0.08, 0.008, 0.0008], #random.uniform(0.0001, 0.001) # 4e-2 
-    #     'last_layer_lr':  [0.001], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
-    #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-    #     'push_gap':                 [10, 15, 20], # 17 #random.randint(10, 20)# 1_000_000 # not set
-    #     'push_start':               [35], #25 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-    #     'num_pushes':               [1, 2, 3, 4],
-    #     # BELOW IS UNUSED
-    #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-    #     'joint_optimizer_lrs': [{ # learning rates for the different stages
-    #         'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
-    #         'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
-    #     }]
-    # }
-
-    # # manual search 3/13/24
-    # # These two are also hyperparameters. Feel free to add more values to try.
-    # num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
-    # ptype_length = [29] #[21, 25, 29] #[17, 19, 21, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
-    # hyperparameters = {
-    #     # comments after the line indicate jon's original settings
-    #     # if the settings were not applicable, I write "not set".
-
-    #     'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-    #     'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
-    #     'joint_weight_decay':       [0], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-    #     'gamma':                    [.8], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-    #     'warm_lr_step_size':        [20*train.shape[0]//config['train_batch_size']], #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
-    #     'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
-    #     'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-    #     'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
-    #     'l1_weight':                [1e-3],
-    #     'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-    #     'last_layer_lr':            [0.05], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
-    #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-    #     'push_gap':                 [100], # 17 #random.randint(10, 20)# 1_000_000 # not set
-    #     'push_start':               [50], #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-    #     'num_pushes':               [10], # 3-5?
-    #     'last_layer_epochs':        [50], # 50
-    #     # BELOW IS UNUSED
-    #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-    #     'joint_optimizer_lrs': [{ # learning rates for the different stages
-    #         'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
-    #         'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
-    #     }]
-    # }
-
-    # # 3/23/24 finding good warm lr, no pushes
-    # # These two are also hyperparameters. Feel free to add more values to try.
-    # num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
-    # ptype_length = [29] #[21, 25, 29] #[17, 19, 21, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
-    # hyperparameters = {
-    #     # comments after the line indicate jon's original settings
-    #     # if the settings were not applicable, I write "not set".
-
-    #     'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-    #     'latent_weight':            [0.9], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
-    #     'joint_weight_decay':       [-1], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-    #     'gamma':                    [.8, 0.5], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-    #     'warm_lr_step_size':        [20*train.shape[0]//config['train_batch_size']], #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
-    #     'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
-    #     'clst_weight':              [12*-0.8], # OG: 1*12*-0.8 times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-    #     'sep_weight':               [30*0.08], # OG: 1*30*0.08 go as high as 50x
-    #     'l1_weight':                [1e-3],
-    #     'warm_ptype_lr':            [0.1], #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-    #     'last_layer_lr':            [0.05], #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
-    #     'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-    #     'push_gap':                 [-1], # 17 #random.randint(10, 20)# 1_000_000 # not set
-    #     'push_start':               [200], #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-    #     'num_pushes':               [0], # 3-5?
-    #     'last_layer_epochs':        [0], # 50
-    #     # BELOW IS UNUSED
-    #     'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-    #     'joint_optimizer_lrs': [{ # learning rates for the different stages
-    #         'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
-    #         'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
-    #     }]
-    # }
 
     # 3/23/24 getting last layer lr and epochs
     # These two are also hyperparameters. Feel free to add more values to try.
+    # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
     num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
-    ptype_length = [29] #[21, 25, 29] #[17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    ptype_length = [29] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0.8], #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
-        'joint_weight_decay':       [-1], #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-        'gamma':                    [-1], #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-        'warm_lr_step_size':        [1_000_000*train.shape[0]//config['train_batch_size']], #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
-        'crs_ent_weight':           [1],  # explore 3-4 powers of 2 in either direction
-        'clst_weight':              [12*-0.8], #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
-        'sep_weight':               [30*0.08], #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*30*0.08, 1*30*0.08, 0.1*30*0.08], # OG: [30*0.08], go as high as 50x
-        'l1_weight':                [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
-        'warm_ptype_lr':            [0.4], # first layer: 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'last_layer_lr':            [0.001], #[0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
-        'last_layer_lr_after_second_push': [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005],
-        'num_warm_epochs':          [1_000_000], # random.randint(0, 10) # not set
-        'push_gap':                 [12], # 17 # random.randint(10, 20)# 1_000_000 # not set
-        'push_start':               [12], # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'num_pushes':               [2], # 3-5?
-        'last_layer_epochs':        [85], # 50, 100
-        # BELOW IS UNUSED
+        'latent_weight':            [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        
+        'num_warm_epochs':          [1_000_000],                    # random.randint(0, 10) # not set
+        'push_gap':                 [35],                           # 17 # random.randint(10, 20)# 1_000_000 # not set
+        'num_pushes':               [2],                            # 3-5?
+        'last_layer_epochs':        [85],                           # 50, 100
+
+        'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
+        'clst_weight':              [12*-0.8],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
+        'sep_weight':               [30*0.08],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*30*0.08, 1*30*0.08, 0.1*30*0.08], # OG: [30*0.08], go as high as 50x
+        'l1_weight':                [0.001],                        #[0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
+        
+        'push_start':               [35],                         # 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'p0_warm_ptype_lr':         [0.01], # [0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                         # the warm prototype lr for before the first push 0.35 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
+        'p0_warm_ptype_gamma':      [0.5], #[0.2, 0.5, 0.8],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'p0_warm_ptype_step_size':  [20], # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
+        # push 1
+        'p1_last_layer_lr':         [0.001],                        #[0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'p1_warm_ptype_lr':         [0.28],                         # the warm prototype lr for after the first push
+        'p1_warm_ptype_gamma':      [0.8],
+        'p1_warm_ptype_step_size':  [20],
+        # push 2
+        'p2_last_layer_lr':         [0.0007],
+        'p2_warm_ptype_lr':         [0.1],                          # the warm prototype lr for after the second push
+        'p2_warm_ptype_gamma':      [-1],
+        'p2_warm_ptype_step_size':  [20],
+        # push 3
+        'p3_last_layer_lr':         [0.000075],
+        'p3_warm_ptype_lr':         [0.05],                         # the warm prototype lr for after the third push
+        'p3_warm_ptype_gamma':      [-1],
+        'p3_warm_ptype_step_size':  [20],
+        # push 4
+        'p4_last_layer_lr':         [0.0000075],
+        'p4_warm_ptype_lr':         [0.05],                         # the warm prototype lr for after the third push
+        'p4_warm_ptype_gamma':      [-1],
+        'p4_warm_ptype_step_size':  [20],
+
+        'joint_weight_decay':       [-1],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+        'joint_gamma':              [-1],
         'joint_optimizer_lrs': [{ # learning rates for the different stages
             'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
             'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
         }]
     }
-    # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']
+
+    p0_warm_ptype_step_size = [x*train.shape[0]//config['train_batch_size'] for x in p0_warm_ptype_step_size]
+    p1_warm_ptype_step_size = [x*train.shape[0]//config['train_batch_size'] for x in p1_warm_ptype_step_size]
+    p2_warm_ptype_step_size = [x*train.shape[0]//config['train_batch_size'] for x in p2_warm_ptype_step_size]
+    p3_warm_ptype_step_size = [x*train.shape[0]//config['train_batch_size'] for x in p3_warm_ptype_step_size]
+    p4_warm_ptype_step_size = [x*train.shape[0]//config['train_batch_size'] for x in p4_warm_ptype_step_size]
 
     # 1. find a good warm lr and push_start by setting push_start to 300, last_layer_epochs to 0, and num_pushes to 0, and grid search through different warm_lrs.
     # 1.5. (optionally) modify gamma and warm_lr_step_size and gamma to improve even more, once you find good performance
@@ -517,7 +349,9 @@ for trial in range(1):
     # - they are part of the loss fn for the warm ptype training and last layer training. 
     
     print(f"Hyperparameters: {hyperparameters}\n\n")
-
+    ch = {key: value for key, value in hyperparameters.items() if len(value) > 1}
+    print(f"Checking hyperparameters: {ch}\n\n")
+    del ch
     # Generate all combinations of hyperparameters
     combinations = list(itertools.product(*hyperparameters.values()))
 
@@ -569,17 +403,17 @@ for trial in range(1):
         ]
         joint_optimizer = torch.optim.Adam(joint_optimizer_specs)
         # after step-size epochs, the lr is multiplied by gamma
-        joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=params['joint_lr_step_size'], gamma=params['gamma'])
+        joint_lr_scheduler = torch.optim.lr_scheduler.StepLR(joint_optimizer, step_size=params['joint_lr_step_size'], gamma=params['joint_gamma'])
 
         warm_optimizer_specs = [
             {'params': ppnet.prototype_vectors,
-            'lr': params['warm_ptype_lr']}
+            'lr': params['p0_warm_ptype_lr']}
         ]
         warm_optimizer = torch.optim.Adam(warm_optimizer_specs)
         # after step-size epochs, the lr is multiplied by gamma
-        warm_lr_scheduler = torch.optim.lr_scheduler.StepLR(warm_optimizer, step_size=params['warm_lr_step_size'], gamma=params['gamma'])
+        warm_lr_scheduler = torch.optim.lr_scheduler.StepLR(warm_optimizer, step_size=params['p0_warm_ptype_step_size'], gamma=params['p0_warm_ptype_gamma'])
         last_layer_optimizer_specs = [{'params': ppnet.last_layer.parameters(),
-                                    'lr': params['last_layer_lr']}]
+                                    'lr': params['p1_last_layer_lr']}]
         last_layer_optimizer = torch.optim.Adam(last_layer_optimizer_specs)
         # if start_push=17, push_gap=11, num_pushes=0,1,...,4
         # push 17(DONE)                                      17 + 0*11
@@ -602,27 +436,16 @@ for trial in range(1):
         # cluster should be larger than separation. if it is lower, then it
         # will destroy accuracy on the push
           
-        end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']
+        end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
         print(f"End epoch: {end_epoch}")
 
         flush = True
+
+        pushes_completed = 0
         
         for epoch in range(30_000):
         # for epoch in tqdm(range(30_000)):
-            if epoch == params['push_start'] + params['push_gap']*2:
-                for param_group in last_layer_optimizer.param_groups:
-                    param_group['lr'] = params['last_layer_lr_after_second_push']
 
-            # Instead of manual lr below, use gamma in settings
-            # if epoch == 0:
-            #     for param_group in warm_optimizer.param_groups:
-            #         param_group['lr'] *= 10
-            # elif epoch == 10:
-            #     for param_group in warm_optimizer.param_groups:
-            #         param_group['lr'] /= 10
-            # elif epoch == 20:
-            #     for param_group in warm_optimizer.param_groups:
-            #         param_group['lr'] /= 10
 
             # print(f"Calculating validation accuracy for epoch")
             val_actual, val_predicted, val_ptype_results  = tnt.test(
@@ -644,7 +467,7 @@ for trial in range(1):
             if epoch == end_epoch:
                 print(f"Stopping after epoch {epoch+1}.\n"
                     f"Final validation accuracy before push: {val_acc*100}%")
-                print(f"Pushing prototypes since finished training")
+                print(f"Push number {pushes_completed + 1}")
                 push_prototypes(
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
@@ -653,6 +476,7 @@ for trial in range(1):
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log
                 )
+                pushes_completed += 1
                 # evaluate on train, find aggregate sep and cluster loss for analysis purposes
                 # print(f"Evaluating after push, before retraining last layer")
                 train_actual, train_predicted, train_ptype_results = tnt.test(
@@ -680,23 +504,26 @@ for trial in range(1):
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
                 print(f"Retraining last layer")
-                # # Set the last layer lr to the original lr
-                # for param_group in last_layer_optimizer.param_groups:
-                #     param_group['lr'] = params['last_layer_lr']
 
+                # Set the last layer lr based on the number of pushes completed
+                if epoch == params['push_start']:
+                    for param_group in last_layer_optimizer.param_groups:
+                        param_group['lr'] = params['p1_last_layer_lr_']
+                elif epoch == params['push_start'] + params['push_gap']:
+                    for param_group in last_layer_optimizer.param_groups:
+                        param_group['lr'] = params['p2_last_layer_lr']
+                elif epoch == params['push_start'] + params['push_gap']*2:
+                    for param_group in last_layer_optimizer.param_groups:
+                        param_group['lr'] = params['p3_last_layer_lr']
+                elif epoch == params['push_start'] + params['push_gap']*3:
+                    for param_group in last_layer_optimizer.param_groups:
+                        param_group['lr'] = params['p4_last_layer_lr']
+
+                # Print out the last layer lr
                 for param_group in last_layer_optimizer.param_groups:
                         print(f"Last layer lr: {param_group['lr']}")
 
                 for i in range(params['last_layer_epochs']):
-                    # if i == 25:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] *= 0.8 # was /= 5 for all three, 25, 35, 45
-                    # elif i == 35:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] *= 0.8
-                    # elif i == 45:
-                    #     for param_group in last_layer_optimizer.param_groups:
-                    #         param_group['lr'] *= 0.8
 
                     actual, pred, _ = tnt.train(
                         model=ppnet_multi,
@@ -718,141 +545,149 @@ for trial in range(1):
                     val_acc = metrics.accuracy_score(val_actual, val_predicted)
                     print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
 
-                # Get the final model validation and test scores
-                print(f"Getting final validation and test accuracy after training.")
-                val_actual, val_predicted, val_ptype_results  = tnt.test(
-                    model=ppnet_multi,
-                    dataloader=valloader,
-                    class_specific=class_specific,
-                    log=log
-                )
-                test_actual, test_predicted, test_ptype_results = tnt.test(
-                    model=ppnet_multi,
-                    dataloader=testloader,
-                    class_specific=class_specific,
-                    log=log
-                )
+                # # Get the final model validation and test scores
+                # print(f"Getting final validation and test accuracy after training.")
+                # val_actual, val_predicted, val_ptype_results  = tnt.test(
+                #     model=ppnet_multi,
+                #     dataloader=valloader,
+                #     class_specific=class_specific,
+                #     log=log
+                # )
+                # test_actual, test_predicted, test_ptype_results = tnt.test(
+                #     model=ppnet_multi,
+                #     dataloader=testloader,
+                #     class_specific=class_specific,
+                #     log=log
+                # )
 
-                # Compute metrics for validation set
-                print(f"Computing and storing results metrics")
-                val_m_f1 = metrics.f1_score(val_actual, val_predicted, average='macro')
-                val_m_recall = metrics.recall_score(val_actual, val_predicted, average='macro', zero_division=1)
-                val_acc = metrics.accuracy_score(val_actual, val_predicted)
-                val_m_precision = metrics.precision_score(val_actual, val_predicted, average='macro', zero_division=1)
-                val_w_precision = metrics.precision_score(val_actual, val_predicted, average='weighted', zero_division=1)
-                val_w_recall = metrics.recall_score(val_actual, val_predicted, average='weighted', zero_division=1)
-                val_w_f1 = metrics.f1_score(val_actual, val_predicted, average='weighted')
-                val_balanced_acc = metrics.balanced_accuracy_score(val_actual, val_predicted)
+                # # Compute metrics for validation set
+                # print(f"Computing and storing results metrics")
+                # val_m_f1 = metrics.f1_score(val_actual, val_predicted, average='macro')
+                # val_m_recall = metrics.recall_score(val_actual, val_predicted, average='macro', zero_division=1)
+                # val_acc = metrics.accuracy_score(val_actual, val_predicted)
+                # val_m_precision = metrics.precision_score(val_actual, val_predicted, average='macro', zero_division=1)
+                # val_w_precision = metrics.precision_score(val_actual, val_predicted, average='weighted', zero_division=1)
+                # val_w_recall = metrics.recall_score(val_actual, val_predicted, average='weighted', zero_division=1)
+                # val_w_f1 = metrics.f1_score(val_actual, val_predicted, average='weighted')
+                # val_balanced_acc = metrics.balanced_accuracy_score(val_actual, val_predicted)
 
-                # Compute metrics for test set
-                test_m_f1 = metrics.f1_score(test_actual, test_predicted, average='macro')
-                test_m_recall = metrics.recall_score(test_actual, test_predicted, average='macro', zero_division=1)
-                test_acc = metrics.accuracy_score(test_actual, test_predicted)
-                test_m_precision = metrics.precision_score(test_actual, test_predicted, average='macro', zero_division=1)
-                test_w_precision = metrics.precision_score(test_actual, test_predicted, average='weighted', zero_division=1)
-                test_w_recall = metrics.recall_score(test_actual, test_predicted, average='weighted', zero_division=1)
-                test_w_f1 = metrics.f1_score(test_actual, test_predicted, average='weighted')
-                test_bal_acc = metrics.balanced_accuracy_score(test_actual, test_predicted)
+                # # Compute metrics for test set
+                # test_m_f1 = metrics.f1_score(test_actual, test_predicted, average='macro')
+                # test_m_recall = metrics.recall_score(test_actual, test_predicted, average='macro', zero_division=1)
+                # test_acc = metrics.accuracy_score(test_actual, test_predicted)
+                # test_m_precision = metrics.precision_score(test_actual, test_predicted, average='macro', zero_division=1)
+                # test_w_precision = metrics.precision_score(test_actual, test_predicted, average='weighted', zero_division=1)
+                # test_w_recall = metrics.recall_score(test_actual, test_predicted, average='weighted', zero_division=1)
+                # test_w_f1 = metrics.f1_score(test_actual, test_predicted, average='weighted')
+                # test_bal_acc = metrics.balanced_accuracy_score(test_actual, test_predicted)
 
-                print(f"Final val macro f1-score: {val_m_f1}")
-                print(f"Final val micro accuracy: {val_acc}")
-                print(f"Final test macro f1-score: {test_m_f1}")
-                print(f"Final test micro accuracy: {test_acc}")
+                # print(f"Final val macro f1-score: {val_m_f1}")
+                # print(f"Final val micro accuracy: {val_acc}")
+                # print(f"Final test macro f1-score: {test_m_f1}")
+                # print(f"Final test micro accuracy: {test_acc}")
 
-                print(f"Final validation:")
-                print(f"\tCluster: {val_ptype_results['cluster']}")
-                print(f"\tSeparation: {val_ptype_results['separation']}")
-                # print(f"Final val prototype results: {val_ptype_results}")
-                print(f"Final test:")
-                print(f"\tCluster: {test_ptype_results['cluster']}")
-                print(f"\tSeparation: {test_ptype_results['separation']}")
-                # print(f"Final test prototype results: {test_ptype_results}")
+                # print(f"Final validation:")
+                # print(f"\tCluster: {val_ptype_results['cluster']}")
+                # print(f"\tSeparation: {val_ptype_results['separation']}")
+                # # print(f"Final val prototype results: {val_ptype_results}")
+                # print(f"Final test:")
+                # print(f"\tCluster: {test_ptype_results['cluster']}")
+                # print(f"\tSeparation: {test_ptype_results['separation']}")
+                # # print(f"Final test prototype results: {test_ptype_results}")
 
-                results = {
-                    # Results
-                    'val_macro_f1-score': val_m_f1,
-                    'val_macro_recall': val_m_recall, 
-                    'val_micro_accuracy': val_acc,
-                    'val_macro_precision': val_m_precision,
-                    'val_weighted_precision': val_w_precision, 
-                    'val_weighted_recall': val_w_recall,
-                    'val_weighted_f1-score': val_w_f1,
-                    'val_balanced_accuracy': val_balanced_acc,
-                    'test_macro_f1-score': test_m_f1,
-                    'test_macro_recall': test_m_recall,
-                    'test_micro_accuracy': test_acc,
-                    'test_macro_precision': test_m_precision,
-                    'test_weighted_precision': test_w_precision, 
-                    'test_weighted_recall': test_w_recall,
-                    'test_weighted_f1-score': test_w_f1,
-                    'test_balanced_accuracy': test_bal_acc,
-                    'epochs_taken': epoch+1,
-                    'test_time': test_ptype_results['time'],
-                    # Prototype Results
-                    'val_cross_ent': val_ptype_results['cross_ent'],
-                    'val_cluster': val_ptype_results['cluster'],
-                    'val_separation': val_ptype_results['separation'],
-                    'val_avg_separation': val_ptype_results['avg_separation'],
-                    'val_p_avg_pair_dist': val_ptype_results['p_avg_pair_dist'],
+                # results = {
+                #     # Results
+                #     'val_macro_f1-score': val_m_f1,
+                #     'val_macro_recall': val_m_recall, 
+                #     'val_micro_accuracy': val_acc,
+                #     'val_macro_precision': val_m_precision,
+                #     'val_weighted_precision': val_w_precision, 
+                #     'val_weighted_recall': val_w_recall,
+                #     'val_weighted_f1-score': val_w_f1,
+                #     'val_balanced_accuracy': val_balanced_acc,
+                #     'test_macro_f1-score': test_m_f1,
+                #     'test_macro_recall': test_m_recall,
+                #     'test_micro_accuracy': test_acc,
+                #     'test_macro_precision': test_m_precision,
+                #     'test_weighted_precision': test_w_precision, 
+                #     'test_weighted_recall': test_w_recall,
+                #     'test_weighted_f1-score': test_w_f1,
+                #     'test_balanced_accuracy': test_bal_acc,
+                #     'epochs_taken': epoch+1,
+                #     'test_time': test_ptype_results['time'],
+                #     # Prototype Results
+                #     'val_cross_ent': val_ptype_results['cross_ent'],
+                #     'val_cluster': val_ptype_results['cluster'],
+                #     'val_separation': val_ptype_results['separation'],
+                #     'val_avg_separation': val_ptype_results['avg_separation'],
+                #     'val_p_avg_pair_dist': val_ptype_results['p_avg_pair_dist'],
 
 
-                    # Variable variables
-                    'num_ptypes_per_class': params['prototype_shape'][0] / config['num_classes'], # num_ptypes_per_class,
-                    'ptype_length': params['prototype_shape'][2], # ptype_length,
-                    'prototype_shape': params['prototype_shape'],
-                    'ptype_activation_fn': 'unused',
-                    'latent_weight': params['latent_weight'],
-                    # joint is not used currently
-                    'joint_features_lr': params['joint_optimizer_lrs']['features'],
-                    'joint_ptypes_lr': params['joint_optimizer_lrs']['prototype_vectors'],
-                    'warm_ptypes_lr': params['warm_ptype_lr'],
-                    'last_layer_lr': params['last_layer_lr'],
-                    'joint_weight_decay': params['joint_weight_decay'],
-                    'joint_lr_step_size': params['joint_lr_step_size'],
-                    'warm_lr_step_size': params['warm_lr_step_size'],
-                    'cross_entropy_weight': params['coefs']['crs_ent'],
-                    'cluster_weight': params['coefs']['clst'],
-                    'separation_weight': params['coefs']['sep'],
-                    'l1_weight': params['coefs']['l1'],
-                    'num_warm_epochs': params['num_warm_epochs'],
-                    'push_gap': params['push_gap'],
-                    'push_start': params['push_start'],
-                    'num_pushes': params['num_pushes'],
-                    'last_layer_epochs': params['last_layer_epochs'],
+                #     # Variable variables
+                #     'num_ptypes_per_class': params['prototype_shape'][0] / config['num_classes'], # num_ptypes_per_class,
+                #     'ptype_length': params['prototype_shape'][2], # ptype_length,
+                #     'prototype_shape': params['prototype_shape'],
+                #     'ptype_activation_fn': 'unused',
+                #     'latent_weight': params['latent_weight'],
+                #     # joint is not used currently
+                #     'joint_features_lr': params['joint_optimizer_lrs']['features'],
+                #     'joint_ptypes_lr': params['joint_optimizer_lrs']['prototype_vectors'],
+                #     'p0_warm_ptype_lr': params['p0_warm_ptype_lr'],
+                #     'p1_warm_ptype_lr': params['p1_warm_ptype_lr'],
+                #     'p2_warm_ptype_lr': params['p2_warm_ptype_lr'],
+                #     'p3_warm_ptype_lr': params['p3_warm_ptype_lr'],
+                #     'p1_last_layer_lr': params['p1_last_layer_lr'],
+                #     'p2_last_layer_lr': params['p2_last_layer_lr'],
+                #     'p3_last_layer_lr': params['p3_last_layer_lr'],
+                #     'p4_last_layer_lr': params['p4_last_layer_lr'],
+                #     'joint_weight_decay': params['joint_weight_decay'],
+                #     'joint_lr_step_size': params['joint_lr_step_size'],
+                #     'warm_lr_step_size': params['warm_lr_step_size'],
+                #     'cross_entropy_weight': params['coefs']['crs_ent'],
+                #     'cluster_weight': params['coefs']['clst'],
+                #     'separation_weight': params['coefs']['sep'],
+                #     'l1_weight': params['coefs']['l1'],
+                #     'num_warm_epochs': params['num_warm_epochs'],
+                #     'push_gap': params['push_gap'],
+                #     'push_start': params['push_start'],
+                #     'num_pushes': params['num_pushes'],
+                #     'last_layer_epochs': params['last_layer_epochs'],
 
-                    # Static Variables
-                    'seq_count_thresh': config['seq_count_thresh'],           
-                    'trainRandomInsertions': config['trainRandomInsertions'],  
-                    'trainRandomDeletions': config['trainRandomDeletions'],  
-                    'trainMutationRate': config['trainMutationRate'],      
-                    'oversample': config['oversample'],               
-                    'encoding_mode': config['encoding_mode'],    
-                    'push_encoding_mode': config['push_encoding_mode'],  
-                    'applying_on_raw_data': config['applying_on_raw_data'],
-                    'augment_test_data': config['augment_test_data'],
-                    'load_existing_train_test': config['load_existing_train_test'], 
-                    'train_batch_size': config['train_batch_size'], 
-                    'test_batch_size': config['test_batch_size'],
-                    'num_classes': config['num_classes'],
-                    'seq_target_length': config['seq_target_length'],   
-                    'addTagAndPrimer': config['addTagAndPrimer'],
-                    'addRevComplements': config['addRevComplements'],
-                    'val_portion_of_train': val_portion,
-                    # 'patience': early_stopper.patience,
-                    # 'min_pc_improvement': early_stopper.min_pct_improvement,
-                }
-                utils.update_results(
-                    results,
-                    compare_cols='ppn',
-                    model=ppnet_multi,
-                    filename='search_for_warm_improvement_3_18_24.csv',
-                    save_model_dir = None
-                    # save_model_dir='saved_ppn_models'
-                )
+                #     # Static Variables
+                #     'seq_count_thresh': config['seq_count_thresh'],           
+                #     'trainRandomInsertions': config['trainRandomInsertions'],  
+                #     'trainRandomDeletions': config['trainRandomDeletions'],  
+                #     'trainMutationRate': config['trainMutationRate'],      
+                #     'oversample': config['oversample'],               
+                #     'encoding_mode': config['encoding_mode'],    
+                #     'push_encoding_mode': config['push_encoding_mode'],  
+                #     'applying_on_raw_data': config['applying_on_raw_data'],
+                #     'augment_test_data': config['augment_test_data'],
+                #     'load_existing_train_test': config['load_existing_train_test'], 
+                #     'train_batch_size': config['train_batch_size'], 
+                #     'test_batch_size': config['test_batch_size'],
+                #     'num_classes': config['num_classes'],
+                #     'seq_target_length': config['seq_target_length'],   
+                #     'addTagAndPrimer': config['addTagAndPrimer'],
+                #     'addRevComplements': config['addRevComplements'],
+                #     'val_portion_of_train': val_portion,
+                #     # 'patience': early_stopper.patience,
+                #     # 'min_pc_improvement': early_stopper.min_pct_improvement,
+                # }
+                # utils.update_results(
+                #     results,
+                #     compare_cols='ppn',
+                #     model=ppnet_multi,
+                #     filename='search_for_warm_improvement_3_18_24.csv',
+                #     save_model_dir = None
+                #     # save_model_dir='saved_ppn_models'
+                # )
                 break # for early stopping
 
             elif epoch >= params['push_start'] and (epoch - params['push_start']) % params['push_gap'] == 0:
-                print(f"Push epoch")
+                print(f"Push epoch at epoch {epoch+1}.\n"
+                    f"Final validation accuracy before push: {val_acc*100}%")
+                print(f"Push number {pushes_completed + 1}")
                 push_prototypes(
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
@@ -862,6 +697,7 @@ for trial in range(1):
                     log=log,
                     sanity_check=False
                 )
+                pushes_completed += 1
 
                 # evaluate on train, find aggregate sep and cluster loss for analysis purposes
                 # print(f"Evaluating after push, before retraining last layer")
@@ -887,13 +723,25 @@ for trial in range(1):
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
                 print(f"(Directly after push) Val acc at iteration 0: {val_acc}", flush=flush)
 
+                # Set the last layer lr based on the number of pushes completed
+                if epoch == params['push_start']:
+                    for param_group in last_layer_optimizer.param_groups:
+                        param_group['lr'] = params['p1_last_layer_lr_']
+                elif epoch == params['push_start'] + params['push_gap']:
+                    for param_group in last_layer_optimizer.param_groups:
+                        param_group['lr'] = params['p2_last_layer_lr']
+                elif epoch == params['push_start'] + params['push_gap']*2:
+                    for param_group in last_layer_optimizer.param_groups:
+                        param_group['lr'] = params['p3_last_layer_lr']
+                elif epoch == params['push_start'] + params['push_gap']*3:
+                    for param_group in last_layer_optimizer.param_groups:
+                        param_group['lr'] = params['p4_last_layer_lr']
+
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
                 print(f"Retraining last layer: ")
-                # # Set the last layer lr to the original lr
-                # for param_group in last_layer_optimizer.param_groups:
-                #     param_group['lr'] = params['last_layer_lr']
 
+                # Print out the last layer lr
                 for param_group in last_layer_optimizer.param_groups:
                         print(f"Last layer lr: {param_group['lr']}")
 
@@ -928,17 +776,6 @@ for trial in range(1):
                     val_acc = metrics.accuracy_score(val_actual, val_predicted)
                     print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
                     
-
-                # # Reset warm lr to original lr
-                # for param_group in warm_optimizer.param_groups:
-                #     param_group['lr'] = params['warm_ptype_lr']
-
-                # Lower the warm and last_layer lr by half after each push
-                for param_group in warm_optimizer.param_groups:
-                    param_group['lr'] *= 0.7
-                for param_group in last_layer_optimizer.param_groups:
-                    param_group['lr'] *= 0.7
-
             elif epoch < params['num_warm_epochs']:
                 # print(f"Train epoch")
                 # train the prototypes without modifying the backbone
