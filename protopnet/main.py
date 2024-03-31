@@ -331,11 +331,11 @@ for trial in range(1):
         }]
     }
 
-    p0_warm_ptype_step_size = [x*train.shape[0]//config['train_batch_size'] for x in p0_warm_ptype_step_size]
-    p1_warm_ptype_step_size = [x*train.shape[0]//config['train_batch_size'] for x in p1_warm_ptype_step_size]
-    p2_warm_ptype_step_size = [x*train.shape[0]//config['train_batch_size'] for x in p2_warm_ptype_step_size]
-    p3_warm_ptype_step_size = [x*train.shape[0]//config['train_batch_size'] for x in p3_warm_ptype_step_size]
-    p4_warm_ptype_step_size = [x*train.shape[0]//config['train_batch_size'] for x in p4_warm_ptype_step_size]
+    hyperparameters['p0_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p0_warm_ptype_step_size']]
+    hyperparameters['p1_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p1_warm_ptype_step_size']]
+    hyperparameters['p2_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p2_warm_ptype_step_size']]
+    hyperparameters['p3_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p3_warm_ptype_step_size']]
+    hyperparameters['p4_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p4_warm_ptype_step_size']]
 
     # 1. find a good warm lr and push_start by setting push_start to 300, last_layer_epochs to 0, and num_pushes to 0, and grid search through different warm_lrs.
     # 1.5. (optionally) modify gamma and warm_lr_step_size and gamma to improve even more, once you find good performance
