@@ -289,8 +289,8 @@ for trial in range(1):
         
         'num_warm_epochs':          [1_000_000],                    # random.randint(0, 10) # not set
         'push_gap':                 [35],                           # 17 # random.randint(10, 20)# 1_000_000 # not set
-        'num_pushes':               [2],                            # 3-5?
-        'last_layer_epochs':        [85],                           # 50, 100
+        'num_pushes':               [1],                            # 3-5?
+        'last_layer_epochs':        [0],                           # 85, 50, 100
 
         'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
         'clst_weight':              [12*-0.8],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
