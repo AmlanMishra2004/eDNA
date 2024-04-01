@@ -288,7 +288,7 @@ for trial in range(1):
         'latent_weight':            [0.9],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
         'num_warm_epochs':          [1_000_000],                    # random.randint(0, 10) # not set
-        'push_gap':                 [35],                           # 17 # random.randint(10, 20)# 1_000_000 # not set
+        'push_gap':                 [0],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
         'num_pushes':               [1],                            # 3-5?
         'last_layer_epochs':        [0],                           # 85, 50, 100
 
@@ -298,9 +298,9 @@ for trial in range(1):
         'l1_weight':                [0.001],                        #[0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
         
         'push_start':               [70],                           # 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'p0_warm_ptype_lr':         [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                               # [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                         # the warm prototype lr for before the first push 0.35 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'p0_warm_ptype_gamma':      [0.5, 0.6, 0.7, 0.8, 0.9],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-        'p0_warm_ptype_step_size':  [10],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
+        'p0_warm_ptype_lr':         [0.001, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                               # [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                         # the warm prototype lr for before the first push 0.35 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
+        'p0_warm_ptype_gamma':      [-1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'p0_warm_ptype_step_size':  [72],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         # push 1
         'p1_last_layer_lr':         [0.001],                        #[0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'p1_warm_ptype_lr':         [0.28],                         # the warm prototype lr for after the first push
@@ -466,7 +466,7 @@ for trial in range(1):
             # if epoch >= 31 or val_acc >= 0.99: 
             if epoch == end_epoch:
                 print(f"Stopping after epoch {epoch+1}.\n"
-                    f"Final validation accuracy before push: {val_acc*100}%")
+                    f"Final validation accuracy before push: {val_acc}")
                 print(f"Push number {pushes_completed + 1}")
                 push_prototypes(
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
@@ -499,7 +499,7 @@ for trial in range(1):
                 log=log
                 )
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
-                print(f"(Directly after push) Val acc at iteration 0: {val_acc}", flush=flush)
+                print(f"(Directly after push {pushes_completed+1}) Val acc at iteration 0: {val_acc}", flush=flush)
 
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
@@ -686,7 +686,7 @@ for trial in range(1):
 
             elif epoch >= params['push_start'] and (epoch - params['push_start']) % params['push_gap'] == 0:
                 print(f"Push epoch at epoch {epoch+1}.\n"
-                    f"Final validation accuracy before push: {val_acc*100}%")
+                    f"Final validation accuracy before push: {val_acc}")
                 print(f"Push number {pushes_completed + 1}")
                 push_prototypes(
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
@@ -721,7 +721,7 @@ for trial in range(1):
                 log=log
                 )
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
-                print(f"(Directly after push) Val acc at iteration 0: {val_acc}", flush=flush)
+                print(f"(Directly after push {pushes_completed+1}) Val acc at iteration 0: {val_acc}", flush=flush)
 
                 # Set the last layer lr based on the number of pushes completed
                 if epoch == params['push_start']:

@@ -18,12 +18,6 @@ import numpy as np
 # with open('out.1838794.log', 'r') as file: # to see if push gap should change -> too many epochs, can't see
 # FIXED WARM LR AFTER PUSH
 # with open('out.1840139.log', 'r') as file: # to find push_gap
-
-def moving_average(a, n=10) :
-    ret = np.cumsum(a, dtype=float)
-    ret[n:] = ret[n:] - ret[:-n]
-    return ret[n - 1:] / n
-
 # with open('out.1840698.log', 'r') as file: # to find last layer lr
 # with open('out.1841514.log', 'r') as file: # to see if accuracy after push goes to 0 regardless of last layer lr
 # with open('out.1842207.log', 'r') as file: # to find an even better (second round) warm lr
@@ -31,8 +25,17 @@ def moving_average(a, n=10) :
 # with open('out.1842260.log', 'r') as file: # to view last layer lr after second push
 # with open('out.1843172.log', 'r') as file: # to see that learning rates need to change after each push
 # with open('out.1845753.log', 'r') as file: # to find best last layer lr after 2 pushes
-with open('out.1838072.log', 'r') as file: # to look back (do not save) 1842207?
+# KINDA RESET
+# with open('out.1850021.log', 'r') as file: # to find latent weight
+with open('out.1850026.log', 'r') as file: # to find first layer lr and scheduler
+
+# with open('out.1838072.log', 'r') as file: # to look back (do not save) 1842207? 
     data = file.read()
+
+def moving_average(a, n=1):
+    ret = np.cumsum(a, dtype=float)
+    ret[n:] = ret[n:] - ret[:-n]
+    return ret[n - 1:] / n
 
 # Split the data into different combinations
 combinations = data.split('Attempting combination')
@@ -48,24 +51,9 @@ if not fancy:
     # new files start at combination 1. these loops should start at 1, they 
     # correspond directly with the combination number
 
-    # NEW VERSION
-    # # for i in range(1, len(combinations)+1):
-    # for i in range(1,6):
-    # # for i in [1, 8]:
-    #     # Extract the validation accuracies
-    #     accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i-1])
-    #     accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
-    #     # Convert to floats
-    #     accs = [float(acc) for acc in accs]
-    #     # Apply moving average
-    #     accs_smooth = moving_average(np.array(accs))
-    #     # Add to the graph
-    #     plt.plot(accs_smooth, label=f'Combination {i}')
-
-    # OLD VERSION
     # for i in range(1, len(combinations)+1):
-    # for i in range(9,14):
-    for i in [10]:
+    for i in range(1, 46, 7):
+    # for i in [5, 45]:
         print(i)
         # Extract the validation accuracies
         accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i-1])
@@ -116,3 +104,23 @@ elif fancy:
     plt.legend()
     # Show the graph
     plt.show()
+
+
+
+
+
+
+
+# NEW VERSION that inorporates trials
+    # # for i in range(1, len(combinations)+1):
+    # for i in range(1,6):
+    # # for i in [1, 8]:
+    #     # Extract the validation accuracies
+    #     accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i-1])
+    #     accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
+    #     # Convert to floats
+    #     accs = [float(acc) for acc in accs]
+    #     # Apply moving average
+    #     accs_smooth = moving_average(np.array(accs))
+    #     # Add to the graph
+    #     plt.plot(accs_smooth, label=f'Combination {i}')
