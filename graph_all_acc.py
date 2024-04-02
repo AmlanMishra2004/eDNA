@@ -27,12 +27,13 @@ import numpy as np
 # with open('out.1845753.log', 'r') as file: # to find best last layer lr after 2 pushes
 # KINDA RESET
 # with open('out.1850021.log', 'r') as file: # to find latent weight
-with open('out.1850026.log', 'r') as file: # to find first layer lr and scheduler
+# with open('out.1850026.log', 'r') as file: # to find first layer lr and scheduler
+with open('out.1851380.log', 'r') as file: # to find first layer lr
 
 # with open('out.1838072.log', 'r') as file: # to look back (do not save) 1842207? 
     data = file.read()
 
-def moving_average(a, n=1):
+def moving_average(a, n=6):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
@@ -52,7 +53,7 @@ if not fancy:
     # correspond directly with the combination number
 
     # for i in range(1, len(combinations)+1):
-    for i in range(1, 46, 7):
+    for i in range(5, 11, 1):
     # for i in [5, 45]:
         print(i)
         # Extract the validation accuracies
@@ -71,6 +72,7 @@ if not fancy:
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
     plt.legend()
+    plt.ylim(.70, 1)
     plt.show()
 
 elif fancy:
