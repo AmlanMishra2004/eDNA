@@ -113,11 +113,11 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     # np.save(os.path.join(proto_epoch_dir,
     #                     'prototype_vectors.npy'), 
     #         prototype_update)
-    # save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
-    #                     prototype_network_parallel=prototype_network_parallel,
-    #                     search_batch_input=search_batch_input,
-    #                     search_y=search_y,
-    #                     num_classes=num_classes)
+    save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
+                        prototype_network_parallel=prototype_network_parallel,
+                        search_batch_input=search_batch_input,
+                        search_y=search_y,
+                        num_classes=num_classes)
     # prototype_network_parallel.cuda()
     # end = time.time()
     # log('\tpush time: \t{0}'.format(end -  start))
@@ -388,6 +388,8 @@ def update_prototypes_on_batch(search_batch_input,
     if class_specific:
         del class_to_seq_index_dict
     
+    print(f"")
+    
     # print(f"global_max_proto_act from inside: {global_max_proto_act}") # should be a tensor of 1s, or 1/sqrt(25)
     # print(f"global_max_fmap_patches from inside: {global_max_fmap_patches}") # ?
 
@@ -438,7 +440,7 @@ def save_self_activations(dir_for_saving_prototypes,
 
         batch_max_proto_act_j = np.amax(proto_act_j)
         if batch_max_proto_act_j >= 0.999:
-            # print("Grabbed activation map for prototype {}".format(j))
+            print("Grabbed activation map for prototype {}".format(j))
             batch_argmax_proto_act_j = \
                 list(np.unravel_index(np.argmax(proto_act_j, axis=None),
                                       proto_act_j.shape))
@@ -451,24 +453,31 @@ def save_self_activations(dir_for_saving_prototypes,
             original_seq_j = original_seq_j.numpy()
             center_loc = batch_argmax_proto_act_j[1]
 
-            img_space_start = (center_loc - proto_h // 2) * upsampling_factor
-            img_space_end = (center_loc + proto_h // 2) * upsampling_factor + upsampling_factor
 
-            if img_space_start < 0:
-                # Handle zero padding
-                high_act_region = original_seq_j[:, :img_space_end]
 
-                zeros = np.zeros((original_seq_j.shape[0], -(img_space_start)))
-                high_act_region = np.concatenate((zeros, high_act_region), axis=-1)
+            img_space_start = center_loc * upsampling_factor
+            img_space_end = (center_loc + proto_h) * upsampling_factor # was + upsampling_factor
 
-            elif img_space_end > original_seq_j.shape[-1]:
-                # Handle zero padding
-                high_act_region = original_seq_j[:, img_space_start:]
+            if img_space_start < 0 or img_space_end > original_seq_j.shape[-1]:
+                print("Error with index of start position of prototype mapped back to input space")
+                assert False
+            # if img_space_start < 0:
+            #     # Handle zero padding
+            #     high_act_region = original_seq_j[:, :img_space_end]
+
+            #     zeros = np.zeros((original_seq_j.shape[0], -(img_space_start)))
+            #     high_act_region = np.concatenate((zeros, high_act_region), axis=-1)
+
+            # elif img_space_end > original_seq_j.shape[-1]:
+            #     # Handle zero padding
+            #     high_act_region = original_seq_j[:, img_space_start:]
                 
-                zeros = np.zeros((original_seq_j.shape[0], img_space_end - original_seq_j.shape[-1]))
-                high_act_region = np.concatenate((high_act_region, zeros), axis=-1)
-            else:
-                high_act_region = original_seq_j[:, img_space_start:img_space_end]
+            #     zeros = np.zeros((original_seq_j.shape[0], img_space_end - original_seq_j.shape[-1]))
+            #     high_act_region = np.concatenate((high_act_region, zeros), axis=-1)
+            # else:
+            #    high_act_region = original_seq_j[:, img_space_start:img_space_end]
+
+            high_act_region = original_seq_j[:, img_space_start:img_space_end]
 
             np.save(os.path.join(dir_for_saving_prototypes, 'prototype_{}_activations.npy'.format(j)),
                     proto_act_[seq_index_in_batch, j])
