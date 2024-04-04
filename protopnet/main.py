@@ -279,48 +279,48 @@ for trial in range(1):
     # These two are also hyperparameters. Feel free to add more values to try.
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
     num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
-    ptype_length = [29] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    ptype_length = [29] #[11, 13, 15, 17, 19, 21, 23, 25, 27, 29] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0.9],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0.95],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
         'num_warm_epochs':          [1_000_000],                    # random.randint(0, 10) # not set
         'push_gap':                 [45],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
-        'num_pushes':               [2],                            # 3-5?
-        'last_layer_epochs':        [85],                           # 85, 50, 100
+        'num_pushes':               [3],                            # 3-5?
+        'last_layer_iterations':    [85],                           # 85, 50, 100
 
         'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
         'clst_weight':              [-1],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [0.001, 0.005, 0.01, 0.05, 0.1, 0.3, 0.5, 0.7, 0.9],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*30*0.08, 1*30*0.08, 0.1*30*0.08], # OG: [30*0.08], go as high as 50x
-        'l1_weight':                [0.001],                        #[0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
+        'l1_weight':                [0.00005],                        #[0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
         
         'push_start':               [37],                           # 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'p0_warm_ptype_lr':         [0.05],                          # [0.001, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                               # [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                         # the warm prototype lr for before the first push 0.35 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'p0_warm_ptype_gamma':      [1],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-        'p0_warm_ptype_step_size':  [1_000_000],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
+        'p0_warm_ptype_gamma':      [0.9],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'p0_warm_ptype_step_size':  [10],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         # push 1
         'p1_last_layer_lr':         [0.001],                        #[0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
-        'p1_warm_ptype_lr':         [0.28],                         # the warm prototype lr for after the first push
-        'p1_warm_ptype_gamma':      [1],#[0.8],
-        'p1_warm_ptype_step_size':  [1_000_000],#[20],
+        'p1_warm_ptype_lr':         [0.05],                         # the warm prototype lr for after the first push
+        'p1_warm_ptype_gamma':      [0.9],#[0.8],
+        'p1_warm_ptype_step_size':  [10],#[20],
         # push 2
-        'p2_last_layer_lr':         [0.0007],
-        'p2_warm_ptype_lr':         [0.1],                          # the warm prototype lr for after the second push
-        'p2_warm_ptype_gamma':      [-1],
-        'p2_warm_ptype_step_size':  [20],
+        'p2_last_layer_lr':         [0.001],
+        'p2_warm_ptype_lr':         [0.05],                          # the warm prototype lr for after the second push
+        'p2_warm_ptype_gamma':      [0.9],
+        'p2_warm_ptype_step_size':  [10],
         # push 3
-        'p3_last_layer_lr':         [0.000075],
-        'p3_warm_ptype_lr':         [0.05],                         # the warm prototype lr for after the third push
-        'p3_warm_ptype_gamma':      [-1],
-        'p3_warm_ptype_step_size':  [20],
+        'p3_last_layer_lr':         [0.01],
+        'p3_warm_ptype_lr':         [0.025],                         # the warm prototype lr for after the third push
+        'p3_warm_ptype_gamma':      [0.9],
+        'p3_warm_ptype_step_size':  [10],
         # push 4
-        'p4_last_layer_lr':         [0.0000075],
-        'p4_warm_ptype_lr':         [0.05],                         # the warm prototype lr for after the third push
-        'p4_warm_ptype_gamma':      [-1],
-        'p4_warm_ptype_step_size':  [20],
+        'p4_last_layer_lr':         [0.007],
+        'p4_warm_ptype_lr':         [0.02],                         # the warm prototype lr for after the third push
+        'p4_warm_ptype_gamma':      [0.9],
+        'p4_warm_ptype_step_size':  [10],
 
         'joint_weight_decay':       [-1],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
@@ -337,9 +337,9 @@ for trial in range(1):
     hyperparameters['p3_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p3_warm_ptype_step_size']]
     hyperparameters['p4_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p4_warm_ptype_step_size']]
 
-    # 1. find a good warm lr and push_start by setting push_start to 300, last_layer_epochs to 0, and num_pushes to 0, and grid search through different warm_lrs.
+    # 1. find a good warm lr and push_start by setting push_start to 300, last_layer_iterations to 0, and num_pushes to 0, and grid search through different warm_lrs.
     # 1.5. (optionally) modify gamma and warm_lr_step_size and gamma to improve even more, once you find good performance
-    # 2. find a good last layer lr by setting last_layer_epochs to 300, with num_pushes at 0 (still using the warm lr and push_gap that you found)
+    # 2. find a good last layer lr by setting last_layer_iterations to 300, with num_pushes at 0 (still using the warm lr and push_gap that you found)
     # 2.5. (optionally) modify the manual lr scheduler in the code to improve performance. possibly have different last layer epochs after the first one and after subsequent pushes?
     # 3. find a good push_gap by setting it to 300 and seeing how many epochs are necessary. num_pushes should be 1.
     # 4. find a good num_pushes by setting it to 10. If accuracy does not increase after each push, then consider lowering the learning rates by 75% after each push.
@@ -523,7 +523,7 @@ for trial in range(1):
                 for param_group in last_layer_optimizer.param_groups:
                         print(f"Last layer lr: {param_group['lr']}")
 
-                for i in range(params['last_layer_epochs']):
+                for i in range(params['last_layer_iterations']):
 
                     actual, pred, _ = tnt.train(
                         model=ppnet_multi,
@@ -651,7 +651,7 @@ for trial in range(1):
                 #     'push_gap': params['push_gap'],
                 #     'push_start': params['push_start'],
                 #     'num_pushes': params['num_pushes'],
-                #     'last_layer_epochs': params['last_layer_epochs'],
+                #     'last_layer_iterations': params['last_layer_iterations'],
 
                 #     # Static Variables
                 #     'seq_count_thresh': config['seq_count_thresh'],           
@@ -745,7 +745,7 @@ for trial in range(1):
                 for param_group in last_layer_optimizer.param_groups:
                         print(f"Last layer lr: {param_group['lr']}")
 
-                for i in range(params['last_layer_epochs']):
+                for i in range(params['last_layer_iterations']):
                     # if i == 25:
                     #     for param_group in last_layer_optimizer.param_groups:
                     #         param_group['lr'] /= 5

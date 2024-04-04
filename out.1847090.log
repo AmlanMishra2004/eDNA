@@ -64,7 +64,8 @@ train batch size: 156
 test batch size: 94
 Hyperparameters: {'prototype_shape': [(468, 520, 29)], 'latent_weight': [0.8], 'joint_weight_decay': [-1], 'gamma': [-1], 'warm_lr_step_size': [5000000], 'crs_ent_weight': [1], 'clst_weight': [-9.600000000000001], 'sep_weight': [2.4], 'l1_weight': [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], 'warm_ptype_lr': [0.4], 'last_layer_lr': [0.001], 'last_layer_lr_after_second_push': [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 5e-05], 'num_warm_epochs': [1000000], 'push_gap': [12], 'push_start': [12], 'num_pushes': [2], 'last_layer_epochs': [85], 'joint_lr_step_size': [-1], 'joint_optimizer_lrs': [{'features': -1, 'prototype_vectors': -1}]}
 
-
+1st best: 0.0001 0.01
+2nd best: 0.0001 0.005
 
 
 Exploring 72 hyperparameter combinations for grid search.

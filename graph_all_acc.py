@@ -28,12 +28,12 @@ import numpy as np
 # KINDA RESET
 # with open('out.1850021.log', 'r') as file: # to find latent weight
 # with open('out.1850026.log', 'r') as file: # to find first layer lr and scheduler
-with open('out.1851380.log', 'r') as file: # to find first layer lr
-
-# with open('out.1838072.log', 'r') as file: # to look back (do not save) 1842207? 
+# with open('out.1851380.log', 'r') as file: # to find first layer lr
+# with open('out.1852559.log', 'r') as file: # to find ratio of clst to sep
+with open('out.1845752.log', 'r') as file: # to look back (do not save) 1842207? 
     data = file.read()
 
-def moving_average(a, n=6):
+def moving_average(a, n=3):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
@@ -52,9 +52,9 @@ if not fancy:
     # new files start at combination 1. these loops should start at 1, they 
     # correspond directly with the combination number
 
-    # for i in range(1, len(combinations)+1):
-    for i in range(5, 11, 1):
-    # for i in [5, 45]:
+    for i in range(1, len(combinations)+1):
+    # for i in range(1, 10, 1):
+    # for i in [4, 13, 22]:
         print(i)
         # Extract the validation accuracies
         accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i-1])
@@ -72,7 +72,7 @@ if not fancy:
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
     plt.legend()
-    plt.ylim(.70, 1)
+    plt.ylim(.40, 1)
     plt.show()
 
 elif fancy:
