@@ -289,7 +289,7 @@ for trial in range(1):
         
         'num_warm_epochs':          [1_000_000],                    # random.randint(0, 10) # not set
         'push_gap':                 [45],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
-        'num_pushes':               [3],                            # 3-5?
+        'num_pushes':               [4],                            # 3-5?
         'last_layer_iterations':    [85],                           # 85, 50, 100
 
         'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
