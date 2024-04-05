@@ -27,7 +27,7 @@ echo "==========================================="
 source ../eDNA_env/bin/activate
 cd protopnet
 
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py $SLURM_JOB_ID $SLURM_ARRAY_TASK_ID
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --job_id $SLURM_JOB_ID --index $SLURM_ARRAY_TASK_ID
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 testScript.py

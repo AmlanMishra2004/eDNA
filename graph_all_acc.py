@@ -35,10 +35,13 @@ with open('out.1845752.log', 'r') as file: # to look back (do not save) 1842207?
     data = file.read()
 
 job_ID = 1845752
+num_jobs = 9
 data = ""
-for filename in glob.glob(f'slurm_outputs/out.{job_ID}_*.log'):
-    with open(filename, 'r') as file:
-        data += file.read()
+for i in range(num_jobs + 1):
+    for filename in glob.glob(f'slurm_outputs/out.{job_ID + i}_*.log'):
+        with open(filename, 'r') as file:
+            data += file.read()
+
 
 def moving_average(a, n=3):
     ret = np.cumsum(a, dtype=float)

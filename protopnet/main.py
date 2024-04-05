@@ -1,3 +1,4 @@
+import argparse
 import os
 # import shutil
 
@@ -370,21 +371,39 @@ for trial in range(1):
     combos = len(combinations)
 
     # Try to get the SLURM job ID and array index
-    try:
-        job_id = int(sys.argv[1])
-        print(f"Job ID {job_id}")
-        idx = int(sys.argv[2])
-        print(f"index {idx}")
-    except:
-        idx = None
+    parser = argparse.ArgumentParser()
+
+    # Adding optional argument
+    parser.add_argument("-j", "--job_id", help = "Job ID")
+    parser.add_argument("-i", "--index", help = "Index in array, i.e. hyperparameter combination number")
+
+    # Read arguments from command line
+    args = parser.parse_args()
+
+    if args.job_id:
+        print(f"Job ID {args.job_id}")
+
+    if args.index:
+        print(f"Index {args.index}")
+    else:
+        print(f"Index {args.index}")
+        args.index = None
+
+    # try:
+    #     job_id = int(sys.argv[1])
+    #     print(f"Job ID {job_id}")
+    #     idx = int(sys.argv[2])
+    #     print(f"index {idx}")
+    # except:
+    #     idx = None
 
     # Iterate through all combinations. 
     # If a particular array index is supplied, then only run that combination.
     if combos > 1:
         print(f"\n\nExploring {combos} hyperparameter combinations for grid search.\n")
     for iter, combination in enumerate(combinations):
-        if idx is not None:
-            if idx != iter:
+        if args.index is not None:
+            if args.index != iter:
                 continue
         params = dict(zip(hyperparameters.keys(), combination))
         print(f"\nAttempting combination {iter+1}/{combos}:")
