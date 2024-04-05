@@ -368,10 +368,8 @@ for trial in range(1):
     ch = {key: value for key, value in hyperparameters.items() if len(value) > 1}
     print(f"Checking hyperparameters: {ch}\n\n")
     del ch
-    # if args.comb_num != -1:
-    #     print(f"Performing combination number {args.comb_num}")
-    print(f"Performing combination number {args.comb_num}")
-    print(f"Job id: {args.job_id}")
+    if args.comb_num[0] != -1:
+        print(f"Performing combination number {args.comb_num[0]}")
     # Generate all combinations of hyperparameters
     combinations = list(itertools.product(*hyperparameters.values()))
     combos = len(combinations)
@@ -383,8 +381,8 @@ for trial in range(1):
     for iter, combination in enumerate(combinations):
         # comb_num=-1 indicates that there was no combination_number supplied,
         # which means that it isn't being run in parallel using an array.
-        if args.comb_num != -1: 
-            if args.comb_num != iter:
+        if args.comb_num[0] != -1: 
+            if args.comb_num[0] != iter:
                 continue
         params = dict(zip(hyperparameters.keys(), combination))
         print(f"\nAttempting combination {iter+1}/{combos}:")
@@ -568,7 +566,7 @@ for trial in range(1):
                     conditionally_save_model(
                         ppnet,
                         './ppn_saved_models',
-                        model_name=str(args.job_id),
+                        model_name=str(args.job_id[0]),
                         accu=val_acc,
                         target_accu=0.9,
                         log=print
@@ -808,7 +806,7 @@ for trial in range(1):
                     conditionally_save_model(
                         ppnet,
                         './ppn_saved_models',
-                        model_name=str(args.job_id),
+                        model_name=str(args.job_id[0]),
                         accu=val_acc,
                         target_accu=0.9,
                         log=print
