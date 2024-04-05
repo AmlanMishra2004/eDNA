@@ -131,6 +131,7 @@ assert config['seq_target_length'] % 2 == 0, \
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpuid', nargs=1, type=str, default='0')
 parser.add_argument('--job_id', nargs=1, type=int, default=-1)
+parser.add_argument('--arr_job_id', nargs=1, type=int, default=-1) # same for all elements in the array
 parser.add_argument('--comb_num', nargs=1, type=int, default=-1)
 args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
@@ -303,22 +304,22 @@ for trial in range(1):
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
         'latent_weight':            [0.95],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
-        'num_warm_epochs':          [1_000_000],                    # random.randint(0, 10) # not set
-        'push_start':               [80],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'push_gap':                 [0],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
-        'num_pushes':               [0],                            # 3-5?
+        'num_warm_epochs':          [35],                    # random.randint(0, 10) # not set
+        'push_start':               [35],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_gap':                 [45],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
+        'num_pushes':               [3],                            # 3-5?
 
         'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
         'clst_weight':              [-1],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [0.01],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*30*0.08, 1*30*0.08, 0.1*30*0.08], # OG: [30*0.08], go as high as 50x
-        'l1_weight':                [0.0001],                        #[0, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005], [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
+        'l1_weight':                [0.00005],                        #[0, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005], [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
         
-        'p0_warm_ptype_lr':         [0.05],                          # [0.001, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                               # [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                         # the warm prototype lr for before the first push 0.35 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'p0_warm_ptype_gamma':      [0.7, 0.75, 0.8, 0.83, 0.86, 0.9, 0.92, 0.94, 0.96, 0.98, 1],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'p0_warm_ptype_lr':         [0.05],                          #GOOD [0.001, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                               # [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                         # the warm prototype lr for before the first push 0.35 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
+        'p0_warm_ptype_gamma':      [1],                                #[0.7, 0.75, 0.8, 0.83, 0.86, 0.9, 0.92, 0.94, 0.96, 0.98, 1],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'p0_warm_ptype_step_size':  [5],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         # push 1
-        'p1_last_layer_lr':         [0.001],                        #[0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
-        'p1_last_layer_iterations': [80],                           # 85 for 0.001, 215 for 0.00075
+        'p1_last_layer_lr':         [0.001],                        #GOOD [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'p1_last_layer_iterations': [80],                           #GOOD 85 for 0.001, 215 for 0.00075
         'p1_warm_ptype_lr':         [0.05],                         # the warm prototype lr for after the first push
         'p1_warm_ptype_gamma':      [1],
         'p1_warm_ptype_step_size':  [5],
@@ -340,14 +341,15 @@ for trial in range(1):
         'p4_warm_ptype_lr':         [0.02],                         # the warm prototype lr for after the third push
         'p4_warm_ptype_gamma':      [0.9],
         'p4_warm_ptype_step_size':  [10],
+        # push 5
+        'p5_last_layer_lr':         [0.007],
+        'p5_last_layer_iterations': [80],
 
-        'joint_weight_decay':       [-1],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-        'joint_lr_step_size':       [-1], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
-        'joint_gamma':              [-1],
-        'joint_optimizer_lrs': [{ # learning rates for the different stages
-            'features':             -1,#random.uniform(0.0001, 0.01), # 0.003
-            'prototype_vectors':    -1 #random.uniform(0.0001, 0.01) # 0.003
-        }]
+        'joint_weight_decay':       [0.0001],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+        'joint_lr_step_size':       [45], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+        'joint_gamma':              [0.7],
+        'joint_feature_lr':         [0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
+        'joint_ptype_lr':           [0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
     }
 
     hyperparameters['p0_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p0_warm_ptype_step_size']]
@@ -423,10 +425,10 @@ for trial in range(1):
         # weight decay is how much to penalize large weights in the network, 0-0.1
         joint_optimizer_specs = [
             {'params': ppnet.features.parameters(),
-            'lr': params['joint_optimizer_lrs']['features'],
+            'lr': params['joint_feature_lr'],
             'joint_weight_decay': params['joint_weight_decay']}, # bias are now also being regularized
             {'params': ppnet.prototype_vectors,
-            'lr': params['joint_optimizer_lrs']['prototype_vectors']},
+            'lr': params['joint_ptype_lr']},
         ]
         joint_optimizer = torch.optim.Adam(joint_optimizer_specs)
         # after step-size epochs, the lr is multiplied by gamma
@@ -484,6 +486,39 @@ for trial in range(1):
             # early_stopper(val_acc)
             print(f"Val acc before epoch {epoch}: {val_acc}", flush=flush)
 
+            # Update the number of
+            # last layer iterations
+            # last layer lr
+            # based on the push num.
+            if pushes_completed == 0:
+                for param_group in warm_optimizer.param_groups:
+                    param_group['lr'] = params['p0_warm_ptype_lr']
+                last_layer_iterations = params['p1_last_layer_iterations']
+                for param_group in last_layer_optimizer.param_groups:
+                    param_group['lr'] = params['p1_last_layer_lr']
+            elif pushes_completed == 1:
+                for param_group in warm_optimizer.param_groups:
+                    param_group['lr'] = params['p1_warm_ptype_lr']
+                last_layer_iterations = params['p2_last_layer_iterations']
+                for param_group in last_layer_optimizer.param_groups:
+                    param_group['lr'] = params['p2_last_layer_lr']
+            elif pushes_completed == 2:
+                for param_group in warm_optimizer.param_groups:
+                    param_group['lr'] = params['p2_warm_ptype_lr']
+                last_layer_iterations = params['p3_last_layer_iterations']
+                for param_group in last_layer_optimizer.param_groups:
+                    param_group['lr'] = params['p3_last_layer_lr']
+            elif pushes_completed == 3:
+                for param_group in warm_optimizer.param_groups:
+                    param_group['lr'] = params['p3_warm_ptype_lr']
+                last_layer_iterations = params['p4_last_layer_iterations']
+                for param_group in last_layer_optimizer.param_groups:
+                    param_group['lr'] = params['p4_last_layer_lr']
+            elif pushes_completed == 4:
+                last_layer_iterations = params['p5_last_layer_iterations']
+                for param_group in last_layer_optimizer.param_groups:
+                    param_group['lr'] = params['p5_last_layer_lr']
+
             # if epoch >= 31 or val_acc >= 0.99: 
             if epoch == end_epoch:
                 print(f"Stopping after epoch {epoch+1}.\n"
@@ -520,31 +555,17 @@ for trial in range(1):
                 log=log
                 )
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
-                print(f"(Directly after push {pushes_completed+1}) Val acc at iteration 0: {val_acc}", flush=flush)
+                print(f"(Directly after push {pushes_completed}) Val acc at iteration 0: {val_acc}", flush=flush)
 
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
                 print(f"Retraining last layer")
 
-                # Set the last layer lr based on the number of pushes completed
-                if epoch == params['push_start']:
-                    for param_group in last_layer_optimizer.param_groups:
-                        param_group['lr'] = params['p1_last_layer_lr']
-                elif epoch == params['push_start'] + params['push_gap']:
-                    for param_group in last_layer_optimizer.param_groups:
-                        param_group['lr'] = params['p2_last_layer_lr']
-                elif epoch == params['push_start'] + params['push_gap']*2:
-                    for param_group in last_layer_optimizer.param_groups:
-                        param_group['lr'] = params['p3_last_layer_lr']
-                elif epoch == params['push_start'] + params['push_gap']*3:
-                    for param_group in last_layer_optimizer.param_groups:
-                        param_group['lr'] = params['p4_last_layer_lr']
-
                 # Print out the last layer lr
                 for param_group in last_layer_optimizer.param_groups:
                         print(f"Last layer lr: {param_group['lr']}")
 
-                for i in range(params['last_layer_iterations']):
+                for i in range(last_layer_iterations):
 
                     actual, pred, _ = tnt.train(
                         model=ppnet_multi,
@@ -569,7 +590,7 @@ for trial in range(1):
                     conditionally_save_model(
                         ppnet,
                         './ppn_saved_models',
-                        model_name=str(args.job_id[0]),
+                        model_name=str(args.arr_job_id[0]),
                         accu=val_acc,
                         target_accu=0.9,
                         log=print
@@ -751,21 +772,7 @@ for trial in range(1):
                 log=log
                 )
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
-                print(f"(Directly after push {pushes_completed+1}) Val acc at iteration 0: {val_acc}", flush=flush)
-
-                # Set the last layer lr based on the number of pushes completed
-                if epoch == params['push_start']:
-                    for param_group in last_layer_optimizer.param_groups:
-                        param_group['lr'] = params['p1_last_layer_lr']
-                elif epoch == params['push_start'] + params['push_gap']:
-                    for param_group in last_layer_optimizer.param_groups:
-                        param_group['lr'] = params['p2_last_layer_lr']
-                elif epoch == params['push_start'] + params['push_gap']*2:
-                    for param_group in last_layer_optimizer.param_groups:
-                        param_group['lr'] = params['p3_last_layer_lr']
-                elif epoch == params['push_start'] + params['push_gap']*3:
-                    for param_group in last_layer_optimizer.param_groups:
-                        param_group['lr'] = params['p4_last_layer_lr']
+                print(f"(Directly after push {pushes_completed}) Val acc at iteration 0: {val_acc}", flush=flush)
 
                 # After pushing, retrain the last layer to produce good results again.
                 tnt.last_only(model=ppnet_multi, log=log)
@@ -775,7 +782,7 @@ for trial in range(1):
                 for param_group in last_layer_optimizer.param_groups:
                         print(f"Last layer lr: {param_group['lr']}")
 
-                for i in range(params['last_layer_iterations']):
+                for i in range(last_layer_iterations):
                     # if i == 25:
                     #     for param_group in last_layer_optimizer.param_groups:
                     #         param_group['lr'] /= 5
@@ -809,7 +816,7 @@ for trial in range(1):
                     conditionally_save_model(
                         ppnet,
                         './ppn_saved_models',
-                        model_name=str(args.job_id[0]),
+                        model_name=str(args.arr_job_id[0]),
                         accu=val_acc,
                         target_accu=0.9,
                         log=print
@@ -827,13 +834,13 @@ for trial in range(1):
                     coefs=params['coefs'],
                     log=log
                 )
-
                 for param_group in warm_optimizer.param_groups:
                     print(f"Warm optimizer lr: {param_group['lr']}")
                 # print(f"Prototype results: {ptype_results}")
                     
             else:
                 # train the prototypes and the backbone
+
                 tnt.joint(model=ppnet_multi, log=log)
                 _, _, ptype_results = tnt.train(
                     model=ppnet_multi,
@@ -844,6 +851,8 @@ for trial in range(1):
                     coefs=params['coefs'],
                     log=log
                 )   
+                for param_group in joint_optimizer.param_groups:
+                    print(f"Joint optimizer lr: {param_group['lr']}")
                 # print(f"Prototype results: {ptype_results}")
             
 

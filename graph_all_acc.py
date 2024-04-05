@@ -38,10 +38,9 @@ with open('out.1852546.log', 'r') as file: # to look back (do not save) 1842207?
 # job_ID = 1845752
 # num_jobs = 9
 # data = ""
-# for i in range(num_jobs + 1):
-#     for filename in glob.glob(f'slurm_outputs/out.{job_ID + i}_*.log'):
-#         with open(filename, 'r') as file:
-#             data += file.read()
+# for filename in glob.glob(f'slurm_outputs/out.{job_ID + i}_*.log'):
+#     with open(filename, 'r') as file:
+#         data += file.read()
 
 
 def moving_average(a, n=1):
