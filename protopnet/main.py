@@ -368,6 +368,10 @@ for trial in range(1):
     ch = {key: value for key, value in hyperparameters.items() if len(value) > 1}
     print(f"Checking hyperparameters: {ch}\n\n")
     del ch
+    # if args.comb_num != -1:
+    #     print(f"Performing combination number {args.comb_num}")
+    print(f"Performing combination number {args.comb_num}")
+    print(f"Job id: {args.job_id}")
     # Generate all combinations of hyperparameters
     combinations = list(itertools.product(*hyperparameters.values()))
     combos = len(combinations)
@@ -800,7 +804,7 @@ for trial in range(1):
                     )
                     val_acc = metrics.accuracy_score(val_actual, val_predicted)
                     print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
-                    
+
                     conditionally_save_model(
                         ppnet,
                         './ppn_saved_models',
