@@ -129,7 +129,9 @@ assert config['seq_target_length'] % 2 == 0, \
 # allow the user to call the program with command line gpu argument
 # ex. python3 main.py -gpuid=0,1,2,3
 parser = argparse.ArgumentParser()
-parser.add_argument('-gpuid', nargs=1, type=str, default='0')
+parser.add_argument('--gpuid', nargs=1, type=str, default='0')
+parser.add_argument('--job_id', nargs=1, type=int, default=-1)
+parser.add_argument('--comb_num', nargs=1, type=int, default=-1)
 args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 print(os.environ['CUDA_VISIBLE_DEVICES'])
@@ -370,40 +372,15 @@ for trial in range(1):
     combinations = list(itertools.product(*hyperparameters.values()))
     combos = len(combinations)
 
-    # Try to get the SLURM job ID and array index
-    parser = argparse.ArgumentParser()
-
-    # Adding optional argument
-    parser.add_argument("-j", "--job_id", help = "Job ID")
-    parser.add_argument("-i", "--index", help = "Index in array, i.e. hyperparameter combination number")
-
-    # Read arguments from command line
-    args = parser.parse_args()
-
-    if args.job_id:
-        print(f"Job ID {args.job_id}")
-
-    if args.index:
-        print(f"Index {args.index}")
-    else:
-        print(f"Index {args.index}")
-        args.index = None
-
-    # try:
-    #     job_id = int(sys.argv[1])
-    #     print(f"Job ID {job_id}")
-    #     idx = int(sys.argv[2])
-    #     print(f"index {idx}")
-    # except:
-    #     idx = None
-
     # Iterate through all combinations. 
     # If a particular array index is supplied, then only run that combination.
     if combos > 1:
         print(f"\n\nExploring {combos} hyperparameter combinations for grid search.\n")
     for iter, combination in enumerate(combinations):
-        if args.index is not None:
-            if args.index != iter:
+        # comb_num=-1 indicates that there was no combination_number supplied,
+        # which means that it isn't being run in parallel using an array.
+        if args.comb_num != -1: 
+            if args.comb_num != iter:
                 continue
         params = dict(zip(hyperparameters.keys(), combination))
         print(f"\nAttempting combination {iter+1}/{combos}:")
@@ -501,14 +478,6 @@ for trial in range(1):
             val_acc = metrics.accuracy_score(val_actual, val_predicted)
             # early_stopper(val_acc)
             print(f"Val acc before epoch {epoch}: {val_acc}", flush=flush)
-            
-            conditionally_save_model(
-                ppnet,
-                './ppn_saved_models',
-                model_name=str(job_id),
-                accu=val_acc,
-                target_accu=0.9,
-                log=print)
 
             # if epoch >= 31 or val_acc >= 0.99: 
             if epoch == end_epoch:
@@ -591,6 +560,15 @@ for trial in range(1):
                     )
                     val_acc = metrics.accuracy_score(val_actual, val_predicted)
                     print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
+
+                    conditionally_save_model(
+                        ppnet,
+                        './ppn_saved_models',
+                        model_name=str(args.job_id),
+                        accu=val_acc,
+                        target_accu=0.9,
+                        log=print
+                    )
 
                 # # Get the final model validation and test scores
                 # print(f"Getting final validation and test accuracy after training.")
@@ -823,6 +801,14 @@ for trial in range(1):
                     val_acc = metrics.accuracy_score(val_actual, val_predicted)
                     print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
                     
+                    conditionally_save_model(
+                        ppnet,
+                        './ppn_saved_models',
+                        model_name=str(args.job_id),
+                        accu=val_acc,
+                        target_accu=0.9,
+                        log=print
+                    )
             elif epoch < params['num_warm_epochs']:
                 # print(f"Train epoch")
                 # train the prototypes without modifying the backbone
