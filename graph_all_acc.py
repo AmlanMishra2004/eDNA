@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 import re
 import numpy as np
+import glob
 
 # Open the file
 # with open('out.1831432.log', 'r') as file: # 9
@@ -32,6 +33,12 @@ import numpy as np
 # with open('out.1852559.log', 'r') as file: # to find ratio of clst to sep
 with open('out.1845752.log', 'r') as file: # to look back (do not save) 1842207? 
     data = file.read()
+
+job_ID = 1845752
+data = ""
+for filename in glob.glob(f'slurm_outputs/out.{job_ID}_*.log'):
+    with open(filename, 'r') as file:
+        data += file.read()
 
 def moving_average(a, n=3):
     ret = np.cumsum(a, dtype=float)
