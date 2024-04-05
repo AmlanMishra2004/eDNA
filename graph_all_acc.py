@@ -31,19 +31,20 @@ import glob
 # with open('out.1850026.log', 'r') as file: # to find first layer lr and scheduler
 # with open('out.1851380.log', 'r') as file: # to find first layer lr
 # with open('out.1852559.log', 'r') as file: # to find ratio of clst to sep
-with open('out.1845752.log', 'r') as file: # to look back (do not save) 1842207? 
+with open('out.1852546.log', 'r') as file: # to look back (do not save) 1842207? 
     data = file.read()
 
-job_ID = 1845752
-num_jobs = 9
-data = ""
-for i in range(num_jobs + 1):
-    for filename in glob.glob(f'slurm_outputs/out.{job_ID + i}_*.log'):
-        with open(filename, 'r') as file:
-            data += file.read()
+# For creating multiple jobs in an array
+# job_ID = 1845752
+# num_jobs = 9
+# data = ""
+# for i in range(num_jobs + 1):
+#     for filename in glob.glob(f'slurm_outputs/out.{job_ID + i}_*.log'):
+#         with open(filename, 'r') as file:
+#             data += file.read()
 
 
-def moving_average(a, n=3):
+def moving_average(a, n=1):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
@@ -62,9 +63,10 @@ if not fancy:
     # new files start at combination 1. these loops should start at 1, they 
     # correspond directly with the combination number
 
-    for i in range(1, len(combinations)+1):
-    # for i in range(1, 10, 1):
-    # for i in [4, 13, 22]:
+    # for i in range(1, len(combinations)+1):
+    # for i in range(7, len(combinations)+1):
+    # for i in range(1, 7, 1):
+    for i in [1]:
         print(i)
         # Extract the validation accuracies
         accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i-1])
@@ -82,7 +84,8 @@ if not fancy:
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
     plt.legend()
-    plt.ylim(.40, 1)
+    plt.ylim(.80, 1)
+    # plt.xlim(300, 1)
     plt.show()
 
 elif fancy:

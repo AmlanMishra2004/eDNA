@@ -304,36 +304,39 @@ for trial in range(1):
         'latent_weight':            [0.95],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
         'num_warm_epochs':          [1_000_000],                    # random.randint(0, 10) # not set
-        'push_gap':                 [45],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
-        'num_pushes':               [2],                            # 3-5?
-        'last_layer_iterations':    [200],                           # 85, 50, 100
+        'push_start':               [80],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_gap':                 [0],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
+        'num_pushes':               [0],                            # 3-5?
 
         'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
         'clst_weight':              [-1],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [0.01],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*30*0.08, 1*30*0.08, 0.1*30*0.08], # OG: [30*0.08], go as high as 50x
         'l1_weight':                [0.0001],                        #[0, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005], [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
         
-        'push_start':               [37],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'p0_warm_ptype_lr':         [0.05],                          # [0.001, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                               # [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                         # the warm prototype lr for before the first push 0.35 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'p0_warm_ptype_gamma':      [1],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-        'p0_warm_ptype_step_size':  [10],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
+        'p0_warm_ptype_gamma':      [0.7, 0.75, 0.8, 0.83, 0.86, 0.9, 0.92, 0.94, 0.96, 0.98, 1],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'p0_warm_ptype_step_size':  [5],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         # push 1
         'p1_last_layer_lr':         [0.001],                        #[0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'p1_last_layer_iterations': [80],                           # 85 for 0.001, 215 for 0.00075
         'p1_warm_ptype_lr':         [0.05],                         # the warm prototype lr for after the first push
         'p1_warm_ptype_gamma':      [1],
-        'p1_warm_ptype_step_size':  [10],
+        'p1_warm_ptype_step_size':  [5],
         # push 2
-        'p2_last_layer_lr':         [0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5],
+        'p2_last_layer_lr':         [0.001],                            #[0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5],
+        'p2_last_layer_iterations': [80],                           #
         'p2_warm_ptype_lr':         [0.05],                          # the warm prototype lr for after the second push
         'p2_warm_ptype_gamma':      [0.9],
         'p2_warm_ptype_step_size':  [10],
         # push 3
         'p3_last_layer_lr':         [0.01],
+        'p3_last_layer_iterations': [80],                           # 
         'p3_warm_ptype_lr':         [0.025],                         # the warm prototype lr for after the third push
         'p3_warm_ptype_gamma':      [0.9],
         'p3_warm_ptype_step_size':  [10],
         # push 4
         'p4_last_layer_lr':         [0.007],
+        'p4_last_layer_iterations': [80],                           # 
         'p4_warm_ptype_lr':         [0.02],                         # the warm prototype lr for after the third push
         'p4_warm_ptype_gamma':      [0.9],
         'p4_warm_ptype_step_size':  [10],
