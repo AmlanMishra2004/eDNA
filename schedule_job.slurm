@@ -15,19 +15,18 @@
 # Load versions of modules
 module load singularity
 
-echo "==========================================="
-pwd; hostname; date;
-echo "==========================================="
-
 # Evidently bash scripts execute from the path from which you call the script,
 #   not from the path of the script itself. So, if you are in the directory 
 #   bash_scripts/, then this will not work. (You would have to change it to be
 #   ../zurich_replica/src/... Instead, do: ./bash_scripts/schedule_job.sh
 
 source ../eDNA_env/bin/activate
+mkdir /slurm_outputs/$SLURM_ARRAY_JOB_ID # could be $SLURM_ARRAY_JOB_ID, idk which changes
 cd protopnet
-# Create the directory for the job array outputs
-mkdir -p ../slurm_outputs/$SLURM_ARRAY_JOB_ID # could be $SLURM_ARRAY_JOB_ID, idk which changes
+
+echo "==========================================="
+pwd; hostname; date;
+echo "==========================================="
 
 singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --job_id $SLURM_JOB_ID --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num $SLURM_ARRAY_TASK_ID
 
