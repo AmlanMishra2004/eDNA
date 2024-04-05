@@ -500,7 +500,7 @@ for trial in range(1):
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                     preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes=None #'./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
+                    root_dir_for_saving_prototypes=None, #'./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log
                 )
@@ -720,7 +720,7 @@ for trial in range(1):
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                     preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes=None #'./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
+                    root_dir_for_saving_prototypes=None, #'./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log,
                     sanity_check=False
