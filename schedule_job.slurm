@@ -8,7 +8,9 @@
 #SBATCH --mem=100gb			# Job memory request
 #SBATCH --time=72:00:00		# Time limit, hrs:min:sec
 #SBATCH --gres=gpu:1			# Request 1 gpu            
-#SBATCH --output=out.%j.log		# Standard output and error log
+#not SBATCH --output=out.%j.log		# Standard output and error log
+#SBATCH --output=slurm_outputs/log.%j_%a.out    # job id is %j, array index is %a
+#SBATCH --array=0-9%9       # creates 500 jobs, do %15 at a time. creates a separate .out file for each
 
 # Load versions of modules
 module load singularity
@@ -25,7 +27,7 @@ echo "==========================================="
 source ../eDNA_env/bin/activate
 cd protopnet
 
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py $SLURM_JOB_ID $SLURM_ARRAY_TASK_ID
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 testScript.py

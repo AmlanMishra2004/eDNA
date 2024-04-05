@@ -33,15 +33,28 @@ import ppnet as ppn
 from dataset import Sequence_Data
 from torch.utils.data import DataLoader
 
+def conditionally_save_model(model, model_dir, model_name, accu, target_accu, log=print):
+    if accu < target_accu:
+        # Do not save
+        return
+    
+    # Define the path for the new model
+    new_model_path = os.path.join(model_dir, (model_name + '_{0:.4f}.pth').format(accu))
 
-def save_model_w_condition(model, model_dir, model_name, accu, target_accu, log=print):
-    '''
-    model: this is not the multigpu model
-    '''
-    if accu > target_accu:
-        log('\tabove {0:.2f}%'.format(target_accu * 100))
-        # torch.save(obj=model.state_dict(), f=os.path.join(model_dir, (model_name + '{0:.4f}.pth').format(accu)))
-        torch.save(obj=model, f=os.path.join(model_dir, (model_name + '{0:.4f}.pth').format(accu)))
+    # Check if a model already exists with the same name
+    if os.path.exists(new_model_path):
+        # Get the accuracy of the existing model based off the file name
+        existing_accu = float(new_model_path.split('_')[-1].replace('.pth', ''))
+
+        # If the accuracy of the new model is higher than the existing model
+        if accu > existing_accu:
+            # Save the new model
+            torch.save(obj=model, f=new_model_path)
+            log('\tSaved, since accuracy {0:.2f}% is higher than existing accuracy {1:.2f}%'.format(accu * 100, existing_accu * 100))
+    else:
+        # If no model exists with the same name, save the new model
+        torch.save(obj=model, f=new_model_path)
+        log('\tSaved, since above {0:.2f}%'.format(target_accu * 100))
 
 def create_logger(log_filename, display=True):
     f = open(log_filename, 'a')
@@ -289,25 +302,25 @@ for trial in range(1):
         
         'num_warm_epochs':          [1_000_000],                    # random.randint(0, 10) # not set
         'push_gap':                 [45],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
-        'num_pushes':               [1],                            # 3-5?
-        'last_layer_iterations':    [0],                           # 85, 50, 100
+        'num_pushes':               [2],                            # 3-5?
+        'last_layer_iterations':    [200],                           # 85, 50, 100
 
         'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
         'clst_weight':              [-1],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [0.01],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*30*0.08, 1*30*0.08, 0.1*30*0.08], # OG: [30*0.08], go as high as 50x
-        'l1_weight':                [0, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005],                        #[0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
+        'l1_weight':                [0.0001],                        #[0, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005], [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
         
-        'push_start':               [1],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_start':               [37],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'p0_warm_ptype_lr':         [0.05],                          # [0.001, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                               # [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                         # the warm prototype lr for before the first push 0.35 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'p0_warm_ptype_gamma':      [0.9],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'p0_warm_ptype_gamma':      [1],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'p0_warm_ptype_step_size':  [10],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         # push 1
         'p1_last_layer_lr':         [0.001],                        #[0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'p1_warm_ptype_lr':         [0.05],                         # the warm prototype lr for after the first push
-        'p1_warm_ptype_gamma':      [0.9],
+        'p1_warm_ptype_gamma':      [1],
         'p1_warm_ptype_step_size':  [10],
         # push 2
-        'p2_last_layer_lr':         [0.001],
+        'p2_last_layer_lr':         [0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5],
         'p2_warm_ptype_lr':         [0.05],                          # the warm prototype lr for after the second push
         'p2_warm_ptype_gamma':      [0.9],
         'p2_warm_ptype_step_size':  [10],
@@ -354,12 +367,25 @@ for trial in range(1):
     del ch
     # Generate all combinations of hyperparameters
     combinations = list(itertools.product(*hyperparameters.values()))
-
-    # Iterate through all combinations
     combos = len(combinations)
+
+    # Try to get the SLURM job ID and array index
+    try:
+        job_id = int(sys.argv[1])
+        print(f"Job ID {job_id}")
+        idx = int(sys.argv[2])
+        print(f"index {idx}")
+    except:
+        idx = None
+
+    # Iterate through all combinations. 
+    # If a particular array index is supplied, then only run that combination.
     if combos > 1:
         print(f"\n\nExploring {combos} hyperparameter combinations for grid search.\n")
     for iter, combination in enumerate(combinations):
+        if idx is not None:
+            if idx != iter:
+                continue
         params = dict(zip(hyperparameters.keys(), combination))
         print(f"\nAttempting combination {iter+1}/{combos}:")
         for key, value in params.items():
@@ -442,10 +468,9 @@ for trial in range(1):
         flush = True
 
         pushes_completed = 0
-        
+
         for epoch in range(30_000):
         # for epoch in tqdm(range(30_000)):
-
 
             # print(f"Calculating validation accuracy for epoch")
             val_actual, val_predicted, val_ptype_results  = tnt.test(
@@ -458,11 +483,14 @@ for trial in range(1):
             # early_stopper(val_acc)
             print(f"Val acc before epoch {epoch}: {val_acc}", flush=flush)
             
-            # peaked around epoch [38*, 58, 73]
-            # if epoch >= 55: # 45, expected: 38
-            #     # give up on testing the model
-            #     print("giving up on achieving desired accuracy")
-            #     break
+            conditionally_save_model(
+                ppnet,
+                './ppn_saved_models',
+                model_name=str(job_id),
+                accu=val_acc,
+                target_accu=0.9,
+                log=print)
+
             # if epoch >= 31 or val_acc >= 0.99: 
             if epoch == end_epoch:
                 print(f"Stopping after epoch {epoch+1}.\n"
@@ -472,7 +500,7 @@ for trial in range(1):
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                     preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes='./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
+                    root_dir_for_saving_prototypes=None #'./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log
                 )
@@ -692,7 +720,7 @@ for trial in range(1):
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                     preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes='./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
+                    root_dir_for_saving_prototypes=None #'./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log,
                     sanity_check=False
