@@ -1,16 +1,15 @@
 #!/bin/bash
-set -e
 
 #SBATCH --job-name=ppn_model_search  		# Job name
 #SBATCH --cpus-per-task=5 		# Run on 5 cores per node
 #SBATCH --nodes=1			# Run on 1 node
-#SBATCH --ntasks=1 			# One process (shared-memory)
+#not SBATCH --ntasks=1 			# One process (shared-memory)
 #SBATCH --partition=grtx		# Select partition
 #SBATCH --mem=100gb			# Job memory request
 #SBATCH --time=72:00:00		# Time limit, hrs:min:sec
 #SBATCH --gres=gpu:1			# Request 1 gpu            
 #not SBATCH --output=out.%j.log		# Standard output and error log
-#SBATCH --output=slurm_outputs/out.%A_%j_%a.log    # job id is %j, array index is %a
+#SBATCH --output=slurm_outputs/%A_%a.out    # job id is %j, array index is %a
 #SBATCH --array=0-25%10       # creates 500 jobs, do %15 at a time. creates a separate .out file for each
 
 # Load versions of modules
