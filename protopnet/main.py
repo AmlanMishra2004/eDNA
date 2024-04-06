@@ -14,6 +14,7 @@ from sklearn import metrics
 import warnings
 
 import argparse
+import glob
 # import re
 import random
 import pandas as pd
@@ -39,24 +40,30 @@ def conditionally_save_model(model, model_dir, model_name, accu, target_accu, lo
     if accu < target_accu:
         # Do not save
         return
-    
+
     # Define the path for the new model
     new_model_path = os.path.join(model_dir, (model_name + '_{0:.4f}.pth').format(accu))
 
-    # Check if a model already exists with the same name
-    if os.path.exists(new_model_path):
-        # Get the accuracy of the existing model based off the file name
-        existing_accu = float(new_model_path.split('_')[-1].replace('.pth', ''))
+    # Get all the existing models
+    existing_models = glob.glob(os.path.join(model_dir, model_name + '_*.pth'))
 
-        # If the accuracy of the new model is higher than the existing model
-        if accu > existing_accu:
-            # Save the new model
-            torch.save(obj=model, f=new_model_path)
-            log('\tSaved, since accuracy {0:.2f}% is higher than existing accuracy {1:.2f}%'.format(accu * 100, existing_accu * 100))
-    else:
-        # If no model exists with the same name, save the new model
+    # If there are no existing models, save the new model
+    if not existing_models:
         torch.save(obj=model, f=new_model_path)
         log('\tSaved, since above {0:.2f}%'.format(target_accu * 100))
+        return
+
+    # Get the accuracy of the existing model with the highest accuracy
+    existing_accu = max(float(model_path.split('_')[-1].replace('.pth', '')) for model_path in existing_models)
+
+    # If the accuracy of the new model is higher than the existing model with the highest accuracy
+    if accu > existing_accu:
+        # Delete the existing model with the highest accuracy
+        os.remove(os.path.join(model_dir, (model_name + '_{0:.4f}.pth').format(existing_accu)))
+
+        # Save the new model
+        torch.save(obj=model, f=new_model_path)
+        log('\tSaved, since accuracy {0:.2f}% is higher than existing accuracy {1:.2f}%'.format(accu * 100, existing_accu * 100))
 
 def create_logger(log_filename, display=True):
     f = open(log_filename, 'a')
