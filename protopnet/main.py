@@ -599,7 +599,7 @@ for trial in range(1):
 
                     conditionally_save_model(
                         ppnet,
-                        'ppn_saved_models',
+                        'saved_ppn_models',
                         model_name=str(args.arr_job_id),
                         accu=val_acc,
                         target_accu=0.7,
@@ -825,7 +825,7 @@ for trial in range(1):
 
                     conditionally_save_model(
                         ppnet,
-                        'ppn_saved_models',
+                        'saved_ppn_models',
                         model_name=str(args.arr_job_id),
                         accu=val_acc,
                         target_accu=0.7,
