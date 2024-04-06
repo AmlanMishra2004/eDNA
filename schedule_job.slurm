@@ -21,6 +21,7 @@ module load singularity
 #   bash_scripts/, then this will not work. (You would have to change it to be
 #   ../zurich_replica/src/... Instead, do: ./bash_scripts/schedule_job.sh
 
+echo "SLURM_ARRAY_JOB_ID: $SLURM_ARRAY_JOB_ID"
 source ../eDNA_env/bin/activate
 mkdir -p slurm_outputs/$SLURM_ARRAY_JOB_ID
 cd protopnet
@@ -28,7 +29,6 @@ cd protopnet
 echo "==========================================="
 pwd; hostname; date;
 echo "==========================================="
-
 # --arr_job_id $SLURM_ARRAY_JOB_ID
 
 singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --job_id $SLURM_JOB_ID  --comb_num $SLURM_ARRAY_TASK_ID
