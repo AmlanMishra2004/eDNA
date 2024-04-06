@@ -1,0 +1,2 @@
+Some of these files might be from separate jobs, too, since they run for different numbers of epochs.
+None of these got there since there was an error with saving the model if it got above 90%. So, only the ones that didn't reach 90% after the first push got to go on to the second push.

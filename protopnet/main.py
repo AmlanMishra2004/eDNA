@@ -315,8 +315,8 @@ for trial in range(1):
         'l1_weight':                [0.00005],                        #[0, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005], [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
         
         'p0_warm_ptype_lr':         [0.05],                          #GOOD [0.001, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                               # [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                         # the warm prototype lr for before the first push 0.35 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
-        'p0_warm_ptype_gamma':      [1],                                #[0.7, 0.75, 0.8, 0.83, 0.86, 0.9, 0.92, 0.94, 0.96, 0.98, 1],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
-        'p0_warm_ptype_step_size':  [5],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
+        'p0_warm_ptype_gamma':      [0.75],                                #[0.7, 0.75, 0.8, 0.83, 0.86, 0.9, 0.92, 0.94, 0.96, 0.98, 1],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
+        'p0_warm_ptype_step_size':  [25],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         # push 1
         'p1_last_layer_lr':         [0.001],                        #GOOD [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
         'p1_last_layer_iterations': [80],                           #GOOD 85 for 0.001, 215 for 0.00075
@@ -346,7 +346,7 @@ for trial in range(1):
         'p5_last_layer_iterations': [80],
 
         'joint_weight_decay':       [0.0001],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-        'joint_lr_step_size':       [45], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+        'joint_lr_step_size':       [25], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_gamma':              [0.7],
         'joint_feature_lr':         [0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
         'joint_ptype_lr':           [0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
@@ -522,8 +522,7 @@ for trial in range(1):
             # if epoch >= 31 or val_acc >= 0.99: 
             if epoch == end_epoch:
                 print(f"Stopping after epoch {epoch+1}.\n"
-                    f"Final validation accuracy before push: {val_acc}")
-                print(f"Push number {pushes_completed + 1}")
+                    f"Final validation accuracy before push {pushes_completed + 1}: {val_acc}")
                 push_prototypes(
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
@@ -589,7 +588,7 @@ for trial in range(1):
 
                     conditionally_save_model(
                         ppnet,
-                        './ppn_saved_models',
+                        './protopnet/ppn_saved_models',
                         model_name=str(args.arr_job_id[0]),
                         accu=val_acc,
                         target_accu=0.9,
@@ -737,7 +736,7 @@ for trial in range(1):
 
             elif epoch >= params['push_start'] and (epoch - params['push_start']) % params['push_gap'] == 0:
                 print(f"Push epoch at epoch {epoch+1}.\n"
-                    f"Final validation accuracy before push: {val_acc}")
+                    f"Final validation accuracy before push {pushes_completed + 1}: {val_acc}")
                 print(f"Push number {pushes_completed + 1}")
                 push_prototypes(
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
@@ -815,7 +814,7 @@ for trial in range(1):
 
                     conditionally_save_model(
                         ppnet,
-                        './ppn_saved_models',
+                        './protopnet/ppn_saved_models',
                         model_name=str(args.arr_job_id[0]),
                         accu=val_acc,
                         target_accu=0.9,

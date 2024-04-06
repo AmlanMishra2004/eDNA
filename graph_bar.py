@@ -3,10 +3,19 @@
 
 import matplotlib.pyplot as plt
 import re
+import glob
+import os
 
-# with open('out.1850026.log', 'r') as file:
-with open('out.1842252.log', 'r') as file: # clst vs sep
-    data = file.read()
+# # with open('out.1850026.log', 'r') as file:
+# with open('out.1842252.log', 'r') as file: # clst vs sep
+#     data = file.read()
+
+job_ID = 1856524
+data = ""
+file_paths = glob.glob(os.path.join(f'slurm_outputs/{str(job_ID)}', '*'))
+for file_path in file_paths:
+    with open(file_path, 'r') as file:
+        data += file.read()
 
 # Split the data into different combinations
 combinations = data.split('Attempting combination')
@@ -22,7 +31,9 @@ for i in range(1, len(combinations)+1):
     # Extract the validation accuracies
     # pattern = r'Val acc before epoch 70: (\d+\.\d+)'
     # pattern = r'\(Directly after push 2\) Val acc at iteration 0: (\d+\.\d+)'
-    pattern = r'\(Directly after push\) Val acc at iteration 0: (\d+\.\d+)'
+    # pattern = r'\(Directly after push\) Val acc at iteration 0: (\d+\.\d+)'
+    pattern = f'Final validation accuracy before push: (\d+\.\d+)'
+    # pattern = f'Final validation accuracy before push (\d): (\d+\.\d+)'
     accs = re.findall(pattern, combinations[i-1])
     # Convert to floats
     accs = [float(acc) for acc in accs]
