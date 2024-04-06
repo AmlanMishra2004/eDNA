@@ -312,7 +312,7 @@ for trial in range(1):
         'latent_weight':            [0.95],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
         'num_warm_epochs':          [35],                    # random.randint(0, 10) # not set
-        'push_start':               [35],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_start':               [2],# [35],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'push_gap':                 [45],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
         'num_pushes':               [3],                            # 3-5?
 
@@ -595,10 +595,10 @@ for trial in range(1):
 
                     conditionally_save_model(
                         ppnet,
-                        './protopnet/ppn_saved_models',
+                        'ppn_saved_models',
                         model_name=str(args.arr_job_id),
                         accu=val_acc,
-                        target_accu=0.9,
+                        target_accu=0.7,
                         log=print
                     )
 
@@ -821,10 +821,10 @@ for trial in range(1):
 
                     conditionally_save_model(
                         ppnet,
-                        './protopnet/ppn_saved_models',
+                        'ppn_saved_models',
                         model_name=str(args.arr_job_id),
                         accu=val_acc,
-                        target_accu=0.9,
+                        target_accu=0.7,
                         log=print
                     )
             elif epoch < params['num_warm_epochs']:
