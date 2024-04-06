@@ -29,7 +29,9 @@ echo "==========================================="
 pwd; hostname; date;
 echo "==========================================="
 
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --job_id $SLURM_JOB_ID --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num $SLURM_ARRAY_TASK_ID
+# --arr_job_id $SLURM_ARRAY_JOB_ID
+
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --job_id $SLURM_JOB_ID  --comb_num $SLURM_ARRAY_TASK_ID
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py

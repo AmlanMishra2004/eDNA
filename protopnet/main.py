@@ -130,12 +130,15 @@ assert config['seq_target_length'] % 2 == 0, \
 # ex. python3 main.py -gpuid=0,1,2,3
 parser = argparse.ArgumentParser()
 parser.add_argument('--gpuid', nargs=1, type=str, default='0')
-parser.add_argument('--job_id', nargs=1, type=int, default=-1)
+parser.add_argument('--job_id', nargs=1, type=int, default=-1) # not used as of 4/5/23
 parser.add_argument('--arr_job_id', nargs=1, type=int, default=-1) # same for all elements in the array
 parser.add_argument('--comb_num', nargs=1, type=int, default=-1)
 args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 print(os.environ['CUDA_VISIBLE_DEVICES'])
+print(f"job_id: {args.job_id[0]}")
+print(f"comb_num: {args.comb_num[0]}")
+
 
 # base_architecture_type = re.match('^[a-z]*', base_architecture).group(0)
 
