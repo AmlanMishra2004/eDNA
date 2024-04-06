@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 #SBATCH --job-name=ppn_model_search  		# Job name
 #SBATCH --cpus-per-task=5 		# Run on 5 cores per node
