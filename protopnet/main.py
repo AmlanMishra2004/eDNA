@@ -138,6 +138,18 @@ args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 print(os.environ['CUDA_VISIBLE_DEVICES'])
 try:
+    args.comb_num = args.comb_num[0]
+except:
+    pass
+try:
+    args.arr_job_id = args.arr_job_id[0]
+except:
+    pass
+try:
+    args.job_id = args.job_id[0]
+except:
+    pass
+try:
     print(f"comb_num: {args.comb_num}")
     print(f"arr_job_id: {args.arr_job_id}")
     print(f"job_id: {args.job_id}")
