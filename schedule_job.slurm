@@ -1,7 +1,5 @@
 #!/bin/bash
 
-mkdir -p slurm_outputs/$SLURM_ARRAY_JOB_ID
-
 #SBATCH --job-name=ppn_model_search  		# Job name
 #SBATCH --cpus-per-task=5 		# Run on 5 cores per node
 #SBATCH --nodes=1			# Run on 1 node
@@ -11,7 +9,7 @@ mkdir -p slurm_outputs/$SLURM_ARRAY_JOB_ID
 #SBATCH --time=72:00:00		# Time limit, hrs:min:sec
 #SBATCH --gres=gpu:1			# Request 1 gpu            
 #not SBATCH --output=out.%j.log		# Standard output and error log
-#SBATCH --output=slurm_outputs/%A_%a.out    # job id is %j, array index is %a
+#SBATCH --output=slurm_outputs/out.%A_%a.log    # job id is %j, array index is %a
 #SBATCH --array=0-25%10       # creates 500 jobs, do %15 at a time. creates a separate .out file for each
 
 # Load versions of modules
@@ -37,7 +35,7 @@ pwd; hostname; date;
 echo "==========================================="
 # --arr_job_id $SLURM_ARRAY_JOB_ID
 
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --job_id $SLURM_JOB_ID  --comb_num $SLURM_ARRAY_TASK_ID
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --comb_num $SLURM_ARRAY_TASK_ID
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
