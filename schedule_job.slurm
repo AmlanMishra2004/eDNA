@@ -10,7 +10,7 @@ set -e
 #SBATCH --time=72:00:00		# Time limit, hrs:min:sec
 #SBATCH --gres=gpu:1			# Request 1 gpu            
 #not SBATCH --output=out.%j.log		# Standard output and error log
-#SBATCH --output=slurm_outputs/%A/out.%j_%a.log    # job id is %j, array index is %a
+#SBATCH --output=slurm_outputs/out.%A_%j_%a.log    # job id is %j, array index is %a
 #SBATCH --array=0-25%10       # creates 500 jobs, do %15 at a time. creates a separate .out file for each
 
 # Load versions of modules
