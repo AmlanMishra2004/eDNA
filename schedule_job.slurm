@@ -1,5 +1,7 @@
 #!/bin/bash
 
+mkdir -p slurm_outputs/$SLURM_ARRAY_JOB_ID
+
 #SBATCH --job-name=ppn_model_search  		# Job name
 #SBATCH --cpus-per-task=5 		# Run on 5 cores per node
 #SBATCH --nodes=1			# Run on 1 node
@@ -28,7 +30,6 @@ echo "SLURM_ARRAY_TASK_MAX: $SLURM_ARRAY_TASK_MAX"
 echo "SLURM_ARRAY_TASK_MIN: $SLURM_ARRAY_TASK_MIN"
 
 source ../eDNA_env/bin/activate
-mkdir -p slurm_outputs/$SLURM_ARRAY_JOB_ID
 cd protopnet
 
 echo "==========================================="
