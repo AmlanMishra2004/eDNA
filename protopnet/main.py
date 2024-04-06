@@ -1,5 +1,9 @@
 import argparse
 import os
+
+print(os.getcwd())
+
+pause = input("Pause")
 # import shutil
 
 import itertools
