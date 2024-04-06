@@ -21,7 +21,7 @@ module load singularity
 #   ../zurich_replica/src/... Instead, do: ./bash_scripts/schedule_job.sh
 
 source ../eDNA_env/bin/activate
-mkdir /slurm_outputs/$SLURM_ARRAY_JOB_ID # could be $SLURM_ARRAY_JOB_ID, idk which changes
+mkdir /slurm_outputs/%A
 cd protopnet
 
 echo "==========================================="
