@@ -380,8 +380,8 @@ for trial in range(1):
     ch = {key: value for key, value in hyperparameters.items() if len(value) > 1}
     print(f"Checking hyperparameters: {ch}\n\n")
     del ch
-    if args.comb_num[0] != -1:
-        print(f"Performing combination number {args.comb_num[0]}")
+    if args.comb_num != -1:
+        print(f"Performing combination number {args.comb_num}")
     # Generate all combinations of hyperparameters
     combinations = list(itertools.product(*hyperparameters.values()))
     combos = len(combinations)
@@ -393,8 +393,8 @@ for trial in range(1):
     for iter, combination in enumerate(combinations):
         # comb_num=-1 indicates that there was no combination_number supplied,
         # which means that it isn't being run in parallel using an array.
-        if args.comb_num[0] != -1: 
-            if args.comb_num[0] != iter:
+        if args.comb_num != -1: 
+            if args.comb_num != iter:
                 continue
         params = dict(zip(hyperparameters.keys(), combination))
         print(f"\nAttempting combination {iter+1}/{combos}:")
