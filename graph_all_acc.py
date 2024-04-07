@@ -6,6 +6,18 @@ import numpy as np
 import glob
 import os
 
+# Define a function to extract the number from the file name
+def extract_number(file_path):
+    print(file_path)
+    # pattern = f'slum_outputs\\out.{job_ID}_([0-9]+).log'
+    pattern = f'slurm_outputs\\\\out\\.{job_ID}_([0-9]+)\\.log'
+    match = re.search(pattern, file_path)
+    if match:
+        print(f"Match! {int(match.group(1))}")
+        return int(match.group(1))
+    else:
+        return 0
+
 # Open the file
 # with open('out.1831432.log', 'r') as file: # 9
 # with open('out.1832475.log', 'r') as file: # the single best of the 9
@@ -32,27 +44,27 @@ import os
 # with open('out.1850026.log', 'r') as file: # to find first layer lr and scheduler
 # with open('out.1851380.log', 'r') as file: # to find first layer lr
 # with open('out.1852559.log', 'r') as file: # to find ratio of clst to sep
+# with open('out.1855239.log', 'r') as file: # to find ratio of clst to sep
+# with open('out.1855241.log', 'r') as file: # to find l1
+with open('out.1855240.log', 'r') as file: # to find ptype length
 # with open('out.1852546.log', 'r') as file: # to look back (do not save) 1842207? 
-#     data = file.read()
+    data = file.read()
 
+# job_ID = 1857326
+# data = ""
+# file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
+# print(file_paths)
+# for file_path in file_paths:
+#     with open(file_path, 'r') as file:
+#         data += file.read()
 
-job_ID = 1856524
-data = ""
-file_paths = glob.glob(os.path.join(f'slurm_outputs/{str(job_ID)}', '*'))
-for file_path in file_paths:
-    with open(file_path, 'r') as file:
-        data += file.read()
-
-
-
-def moving_average(a, n=15):
+def moving_average(a, n=5):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
 # Split the data into different combinations
 combinations = data.split('Attempting combination')
-del combinations[0]
 # Create the figure
 plt.figure(figsize=(10, 6))
 
@@ -64,13 +76,16 @@ if not fancy:
     # new files start at combination 1. these loops should start at 1, they 
     # correspond directly with the combination number
 
-    for i in range(1, len(combinations)+1):
-    # for i in range(7, len(combinations)+1):
-    # for i in range(1, 4, 1):
-    # for i in [1]:
+    # for i in range(1, len(combinations)):
+    # for i in range(7, len(combinations)):
+    # for i in range(3, 26, 5):
+    # for i in range(1, 6):
+    for i in [3]: # 8, 9, 11, 14, 18
+    # for i in [5, 6, 15, 16, 25]:
         print(i)
+        # print(combinations[i])
         # Extract the validation accuracies
-        accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i-1])
+        accs = re.findall('.*Val acc before epoch \d+: (\d+\.\d+)|.*Val acc at iteration \d+: (\d+\.\d+)', combinations[i])
         accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
         # Convert to floats
         accs = [float(acc) for acc in accs]
@@ -85,21 +100,24 @@ if not fancy:
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
     plt.legend()
-    plt.ylim(.40, 1)
-    # plt.xlim(300, 1)
+    plt.ylim(.70, 1)
+    # plt.xlim(300, 500)
     plt.show()
 
 elif fancy:
     # FANCY VERSION (for use of creating graphs to put in the thesis)
 
-    labels = ['0.5', '0.1', '0.05', '0.01', '0.005', '0.001', '0.0005', '0.0001']
+    # labels = ['11', '17', '25', '29']
+    labels = [str(x) for x in range(11, 30, 2)]
+    # labels = ['0', '5e-06', '1e-05', '5e-05', '0.0001', '0.0005']
+    # labels = ['0.5', '0.1', '0.05', '0.01', '0.005', '0.001', '0.0005', '0.0001']
     # [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.95, 0.09, 0.85, 0.08, 0.75, 0.07, 0.65, 0.06, 0.55, 0.05]
 
     print(len(combinations))
     print(len(labels))
-    for i in range(1, len(combinations)+1):
+    # for i in range(1, len(combinations)):
     # for i in range(0,8):
-    # for i in [0]:
+    for i in [1, 4, 8, 10]:
         print(f"i is {i}")
         # print(combinations[i])
         # Extract the validation accuracies
@@ -110,10 +128,10 @@ elif fancy:
         # Apply moving average
         accs_smooth = moving_average(np.array(accs))
         # Add to the graph
-        plt.plot(accs_smooth, label=labels[i])  # Use the corresponding label
+        plt.plot(accs_smooth, label=labels[i-1])  # Use the corresponding label
 
     # Add labels, title, and legend
-    plt.title('Comparing Warm Prototype Learning Rates')
+    plt.title('Comparing Prototype Lengths (Smoothed, n=20)')
     plt.xlabel('Epoch')
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
