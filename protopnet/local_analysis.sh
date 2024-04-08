@@ -31,7 +31,7 @@
 #                                     -sequence 'ACGTCGTGTGTGTGTGTGTGGGT'\
 #                                     -seqclass 1
 
-# source ../eDNA_env/bin/activate
+source ../../eDNA_env/bin/activate
 
 for IND in 25 50 75 100 125 150 175 200
 do
