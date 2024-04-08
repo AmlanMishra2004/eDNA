@@ -20,7 +20,7 @@
 #                                 -sequence 'ACGTCGTGTGTGTGTGTGTGGGT'\
 #                                 -seqclass 1
 
-# module load singularity
+module load singularity
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 local_analysis.py\
 #                                     -gpuid 0\
