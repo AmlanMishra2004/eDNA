@@ -22,7 +22,6 @@
 module load singularity
 
 source ../eDNA_env/bin/activate
-cd protopnet
 
 for IND in 25 50 75 100 125 150 175 200
 do
