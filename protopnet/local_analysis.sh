@@ -35,7 +35,7 @@ source ../../eDNA_env/bin/activate
 
 for IND in 25 50 75 100 125 150 175 200
 do
-    srun -u python3 local_analysis.py\
+    singularity run --nv ~/containers/pytorch-waggoner2.simg python3 local_analysis.py\
                                     -gpuid 0\
                                     -modeldir './saved_ppn_models'\
                                     -model '1857326_0.9894.pth'\
