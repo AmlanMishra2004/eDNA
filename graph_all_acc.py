@@ -59,7 +59,7 @@ for file_path in file_paths:
     with open(file_path, 'r') as file:
         data += file.read()
 
-def moving_average(a, n=15):
+def moving_average(a, n=1):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
@@ -81,14 +81,9 @@ if not fancy:
 
     # for i in range(1, len(combinations)):
     # for i in range(7, len(combinations)):
-    for i in range(7, 36, 7):
-        # for i in range(1, 8): # 1, 8
-        # for i in range(7, 15): # 1, 8
-        # for i in range(14, 22):
-        # for i in range(21, 29):
-        # for i in range(28, 35):
-    # for i in [5, 15, 25]: # 8, 9, 11, 14, 18
-    # for i in [5, 6, 15, 16, 25]:
+    # for i in range(1, 35, 7):
+    # for i in range(1, 8):
+    for i in [7]:
         print(i)
         # print(combinations[i])
         # Extract the validation accuracies

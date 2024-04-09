@@ -36,16 +36,16 @@ import ppnet as ppn
 from dataset import Sequence_Data
 from torch.utils.data import DataLoader
 
-def conditionally_save_model(model, model_dir, model_name, accu, target_accu, log=print):
+def conditionally_save_model(model, model_dir, arr_job_id, comb_num, accu, target_accu, log=print):
     if accu < target_accu:
         # Do not save
         return
 
     # Define the path for the new model
-    new_model_path = os.path.join(model_dir, (model_name + '_{0:.4f}.pth').format(accu))
+    new_model_path = os.path.join(model_dir, (str(arr_job_id) + '_' + str(comb_num) + '_{0:.4f}.pth').format(accu))
 
     # Get all the existing models
-    existing_models = glob.glob(os.path.join(model_dir, model_name + '_*.pth'))
+    existing_models = glob.glob(os.path.join(model_dir, str(arr_job_id) + '_' + str(comb_num) + '_*.pth'))
 
     # If there are no existing models, save the new model
     if not existing_models:
@@ -59,7 +59,7 @@ def conditionally_save_model(model, model_dir, model_name, accu, target_accu, lo
     # If the accuracy of the new model is higher than the existing model with the highest accuracy
     if accu > existing_accu:
         # Delete the existing model with the highest accuracy
-        os.remove(os.path.join(model_dir, (model_name + '_{0:.4f}.pth').format(existing_accu)))
+        os.remove(os.path.join(model_dir, (str(arr_job_id) + '_' + str(comb_num) + '_{0:.4f}.pth').format(existing_accu)))
 
         # Save the new model
         torch.save(obj=model, f=new_model_path)
@@ -413,11 +413,11 @@ for trial in range(1):
         'p5_last_layer_lr':         [0.0001],
         'p5_last_layer_iterations': [80],
 
-        'joint_weight_decay':       [0.0001],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+        'joint_weight_decay':       [0.000005],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'joint_lr_step_size':       [10], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_gamma':              [0.9],
-        'joint_feature_lr':         [0.000005, 0.00001, 0.00005, 0.0001, 0.0005],                           #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
-        'joint_ptype_lr':           [0.5, 0.1, 0.05, 0.05, 0.01, 0.005, 0.001]                           #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
+        'joint_feature_lr':         [0.0000005, 0.000005],                           #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
+        'joint_ptype_lr':           [0.001, 0.0005, 0.0001, 0.00005]                           #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
     }
 
     hyperparameters['p0_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p0_warm_ptype_step_size']]
@@ -657,9 +657,10 @@ for trial in range(1):
                     conditionally_save_model(
                         ppnet,
                         'saved_ppn_models',
-                        model_name=str(args.arr_job_id),
+                        arr_job_id=str(args.arr_job_id),
+                        comb_num=str(args.comb_num),
                         accu=val_acc,
-                        target_accu=0.93,
+                        target_accu=0.95,
                         log=print
                     )
 
@@ -883,9 +884,10 @@ for trial in range(1):
                     conditionally_save_model(
                         ppnet,
                         'saved_ppn_models',
-                        model_name=str(args.arr_job_id),
+                        arr_job_id=str(args.arr_job_id),
+                        comb_num=str(args.comb_num),
                         accu=val_acc,
-                        target_accu=0.93,
+                        target_accu=0.95,
                         log=print
                     )
             elif epoch < params['num_warm_epochs']:
