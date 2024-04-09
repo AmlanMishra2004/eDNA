@@ -926,6 +926,10 @@ for trial in range(1):
             
 
         # end of training and testing for given model
+        # save the model results
+        new_model_path = os.path.join('saved_ppn_models', (str(args.arr_job_id) + '_' + str(args.comb_num) + '_end.pth'))
+        torch.save(obj=model, f=new_model_path)
+        
         del ppnet
         del ppnet_multi
         del warm_optimizer
