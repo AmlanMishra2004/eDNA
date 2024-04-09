@@ -186,6 +186,51 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
             val_dataset,
             batch_size=batch_size,
             shuffle=False)
+        
+
+        # UNCOMMENT THIS IF YOU JUST WANT TO EVALUATE A MODEL
+
+        # test_dataset = Sequence_Data(
+        #     X=test[config['seq_col']],
+        #     y=test[config['species_col']], 
+        #     insertions=config['testRandomInsertions'],
+        #     deletions=config['testRandomDeletions'],
+        #     mutation_rate=config['testMutationRate'],
+        #     encoding_mode=config['encoding_mode'],
+        #     seq_len=config['seq_target_length'])
+        # testloader = DataLoader(
+        #     test_dataset,
+        #     batch_size=batch_size,
+        #     shuffle=False)
+        # def calculate_accuracy(dataloader):
+        #     correct = 0
+        #     total = 0
+        #     with torch.no_grad():
+        #         for data in dataloader:
+        #             inputs, labels = data[0].to('cuda'), data[1].to('cuda')
+        #             outputs = model(inputs) # returns (logits, max_similarities)
+        #             # print(outputs)
+        #             # pause = input("Pause")
+        #             _, predicted = torch.max(outputs[0], 1)
+        #             total += labels.size(0)
+        #             correct += (predicted == labels).sum().item()
+        #     return correct / total
+
+        # # Calculate and print the train, validation, and test accuracies
+        # print("Calculating train acc")
+        # train_accuracy = calculate_accuracy(trainloader)
+        # print("Calculating val acc")
+        # val_accuracy = calculate_accuracy(valloader)
+        # print("Calculating test acc")
+        # test_accuracy = calculate_accuracy(testloader)
+
+        # print(f'\nTrain Accuracy: {train_accuracy}')
+        # print(f'Validation Accuracy: {val_accuracy}')
+        # print(f'Test Accuracy: {test_accuracy}')
+
+        # continue
+
+
 
         model.reset_params() # Ensure weights are cleared from the prev. fold.
         if early_stopper:
@@ -1007,69 +1052,69 @@ if __name__ == '__main__':
 
     if run_my_model:
 
-        cnn1 = models.CNN1(num_classes=num_classes)
-        smallcnn2 = models.SmallCNN2(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        linear1 = models.Linear1(
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        linear2 = models.Linear2(
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        zurich = models.Zurich(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn1_1 = models.SmallCNN1_1(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn1_2 = models.SmallCNN1_2(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn2_1 = models.SmallCNN2_1(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn2_2 = models.SmallCNN2_2(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn2_3 = models.SmallCNN2_3(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn2_4 = models.SmallCNN2_4(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn2_6 = models.SmallCNN2_6(
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn3 = models.SmallCNN3(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
-        smallcnn3_1 = models.SmallCNN3_1(
-            stride=1,
-            in_width=config['seq_target_length'],
-            num_classes=num_classes
-        )
+        # cnn1 = models.CNN1(num_classes=num_classes)
+        # smallcnn2 = models.SmallCNN2(
+        #     stride=1,
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # linear1 = models.Linear1(
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # linear2 = models.Linear2(
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # zurich = models.Zurich(
+        #     stride=1,
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # smallcnn1_1 = models.SmallCNN1_1(
+        #     stride=1,
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # smallcnn1_2 = models.SmallCNN1_2(
+        #     stride=1,
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # smallcnn2_1 = models.SmallCNN2_1(
+        #     stride=1,
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # smallcnn2_2 = models.SmallCNN2_2(
+        #     stride=1,
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # smallcnn2_3 = models.SmallCNN2_3(
+        #     stride=1,
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # smallcnn2_4 = models.SmallCNN2_4(
+        #     stride=1,
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # smallcnn2_6 = models.SmallCNN2_6(
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # smallcnn3 = models.SmallCNN3(
+        #     stride=1,
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
+        # smallcnn3_1 = models.SmallCNN3_1(
+        #     stride=1,
+        #     in_width=config['seq_target_length'],
+        #     num_classes=num_classes
+        # )
 
         # Code for loading in all of the weights of a model:
         # best_12_31 = models.Best_12_31()
@@ -1082,9 +1127,43 @@ if __name__ == '__main__':
         # model_path = "best_model_20240111_060457.pt"
 
         small_best_updated = models.Small_Best_Updated()
+        
+        # UNCOMMENT THIS IF YOU WANT TO LOAD THE WEIGHTS FOR A MODEL AND HARDCODE IT
+        # YOU SHOULD ALSO UNCOMMENT THE PORTION IN EVALUATE_MODEL()
+        # model_path = "saved_models/best_model_20240111_060457.pt"
+        # small_best.load_state_dict(torch.load(model_path))
+
+        # evaluate(
+        #     model=small_best,
+        #     train = train,
+        #     test = test,
+        #     k_folds = 5,
+        #     k_iters = 5,
+        #     epochs = 18,
+        #     oversample = True,
+        #     optimizer = torch.optim.Adam(
+        #         model.parameters(),
+        #         lr=-1,
+        #         betas=(-1, -1),
+        #         eps=-1,
+        #         weight_decay=-1,
+        #         amsgrad=False),
+        #     loss_function = nn.CrossEntropyLoss(),
+        #     early_stopper = None,
+        #     batch_size = 64,
+        #     confidence_threshold = None,
+        #     config = config,
+        #     track_fold_epochs = False,
+        #     track_test_epochs = False,
+        #     num_classes = 156,
+        #     results_file_name=None #'smallbestresults.csv'
+        # )
 
         
+
+
         # small_best.load_state_dict(torch.load(model_path))
+
 
 
         # Code for loading in all of the weights EXCEPT for
@@ -1109,12 +1188,14 @@ if __name__ == '__main__':
         #     if name != 'linear_layer.weight' and name != 'linear_layer.bias':
         #         param.requires_grad = False
 
+
+
         start_time = time.time()
         
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
         num_trials = 1
-        learning_rates = [0.002, 0.001, 0.0001] # 0.002 for 12-31 and small best, 0.005 for large best
+        learning_rates = [0.002] # 0.002 for 12-31 and small best, 0.005 for large best
         # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
         # learning_rates = [0.0005, 0.007, 0.001, 0.002]
@@ -1137,7 +1218,7 @@ if __name__ == '__main__':
         oversample_options = [True]
         # oversample_options = [True, False]
 
-        weight_decays = [0.01, 0.001, 0.0001, 0] # 4: 0.002, 0: 97.8, 94.2
+        weight_decays = [0] # 4: 0.002, 0: 97.8, 94.2
         # I explored weight decays only for the top small_best model. found 0 to be best for 0.002 lr
 
         # This list holds all of the models that will be trained and evaluated.
@@ -1176,7 +1257,7 @@ if __name__ == '__main__':
                                     test = test,
                                     k_folds = k_folds,
                                     k_iters = k_iters,
-                                    epochs = 10_000, #14, # 18
+                                    epochs = 18, #10_000, #14, # 18
                                     oversample = oversample,
                                     optimizer = torch.optim.Adam(
                                         model.parameters(),

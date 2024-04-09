@@ -46,25 +46,28 @@ def extract_number(file_path):
 # with open('out.1852559.log', 'r') as file: # to find ratio of clst to sep
 # with open('out.1855239.log', 'r') as file: # to find ratio of clst to sep
 # with open('out.1855241.log', 'r') as file: # to find l1
-with open('out.1855240.log', 'r') as file: # to find ptype length
+# with open('out.1855240.log', 'r') as file: # to find ptype length
+# with open('out.1857478.log', 'r') as file: # to find joint lrs after 2 pushes
 # with open('out.1852546.log', 'r') as file: # to look back (do not save) 1842207? 
-    data = file.read()
+    # data = file.read()
 
-# job_ID = 1857326
-# data = ""
-# file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
-# print(file_paths)
-# for file_path in file_paths:
-#     with open(file_path, 'r') as file:
-#         data += file.read()
+job_ID = 1857478
+data = ""
+file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
+print(file_paths)
+for file_path in file_paths:
+    with open(file_path, 'r') as file:
+        data += file.read()
 
-def moving_average(a, n=5):
+def moving_average(a, n=15):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
 # Split the data into different combinations
 combinations = data.split('Attempting combination')
+print(len(combinations))
+print(combinations[34])
 # Create the figure
 plt.figure(figsize=(10, 6))
 
@@ -78,9 +81,13 @@ if not fancy:
 
     # for i in range(1, len(combinations)):
     # for i in range(7, len(combinations)):
-    # for i in range(3, 26, 5):
-    # for i in range(1, 6):
-    for i in [3]: # 8, 9, 11, 14, 18
+    for i in range(7, 36, 7):
+        # for i in range(1, 8): # 1, 8
+        # for i in range(7, 15): # 1, 8
+        # for i in range(14, 22):
+        # for i in range(21, 29):
+        # for i in range(28, 35):
+    # for i in [5, 15, 25]: # 8, 9, 11, 14, 18
     # for i in [5, 6, 15, 16, 25]:
         print(i)
         # print(combinations[i])
