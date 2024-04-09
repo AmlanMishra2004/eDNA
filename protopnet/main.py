@@ -291,36 +291,36 @@ pushloader = DataLoader(
 # model = torch.load('saved_ppn_models/1857326_0.9681.pth') # 93, 88 val, test acc
 # model = torch.load('saved_ppn_models/1857326_0.9787.pth') # 94, 88 val, test acc
 # model = torch.load('saved_ppn_models/1857326_0.9894.pth') # 95.2, 90.8 val, test acc
-model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
-model.to('cuda')
+# model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
+# model.to('cuda')
 
-def calculate_accuracy(dataloader):
-    correct = 0
-    total = 0
-    with torch.no_grad():
-        for data in dataloader:
-            inputs, labels = data[0].to('cuda'), data[1].to('cuda')
-            outputs = model(inputs) # returns (logits, max_similarities)
-            # print(outputs)
-            # pause = input("Pause")
-            _, predicted = torch.max(outputs[0], 1)
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-    return correct / total
+# def calculate_accuracy(dataloader):
+#     correct = 0
+#     total = 0
+#     with torch.no_grad():
+#         for data in dataloader:
+#             inputs, labels = data[0].to('cuda'), data[1].to('cuda')
+#             outputs = model(inputs) # returns (logits, max_similarities)
+#             # print(outputs)
+#             # pause = input("Pause")
+#             _, predicted = torch.max(outputs[0], 1)
+#             total += labels.size(0)
+#             correct += (predicted == labels).sum().item()
+#     return correct / total
 
-# Calculate and print the train, validation, and test accuracies
-print("Calculating train acc")
-train_accuracy = calculate_accuracy(trainloader)
-print("Calculating val acc")
-val_accuracy = calculate_accuracy(valloader)
-print("Calculating test acc")
-test_accuracy = calculate_accuracy(testloader)
+# # Calculate and print the train, validation, and test accuracies
+# print("Calculating train acc")
+# train_accuracy = calculate_accuracy(trainloader)
+# print("Calculating val acc")
+# val_accuracy = calculate_accuracy(valloader)
+# print("Calculating test acc")
+# test_accuracy = calculate_accuracy(testloader)
 
-print(f'\nTrain Accuracy: {train_accuracy}')
-print(f'Validation Accuracy: {val_accuracy}')
-print(f'Test Accuracy: {test_accuracy}')
+# print(f'\nTrain Accuracy: {train_accuracy}')
+# print(f'Validation Accuracy: {val_accuracy}')
+# print(f'Test Accuracy: {test_accuracy}')
 
-pause = input("Pause")
+# pause = input("Pause")
 
 
 
