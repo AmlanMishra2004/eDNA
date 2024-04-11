@@ -116,7 +116,7 @@ load_model_name = args.model[0] #'10_18push0.7822.pth'
 #    experiment_run = load_model_dir.split('/')[-1]
 
 model_base_architecture = 'small_best_updated' #load_model_dir.split('/')[2]
-experiment_run = '/'.join(load_model_name)
+experiment_run = '/'.join([load_model_name])
 
 save_analysis_path = os.path.join(save_dir, model_base_architecture,
                                   experiment_run, load_model_name)
