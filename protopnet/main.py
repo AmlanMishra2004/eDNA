@@ -416,8 +416,8 @@ for trial in range(1):
         'joint_weight_decay':       [0.000005],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'joint_lr_step_size':       [10], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_gamma':              [0.9],
-        'joint_feature_lr':         [0.0000005, 0.000005],                           #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
-        'joint_ptype_lr':           [0.001, 0.0005, 0.0001, 0.00005]                           #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
+        'joint_feature_lr':         [0.0000005],                           #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
+        'joint_ptype_lr':           [0.0005]                           #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
     }
 
     hyperparameters['p0_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p0_warm_ptype_step_size']]
@@ -595,7 +595,7 @@ for trial in range(1):
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                     preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes=None, #'./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
+                    root_dir_for_saving_prototypes='./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log
                 )
@@ -811,7 +811,7 @@ for trial in range(1):
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                     preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes=None, #'./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
+                    root_dir_for_saving_prototypes='./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log,
                     sanity_check=False

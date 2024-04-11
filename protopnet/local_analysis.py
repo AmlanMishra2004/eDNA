@@ -44,8 +44,6 @@ test_sequence = args.sequence[0] #'Painted_Bunting_0081_15230.jpg'
 test_sequence_label = args.seqclass[0] #15
 target_row = args.targetrow[0]
 
-#test_image_path = os.path.join(test_image_dir, test_image_name)
-
 # load the model
 check_test_accu = False
 
