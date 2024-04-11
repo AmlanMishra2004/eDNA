@@ -1,8 +1,3 @@
-print("\n\n\n\n\n\n\n\n\n")
-print("HI THIS IS THE SCRIPTPPPTPTPT")
-print("\n\n\n\n\n\n\n\n\n")
-
-
 ##### MODEL AND DATA LOADING
 import torch
 import torch.utils.data
@@ -20,11 +15,62 @@ from log import create_logger
 
 sys.path.append('..')
 from dataset import Sequence_Data
-# from main import config
 import utils
 from torch.utils.data import DataLoader
 
 import argparse
+
+config = {
+    # IUPAC ambiguity codes represent if we are unsure if a base is one of
+    # several options. For example, 'M' means it is either 'A' or 'C'.
+    'iupac': {'a':'t', 't':'a', 'c':'g', 'g':'c',
+            'r':'y', 'y':'r', 'k':'m', 'm':'k', 
+            'b':'v', 'd':'h', 'h':'d', 'v':'b',
+            's':'w', 'w':'s', 'n':'n', 'z':'z'},
+    'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
+    'train_path': '../datasets/train.csv',
+    'test_path': '../datasets/test.csv',
+    'sep': ';',                       # separator character in the csv file
+    'species_col': 'species_cat',     # name of column containing species
+    'seq_col': 'seq',                 # name of column containing sequences
+
+    # Logged information (plus below):
+    'verbose': True,
+    'seq_count_thresh': 2,            # ex. keep species with >1 sequences
+    'trainRandomInsertions': [0,2],   # ex. between 0 and 2 per sequence
+    'trainRandomDeletions': [0,2],    # ex. between 0 and 2 per sequence
+    'trainMutationRate': 0.05,        # n*100% chance for a base to flip
+    'oversample': True,               # whether or not to oversample train # POSSIBLY OVERRIDDEN IN ARCH SEARCH
+    'encoding_mode': 'probability',   # 'probability' or 'random'
+    'push_encoding_mode': 'probability',   # 'probability' or 'random'
+    # Whether or not applying on raw unlabeled data or "clean" ref db data.
+    'applying_on_raw_data': False,
+    # Whether or not to augment the test set.
+    'augment_test_data': True,
+    'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files
+    'train_batch_size': 156, # prev. 64. 1,2,3,4,5,6,10,12,13,15,20,26,30,39,52,60,65,78,130,156,195,260,390,=780
+    'test_batch_size': 94, # 1, 2, 4, 47, 94, 188 NOT # 1,5,7,25,35,175
+    'num_classes': 156
+}
+if config['applying_on_raw_data']:
+    config['seq_target_length'] = 150
+    config['addTagAndPrimer'] = True 
+    config['addRevComplements'] = True
+elif not config['applying_on_raw_data']:
+    # Logged data:
+    config['seq_target_length'] = 70        # 70 (prev. 71) or 60 or 64
+    config['addTagAndPrimer'] = False
+    config['addRevComplements'] = False
+if config['augment_test_data']:
+    config['testRandomInsertions'] = [1,1]
+    config['testRandomDeletions'] = [1,1]
+    config['testMutationRate'] = 0.02
+elif not config['augment_test_data']:
+    config['testRandomInsertions'] = [0,0]
+    config['testRandomDeletions'] = [0,0]
+    config['testMutationRate'] = 0
+assert config['seq_target_length'] % 2 == 0, \
+    "Error: sequence length must be even"
 
 # /protopnet/local_results/epoch-35, or epoch-n/prototype_n_original.npy, prototype_n_activations.npy, prototype_n_patch.npy
 
