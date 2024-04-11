@@ -105,7 +105,7 @@ target_row = args.targetrow[0]
 # load the model
 check_test_accu = False
 
-load_model_dir = args.modeldir[0] #'./saved_models/vgg19/003/'
+load_model_dir = args.modeldir[0] #'./saved_models/vgg19/003/', now 1857326_0.9894.pth
 load_model_name = args.model[0] #'10_18push0.7822.pth'
 
 #if load_model_dir[-1] == '/':
@@ -115,8 +115,8 @@ load_model_name = args.model[0] #'10_18push0.7822.pth'
 #    model_base_architecture = load_model_dir.split('/')[-2]
 #    experiment_run = load_model_dir.split('/')[-1]
 
-model_base_architecture = load_model_dir.split('/')[2]
-experiment_run = '/'.join(load_model_dir.split('/')[3:])
+model_base_architecture = 'small_best_updated' #load_model_dir.split('/')[2]
+experiment_run = '/'.join(load_model_name)
 
 save_analysis_path = os.path.join(save_dir, model_base_architecture,
                                   experiment_run, load_model_name)
