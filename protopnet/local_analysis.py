@@ -18,11 +18,11 @@ import sys
 from helpers import makedir
 from log import create_logger
 
-# sys.path.append('..')
-# from dataset import Sequence_Data
+sys.path.append('..')
+from dataset import Sequence_Data
 # from main import config
-# import utils
-# from torch.utils.data import DataLoader
+import utils
+from torch.utils.data import DataLoader
 
 import argparse
 
