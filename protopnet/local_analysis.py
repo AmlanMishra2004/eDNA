@@ -7,25 +7,24 @@ print("\n\n\n\n\n\n\n\n\n")
 import torch
 import torch.utils.data
 # from dataset_rewrite import Sequence_Data_Alt  # REPLACED
-from torch.autograd import Variable
 import numpy as np
 import pandas as pd
 
-import re
+# import re
 
-import os
-import sys
+# import os
+# import sys
 
-from helpers import makedir
-from log import create_logger
+# from helpers import makedir
+# from log import create_logger
 
-sys.path.append('..')
-from dataset import Sequence_Data
-from main import config
-import utils
-from torch.utils.data import DataLoader
+# sys.path.append('..')
+# from dataset import Sequence_Data
+# from main import config
+# import utils
+# from torch.utils.data import DataLoader
 
-import argparse
+# import argparse
 
 # /protopnet/local_results/epoch-35, or epoch-n/prototype_n_original.npy, prototype_n_activations.npy, prototype_n_patch.npy
 
