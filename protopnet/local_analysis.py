@@ -93,7 +93,6 @@ print(args.targetrow[0])
 print(args.sequence[0])
 print(args.seqclass[0])
 print("\n\n\n\n\n\n\n\n\n")
-pause = input("Pause")
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 
