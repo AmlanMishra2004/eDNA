@@ -9,6 +9,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 from PIL import Image
+import pandas as pd
 
 import re
 
@@ -24,6 +25,12 @@ from preprocess import mean, std, preprocess_input_function, undo_preprocess_inp
 import argparse
 sys.path.append('..')
 from dataset import Sequence_Data
+from main import config
+import utils
+from torch.utils.data import DataLoader
+
+
+# /protopnet/local_results/epoch-35, or epoch-n/prototype_n_original.npy, prototype_n_activations.npy, prototype_n_patch.npy
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-gpuid', nargs=1, type=str, default='0')
@@ -87,32 +94,67 @@ class_specific = True
 #                                  std=std)
 
 # load the test data and check test accuracy
-from settings import test_dir
+sequence_length = 70
 
-sequence_length = 200
-train_dataset = Sequence_Data_Alt(
-    data_path='../datasets/split_datasets/main_train_split_80_threshold_8.csv',
-    target_sequence_length=sequence_length)
+train = pd.read_csv(config['train_path'], sep=',')
+test = pd.read_csv(config['test_path'], sep=',')
+if config['oversample']:
+    train = utils.oversample_underrepresented_species(
+        train,
+        config['species_col'],
+        config['verbose']
+    )
+train_dataset = Sequence_Data(
+    X=train[config['seq_col']],
+    y=train[config['species_col']],
+    insertions=config['trainRandomInsertions'],
+    deletions=config['trainRandomDeletions'],
+    mutation_rate=config['trainMutationRate'],
+    encoding_mode=config['encoding_mode'],
+    seq_len=config['seq_target_length']
+)
+test_dataset = Sequence_Data(
+    test[config['seq_col']],
+    test[config['species_col']],
+    insertions=[config['testRandomInsertions']],
+    deletions=config['testRandomDeletions'],
+    mutation_rate=config['testMutationRate'],
+    encoding_mode=config['encoding_mode'],
+    seq_len=config['seq_target_length']
+)
+trainloader = DataLoader(
+    train_dataset, 
+    batch_size=config['train_batch_size'],
+    shuffle=True
+)
+testloader = DataLoader(
+    test_dataset,
+    batch_size=config['test_batch_size'],
+    shuffle=False
+)
+# train_dataset = Sequence_Data_Alt(
+#     data_path='../datasets/split_datasets/main_train_split_80_threshold_8.csv',
+#     target_sequence_length=sequence_length)
 
-test_dataset = Sequence_Data_Alt(data_path=test_dir,
-            target_sequence_length=sequence_length, 
-            predefined_label_dict=train_dataset.label_dict)
+# test_dataset = Sequence_Data_Alt(data_path=test_dir,
+#             target_sequence_length=sequence_length, 
+#             predefined_label_dict=train_dataset.label_dict)
 
 if target_row is not None:
     seq, label = test_dataset.__getitem__(target_row)
     test_sequence = seq
     test_sequence_label = label
 
-if check_test_accu:
-    test_batch_size = 100
+# if check_test_accu:
+#     test_batch_size = 94
 
-    test_loader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=test_batch_size, shuffle=True,
-        num_workers=4, pin_memory=False)
-    log('test set size: {0}'.format(len(test_loader.dataset)))
+#     test_loader = torch.utils.data.DataLoader(
+#         test_dataset, batch_size=test_batch_size, shuffle=True,
+#         num_workers=4, pin_memory=False)
+#     log('test set size: {0}'.format(len(test_loader.dataset)))
 
-    accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
-                    class_specific=class_specific, log=print)
+#     accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
+#                     class_specific=class_specific, log=print)
 
 ##### SANITY CHECK
 # confirm prototype class identity
