@@ -132,8 +132,10 @@ log('load model from ' + load_model_path)
 log('model base architecture: ' + model_base_architecture)
 log('experiment run: ' + experiment_run + '\n\n\n')
 
-ppnet = torch.load(load_model_path)
-ppnet = ppnet.cuda()
+# ppnet = torch.load(load_model_path)
+ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
+ppnet.to(torch.device('cuda'))
+# ppnet = ppnet.cuda()
 # ppnet_multi = torch.nn.DataParallel(ppnet)
 
 prototype_shape = ppnet.prototype_shape
