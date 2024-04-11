@@ -1,3 +1,8 @@
+print("\n\n\n\n\n\n\n\n\n")
+print("HI THIS IS THE SCRIPTPPPTPTPT")
+print("\n\n\n\n\n\n\n\n\n")
+
+
 ##### MODEL AND DATA LOADING
 import torch
 import torch.utils.data
