@@ -24,7 +24,7 @@ import pandas as pd
 # import utils
 # from torch.utils.data import DataLoader
 
-# import argparse
+import argparse
 
 # /protopnet/local_results/epoch-35, or epoch-n/prototype_n_original.npy, prototype_n_activations.npy, prototype_n_patch.npy
 
