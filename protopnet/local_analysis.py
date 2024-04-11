@@ -230,7 +230,9 @@ else:
 ##### HELPER FUNCTIONS FOR PLOTTING
 # TODO: Change all this image saving stuff to operate on sequences
 def save_prototype(fname, epoch, index):
-    p_seq = np.load(os.path.join(load_img_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_original.npy'))
+    file_to_load = os.path.join(load_img_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_original.npy')
+    log(f"File exists: {os.path.exists(file_to_load)}")
+    p_seq = np.load(file_to_load)
     #plt.axis('off')
     np.save(fname, p_seq)
 
@@ -307,6 +309,7 @@ for i in range(1,11):
     save_act_map(os.path.join(save_analysis_path, 'most_activated_prototypes', 'top-%d_prototype_activation_map.npy' % i),
                     prototype_activation_patterns[:, sorted_indices_act[-i].item()].cpu().detach().numpy())
     log('Saving prototype')
+    log(f'Directory exists: {os.path.exists(save_analysis_path)}')
     save_prototype(os.path.join(save_analysis_path, 'most_activated_prototypes',
                                 'top-%d_activated_prototype.npy' % i),
                    start_epoch_number, sorted_indices_act[-i].item())
