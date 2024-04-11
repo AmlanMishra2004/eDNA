@@ -33,15 +33,20 @@ from torch.utils.data import DataLoader
 # /protopnet/local_results/epoch-35, or epoch-n/prototype_n_original.npy, prototype_n_activations.npy, prototype_n_patch.npy
 
 parser = argparse.ArgumentParser()
-parser.add_argument('-gpuid', nargs=1, type=str, default='0')
-parser.add_argument('-modeldir', nargs=1, type=str)
-parser.add_argument('-model', nargs=1, type=str)
-parser.add_argument('-savedir', nargs=1, type=str)
-# sequence should be the entire string representation of the target sequence
-parser.add_argument('-targetrow', nargs=1, type=int)
-parser.add_argument('-sequence', nargs=1, type=str, default='NA')
-parser.add_argument('-seqclass', nargs=1, type=int, default=-1)
+parser.add_argument('-myarg', nargs=1, type=str)
+# parser.add_argument('-gpuid', nargs=1, type=str, default='0')
+# parser.add_argument('-modeldir', nargs=1, type=str)
+# parser.add_argument('-model', nargs=1, type=str)
+# parser.add_argument('-savedir', nargs=1, type=str)
+# # sequence should be the entire string representation of the target sequence
+# parser.add_argument('-targetrow', nargs=1, type=int)
+# parser.add_argument('-sequence', nargs=1, type=str, default='NA')
+# parser.add_argument('-seqclass', nargs=1, type=int, default=-1)
 args = parser.parse_args()
+
+print(args.myarg)
+print(args.myarg[0])
+pause = input("Pause")
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 
