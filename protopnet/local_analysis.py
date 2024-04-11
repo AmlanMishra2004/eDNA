@@ -72,7 +72,7 @@ elif not config['augment_test_data']:
 assert config['seq_target_length'] % 2 == 0, \
     "Error: sequence length must be even"
 
-# /protopnet/local_results/epoch-35, or epoch-n/prototype_n_original.npy, prototype_n_activations.npy, prototype_n_patch.npy
+# /protopnet/local_results/epoch-n/[prototype_n_original.npy, prototype_n_activations.npy, prototype_n_patch.npy]
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-gpuid', nargs=1, type=str, default='0')
@@ -211,7 +211,8 @@ if target_row is not None:
 
 ##### SANITY CHECK
 # confirm prototype class identity
-load_img_dir = os.path.join(load_model_dir, 'seq')
+# load_img_dir = os.path.join('local_results')
+load_img_dir = 'local_results'
 
 prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
 
