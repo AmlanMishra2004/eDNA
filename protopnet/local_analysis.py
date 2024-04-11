@@ -303,11 +303,14 @@ array_act, sorted_indices_act = torch.sort(prototype_activations[idx])
 for i in range(1,11):
     log('top {0} activated prototype for this image:'.format(i))
     # TODO: Fix all of this to save sequences instead of images
+    log('Saving activation map')
     save_act_map(os.path.join(save_analysis_path, 'most_activated_prototypes', 'top-%d_prototype_activation_map.npy' % i),
                     prototype_activation_patterns[:, sorted_indices_act[-i].item()].cpu().detach().numpy())
+    log('Saving prototype')
     save_prototype(os.path.join(save_analysis_path, 'most_activated_prototypes',
                                 'top-%d_activated_prototype.npy' % i),
                    start_epoch_number, sorted_indices_act[-i].item())
+    log('Saving prototype patch')
     save_prototype_patch(os.path.join(save_analysis_path, 'most_activated_prototypes',
                                 'top-%d_activated_prototype_patch.npy' % i),
                    start_epoch_number, sorted_indices_act[-i].item())
