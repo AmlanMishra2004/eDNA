@@ -130,11 +130,11 @@ start_epoch_number = int(epoch_number_str)
 
 log('load model from ' + load_model_path)
 log('model base architecture: ' + model_base_architecture)
-log('experiment run: ' + experiment_run)
+log('experiment run: ' + experiment_run + '\n\n\n')
 
 ppnet = torch.load(load_model_path)
 ppnet = ppnet.cuda()
-ppnet_multi = torch.nn.DataParallel(ppnet)
+# ppnet_multi = torch.nn.DataParallel(ppnet)
 
 prototype_shape = ppnet.prototype_shape
 #max_dist = prototype_shape[1] * prototype_shape[2] * prototype_shape[3]
@@ -271,7 +271,7 @@ else:
 sequence_test = torch.tensor(test_sequence_numpy).cuda()
 labels_test = torch.tensor([test_sequence_label])
 
-logits, prototype_activations = ppnet_multi(sequence_test)
+logits, prototype_activations = ppnet(sequence_test)
 conv_output, prototype_activation_patterns = ppnet.push_forward(sequence_test)
 #prototype_activations = ppnet.distance_2_similarity(min_distances)
 #prototype_activation_patterns = ppnet.distance_2_similarity(distances)
