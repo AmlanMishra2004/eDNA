@@ -48,6 +48,6 @@ do
     
 done
 
-usage: local_analysis.py [-h] [--gpuid GPUID] [--job_id JOB_ID] [--arr_job_id ARR_JOB_ID]
-                         [--comb_num COMB_NUM]
-local_analysis.py: error: unrecognized arguments: --modeldir ./saved_ppn_models --model 1857326_0.9894.pth --savedir ./local_results/test_local_seq_25 --targetrow 25 --sequence ACGTCGTGTGTGTGTGTGTGGGT --seqclass 1
+# usage: local_analysis.py [-h] [--gpuid GPUID] [--job_id JOB_ID] [--arr_job_id ARR_JOB_ID]
+#                          [--comb_num COMB_NUM]
+# local_analysis.py: error: unrecognized arguments: --modeldir ./saved_ppn_models --model 1857326_0.9894.pth --savedir ./local_results/test_local_seq_25 --targetrow 25 --sequence ACGTCGTGTGTGTGTGTGTGGGT --seqclass 1

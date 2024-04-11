@@ -43,9 +43,10 @@ parser.add_argument('-myarg', nargs=1, type=str)
 # parser.add_argument('-sequence', nargs=1, type=str, default='NA')
 # parser.add_argument('-seqclass', nargs=1, type=int, default=-1)
 args = parser.parse_args()
-
+print("\n\n\n\n\n\n\n\n\n")
 print(args.myarg)
 print(args.myarg[0])
+print("\n\n\n\n\n\n\n\n\n")
 pause = input("Pause")
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
