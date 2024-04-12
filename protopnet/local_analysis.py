@@ -362,7 +362,7 @@ for i,c in enumerate(topk_classes.detach().cpu().numpy()):
                                     'top-%d_activated_test_patch.npy' % prototype_cnt),
                                     patch_start, patch_end, sequence_test)
 
-        log('--------------------------------------------------------------')
+        print('--------------------------------------------------------------', flush=True)
         prototype_cnt += 1
     log('***************************************************************')
 
