@@ -258,9 +258,12 @@ makedir(os.path.join(save_analysis_path, 'most_activated_prototypes'))
 
 log('Most activated 10 prototypes of this image:')
 array_act, sorted_indices_act = torch.sort(prototype_activations[idx])
+log(f"sorted_indices_act: {sorted_indices_act}")
+log(f"array_act: {array_act}")
 i = 1
+i_completed = 0
 while True: # for 10 iterations
-    if i == 11:
+    if i_completed == 11:
         break
 
     # Check if the prototype is saved. If it is not saved, skip it.
@@ -271,6 +274,7 @@ while True: # for 10 iterations
     saved_ptype_exists = os.path.exists(file_to_load)
     print(f"File {file_to_load} exists: {saved_ptype_exists}", flush=True)
     if not saved_ptype_exists:
+        i += 1
         continue
 
     log('top {0} activated prototype for this image:'.format(i))
@@ -314,7 +318,7 @@ while True: # for 10 iterations
     log('most highly activated patch by this prototype shown in the original image:')
     
     print('--------------------------------------------------------------', flush=True)
-    i += 1
+    i_completed += 1
 
 ##### PROTOTYPES FROM TOP-k CLASSES
 # (from the predicted class (which is not necessaryily the correct class))
