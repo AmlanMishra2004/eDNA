@@ -1,7 +1,7 @@
 ##### MODEL AND DATA LOADING
+import argparse
 import torch
 import torch.utils.data
-# from dataset_rewrite import Sequence_Data_Alt  # REPLACED
 import numpy as np
 import pandas as pd
 
@@ -18,7 +18,7 @@ from dataset import Sequence_Data
 import utils
 from torch.utils.data import DataLoader
 
-import argparse
+
 
 config = {
     # IUPAC ambiguity codes represent if we are unsure if a base is one of
@@ -100,53 +100,34 @@ os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 save_dir = args.savedir[0] #'./local_analysis/Painted_Bunting_Class15_0081/'
 test_sequence = args.sequence[0] #'Painted_Bunting_0081_15230.jpg'
 test_sequence_label = args.seqclass[0] #15
-target_row = args.targetrow[0]
+target_row = args.targetrow[0] # The index of the test data sequence you want to analyze.
 
 # load the model
-check_test_accu = False
-
 load_model_dir = args.modeldir[0] #'./saved_models/vgg19/003/', now 1857326_0.9894.pth
 load_model_name = args.model[0] #'10_18push0.7822.pth'
-
-#if load_model_dir[-1] == '/':
-#    model_base_architecture = load_model_dir.split('/')[-3]
-#    experiment_run = load_model_dir.split('/')[-2]
-#else:
-#    model_base_architecture = load_model_dir.split('/')[-2]
-#    experiment_run = load_model_dir.split('/')[-1]
-
 model_base_architecture = 'small_best_updated' #load_model_dir.split('/')[2]
 experiment_run = '/'.join([load_model_name])
-
+load_model_path = os.path.join(load_model_dir, load_model_name)
 save_analysis_path = os.path.join(save_dir, model_base_architecture,
                                   experiment_run, load_model_name)
 makedir(save_analysis_path)
 
+# create the logger
 log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'local_analysis.log'))
 
-load_model_path = os.path.join(load_model_dir, load_model_name)
-# start_epoch_number = int(re.search(r'\d+', load_model_name).group(0))
 start_epoch_number = 259
 
 log('load model from ' + load_model_path)
 log('model base architecture: ' + model_base_architecture)
 log('experiment run: ' + experiment_run + '\n\n\n')
 
-# ppnet = torch.load(load_model_path)
-ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
-ppnet.to(torch.device('cuda'))
-# ppnet = ppnet.cuda()
-# ppnet_multi = torch.nn.DataParallel(ppnet)
+ppnet = torch.load(load_model_path)
+ppnet = ppnet.cuda()
+# ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
+# ppnet.to(torch.device('cuda'))
 
 prototype_shape = ppnet.prototype_shape
-#max_dist = prototype_shape[1] * prototype_shape[2] * prototype_shape[3]
-
 class_specific = True
-
-# normalize = transforms.Normalize(mean=mean,
-#                                  std=std)
-
-# load the test data and check test accuracy
 sequence_length = 70
 
 train = pd.read_csv(config['train_path'], sep=',')
@@ -185,41 +166,19 @@ testloader = DataLoader(
     batch_size=config['test_batch_size'],
     shuffle=False
 )
-# train_dataset = Sequence_Data_Alt(
-#     data_path='../datasets/split_datasets/main_train_split_80_threshold_8.csv',
-#     target_sequence_length=sequence_length)
-
-# test_dataset = Sequence_Data_Alt(data_path=test_dir,
-#             target_sequence_length=sequence_length, 
-#             predefined_label_dict=train_dataset.label_dict)
 
 if target_row is not None:
     seq, label = test_dataset.__getitem__(target_row)
     test_sequence = seq
     test_sequence_label = label
 
-# if check_test_accu:
-#     test_batch_size = 94
-
-#     test_loader = torch.utils.data.DataLoader(
-#         test_dataset, batch_size=test_batch_size, shuffle=True,
-#         num_workers=4, pin_memory=False)
-#     log('test set size: {0}'.format(len(test_loader.dataset)))
-
-#     accu = tnt.test(model=ppnet_multi, dataloader=test_loader,
-#                     class_specific=class_specific, log=print)
+load_img_dir = 'local_results'
 
 ##### SANITY CHECK
 # confirm prototype class identity
-# load_img_dir = os.path.join('local_results')
-load_img_dir = 'local_results'
-
 prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
-
-
 log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
 log('Their class identities are: ' + str(prototype_img_identity))
-
 # confirm prototype connects most strongly to its own class
 prototype_max_connection = torch.argmax(ppnet.last_layer.weight, dim=0)
 prototype_max_connection = prototype_max_connection.cpu().numpy()
@@ -229,7 +188,6 @@ else:
     log('WARNING: Not all prototypes connect most strongly to their respective classes.')
 
 ##### HELPER FUNCTIONS FOR PLOTTING
-# TODO: Change all this image saving stuff to operate on sequences
 def save_prototype(fname, epoch, index):
     file_to_load = os.path.join(load_img_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_original.npy')
     log(f"File exists: {os.path.exists(file_to_load)}")
@@ -266,8 +224,7 @@ def save_act_map(fname, act_map):
     np.save(fname, act_map)
 
 
-# load the test image and forward it through the network
-# TODO: Change this stuff out to operate on a sequence
+# Load the test image and forward it through the network
 if type(test_sequence) is str:
     test_sequence_numpy = np.expand_dims(test_dataset.sequence_to_array(test_sequence), axis=0)
 else:
@@ -276,13 +233,10 @@ else:
 sequence_test = torch.tensor(test_sequence_numpy).cuda()
 labels_test = torch.tensor([test_sequence_label])
 
+log(f"Test sequence: {sequence_test}")
+log(f"Test label: {labels_test}")
 logits, prototype_activations = ppnet(sequence_test)
 conv_output, prototype_activation_patterns = ppnet.push_forward(sequence_test)
-#prototype_activations = ppnet.distance_2_similarity(min_distances)
-#prototype_activation_patterns = ppnet.distance_2_similarity(distances)
-#if ppnet.prototype_activation_function == 'linear':
-#    prototype_activations = prototype_activations + max_dist
-#    prototype_activation_patterns = prototype_activation_patterns + max_dist
 
 tables = []
 for i in range(logits.size(0)):
@@ -299,11 +253,26 @@ save_test_seq(os.path.join(save_analysis_path, 'original_seq.npy'),
                                      test_sequence_numpy)
 
 ##### MOST ACTIVATED (NEAREST) 10 PROTOTYPES OF THIS IMAGE
+# (from any class)
 makedir(os.path.join(save_analysis_path, 'most_activated_prototypes'))
 
 log('Most activated 10 prototypes of this image:')
 array_act, sorted_indices_act = torch.sort(prototype_activations[idx])
-for i in range(1,11):
+i = 1
+while True: # for 10 iterations
+    if i == 11:
+        break
+    
+    # Check if the prototype is saved. If it is not saved, skip it.
+    file_to_load = os.path.join(
+        load_img_dir,
+        'epoch-'+str(start_epoch_number),
+        'prototype_ '+ str(sorted_indices_act[-i].item()) + '_original.npy')
+    saved_ptype_exists = os.path.exists(file_to_load)
+    log(f"File exists: {saved_ptype_exists}")
+    if not saved_ptype_exists:
+        continue
+
     log('top {0} activated prototype for this image:'.format(i))
     # TODO: Fix all of this to save sequences instead of images
     log('Saving activation map')
@@ -311,9 +280,9 @@ for i in range(1,11):
                     prototype_activation_patterns[:, sorted_indices_act[-i].item()].cpu().detach().numpy())
     log('Saving prototype')
     log(f'Directory exists: {os.path.exists(save_analysis_path)}')
-    save_prototype(os.path.join(save_analysis_path, 'most_activated_prototypes',
+    save_prototype(fname=os.path.join(save_analysis_path, 'most_activated_prototypes',
                                 'top-%d_activated_prototype.npy' % i),
-                   start_epoch_number, sorted_indices_act[-i].item())
+                   epoch=start_epoch_number, index=sorted_indices_act[-i].item())
     log('Saving prototype patch')
     save_prototype_patch(os.path.join(save_analysis_path, 'most_activated_prototypes',
                                 'top-%d_activated_prototype_patch.npy' % i),
@@ -345,8 +314,10 @@ for i in range(1,11):
     log('most highly activated patch by this prototype shown in the original image:')
     
     log('--------------------------------------------------------------')
+    i += 1
 
 ##### PROTOTYPES FROM TOP-k CLASSES
+# (from the predicted class (which is not necessaryily the correct class))
 k = 30
 log('Prototypes from top-%d classes:' % k)
 topk_logits, topk_classes = torch.topk(logits[idx], k=k)
