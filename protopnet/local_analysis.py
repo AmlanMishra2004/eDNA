@@ -270,7 +270,7 @@ while True: # for 10 iterations
     file_to_load = os.path.join(
         load_img_dir,
         'epoch-'+str(start_epoch_number),
-        'prototype_ '+ str(sorted_indices_act[-i].item()) + '_original.npy')
+        'prototype_'+ str(sorted_indices_act[-i].item()) + '_original.npy')
     saved_ptype_exists = os.path.exists(file_to_load)
     print(f"File {file_to_load} exists: {saved_ptype_exists}", flush=True)
     if not saved_ptype_exists:
