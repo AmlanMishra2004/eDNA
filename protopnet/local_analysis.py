@@ -278,7 +278,6 @@ while True: # for 10 iterations
         continue
 
     log('top {0} activated prototype for this image:'.format(i))
-    # TODO: Fix all of this to save sequences instead of images
     log('Saving activation map')
     save_act_map(os.path.join(save_analysis_path, 'most_activated_prototypes', 'top-%d_prototype_activation_map.npy' % i),
                     prototype_activation_patterns[:, sorted_indices_act[-i].item()].cpu().detach().numpy())
@@ -321,6 +320,8 @@ while True: # for 10 iterations
     i_completed += 1
 
 # pause = input("PAUSE: SUCCESS!!")
+log("\n\n\n\nFinished finding nearest 10 prototypes of all prototypes.")
+log("Now, finding the top-activated prototypes for the top k classes\n\n\n\n")
 
 ##### PROTOTYPES FROM TOP-k CLASSES
 # (from the predicted class (which is not necessarily the correct class))
