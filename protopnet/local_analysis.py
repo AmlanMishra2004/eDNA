@@ -262,7 +262,7 @@ i = 1
 while True: # for 10 iterations
     if i == 11:
         break
-    
+
     # Check if the prototype is saved. If it is not saved, skip it.
     file_to_load = os.path.join(
         load_img_dir,
@@ -313,7 +313,7 @@ while True: # for 10 iterations
     
     log('most highly activated patch by this prototype shown in the original image:')
     
-    log('--------------------------------------------------------------')
+    print('--------------------------------------------------------------', flush=True)
     i += 1
 
 ##### PROTOTYPES FROM TOP-k CLASSES
