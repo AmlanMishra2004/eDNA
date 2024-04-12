@@ -269,7 +269,7 @@ while True: # for 10 iterations
         'epoch-'+str(start_epoch_number),
         'prototype_ '+ str(sorted_indices_act[-i].item()) + '_original.npy')
     saved_ptype_exists = os.path.exists(file_to_load)
-    log(f"File exists: {saved_ptype_exists}")
+    print(f"File exists: {saved_ptype_exists}", flush=True)
     if not saved_ptype_exists:
         continue
 
