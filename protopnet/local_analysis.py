@@ -327,18 +327,9 @@ while True: # for 10 iterations
 k = 3
 log('Prototypes from top-%d classes:' % k)
 topk_logits, topk_classes = torch.topk(logits[idx], k=k)
+log(f"topk_logits: {topk_logits}")
+log(f"topk_classes: {topk_classes}")
 for i,c in enumerate(topk_classes.detach().cpu().numpy()):
-
-    # # Check if the prototype is saved. If it is not saved, skip it.
-    # file_to_load = os.path.join(
-    #     load_img_dir,
-    #     'epoch-'+str(start_epoch_number),
-    #     'prototype_'+ str(sorted_indices_act[-i].item()) + '_original.npy')
-    # saved_ptype_exists = os.path.exists(file_to_load)
-    # print(f"File {file_to_load} exists: {saved_ptype_exists}", flush=True)
-    # if not saved_ptype_exists:
-    #     i += 1
-    #     continue
 
     makedir(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1)))
 
