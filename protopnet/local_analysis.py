@@ -327,8 +327,8 @@ while True: # for 10 iterations
 k = 3
 log('Prototypes from top-%d classes:' % k)
 topk_logits, topk_classes = torch.topk(logits[idx], k=k)
-log(f"topk_logits: {topk_logits}")
-log(f"topk_classes: {topk_classes}")
+log(f"topk_logits: {topk_logits}", flush=True)
+log(f"topk_classes: {topk_classes}", flush=True)
 for i,c in enumerate(topk_classes.detach().cpu().numpy()):
 
     makedir(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1)))
