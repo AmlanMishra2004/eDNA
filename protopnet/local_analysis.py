@@ -314,10 +314,10 @@ while True: # for 10 iterations
     log('activation value (similarity score): {0}'.format(array_act[-i]))
     log('last layer connection with predicted class: {0}'.format(ppnet.last_layer.weight[predicted_cls][sorted_indices_act[-i].item()]))
     
-    log('most highly activated patch of the chosen image by this prototype:')
+    # log('most highly activated patch of the chosen image by this prototype:')
     #plt.axis('off')
     
-    log('most highly activated patch by this prototype shown in the original image:')
+    # log('most highly activated patch by this prototype shown in the original image:')
     
     print('--------------------------------------------------------------', flush=True)
     i_completed += 1
@@ -351,6 +351,9 @@ for i,c in enumerate(topk_classes.detach().cpu().numpy()):
     for j in reversed(sorted_indices_cls_act.detach().cpu().numpy()):
         prototype_index = class_prototype_indices[j]
 
+        save_act_map(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1), 'top-%d_prototype_activation_map.npy' % prototype_cnt),
+                        prototype_activation_patterns[:, prototype_index].cpu().detach().numpy())
+        
         # Check if the prototype is saved. If it is not saved, skip it.
         file_to_load = os.path.join(
             save_analysis_path,
@@ -361,8 +364,6 @@ for i,c in enumerate(topk_classes.detach().cpu().numpy()):
         if not saved_ptype_exists:
             continue
 
-        save_act_map(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1), 'top-%d_prototype_activation_map.npy' % prototype_cnt),
-                        prototype_activation_patterns[:, prototype_index].cpu().detach().numpy())
         save_prototype(fname=os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1),
                                     'top-%d_activated_prototype.npy' % prototype_cnt),
                        epoch=start_epoch_number, index=prototype_index)
