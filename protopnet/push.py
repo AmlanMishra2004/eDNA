@@ -114,11 +114,12 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     #                     'prototype_vectors.npy'), 
     #         prototype_update)
     if proto_epoch_dir is not None:
-        save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
-                            prototype_network_parallel=prototype_network_parallel,
-                            search_batch_input=search_batch_input,
-                            search_y=search_y,
-                            num_classes=num_classes)
+        for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
+            save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
+                                prototype_network_parallel=prototype_network_parallel,
+                                search_batch_input=search_batch_input,
+                                search_y=search_y,
+                                num_classes=num_classes)
     # prototype_network_parallel.cuda()
     # end = time.time()
     # log('\tpush time: \t{0}'.format(end -  start))
