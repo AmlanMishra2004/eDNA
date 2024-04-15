@@ -110,6 +110,7 @@ experiment_run = '/'.join([load_model_name])
 load_model_path = os.path.join(load_model_dir, load_model_name)
 save_analysis_path = os.path.join(save_dir, model_base_architecture,
                                   experiment_run, load_model_name)
+# ./local_results/test_local_seq_$IND / small_best_updated / 1857326_0.9894.pth / 1857326_0.9894.pth
 makedir(save_analysis_path)
 
 # create the logger
@@ -221,6 +222,8 @@ def save_test_seq(fname, test_seq):
     np.save(fname, test_seq)
 
 def save_act_map(fname, act_map):
+    print(f"Saving the activation map below at {fname}")
+    print(f"Activation map: {act_map}")
     np.save(fname, act_map)
 
 
@@ -319,9 +322,10 @@ while True: # for 10 iterations
     print('--------------------------------------------------------------', flush=True)
     i_completed += 1
 
-# pause = input("PAUSE: SUCCESS!!")
 log("\n\n\n\nFinished finding nearest 10 prototypes of all prototypes.")
 log("Now, finding the top-activated prototypes for the top k classes\n\n\n\n")
+
+# ./local_results/test_local_seq_$IND / small_best_updated / 1857326_0.9894.pth / 1857326_0.9894.pth
 
 ##### PROTOTYPES FROM TOP-k CLASSES
 # (from the predicted class (which is not necessarily the correct class))
@@ -330,6 +334,7 @@ log('Prototypes from top-%d classes:' % k)
 topk_logits, topk_classes = torch.topk(logits[idx], k=k)
 print(f"topk_logits: {topk_logits}", flush=True)
 print(f"topk_classes: {topk_classes}", flush=True)
+# For each of the top k predicted classes,
 for i,c in enumerate(topk_classes.detach().cpu().numpy()):
 
     makedir(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1)))
@@ -342,6 +347,7 @@ for i,c in enumerate(topk_classes.detach().cpu().numpy()):
 
     prototype_cnt = 1
     log(f"sorted_indices_cls_act: {sorted_indices_cls_act}")
+    # For each of the activated prototypes for the current class,
     for j in reversed(sorted_indices_cls_act.detach().cpu().numpy()):
         prototype_index = class_prototype_indices[j]
 
@@ -357,9 +363,9 @@ for i,c in enumerate(topk_classes.detach().cpu().numpy()):
 
         save_act_map(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1), 'top-%d_prototype_activation_map.npy' % prototype_cnt),
                         prototype_activation_patterns[:, prototype_index].cpu().detach().numpy())
-        save_prototype(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1),
+        save_prototype(fname=os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1),
                                     'top-%d_activated_prototype.npy' % prototype_cnt),
-                       start_epoch_number, prototype_index)
+                       epoch=start_epoch_number, index=prototype_index)
         save_prototype_patch(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1),
                                     'top-%d_activated_prototype_patch.npy' % prototype_cnt),
                        start_epoch_number, prototype_index)
