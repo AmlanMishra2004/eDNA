@@ -291,7 +291,7 @@ while True: # for 10 iterations
                    epoch=start_epoch_number, index=sorted_indices_act[-i].item())
     log('Saving prototype patch')
     save_prototype_patch(os.path.join(save_analysis_path, 'most_activated_prototypes',
-                                'top-%d_activated_prototype_patch.npy' % i),
+                                'top-%d_activated_prototype_patch.npy' % i_completed),
                    start_epoch_number, sorted_indices_act[-i].item())
 
     argmax_proto_act = \
@@ -351,15 +351,15 @@ for i,c in enumerate(topk_classes.detach().cpu().numpy()):
     for j in reversed(sorted_indices_cls_act.detach().cpu().numpy()):
         prototype_index = class_prototype_indices[j]
 
-        # Check if the prototype is saved. If it is not saved, skip it.
-        file_to_load = os.path.join(
-            save_analysis_path,
-            'top-%d_class_prototypes' % (i+1),
-            'top-%d_activated_prototype.npy' % prototype_cnt)
-        saved_ptype_exists = os.path.exists(file_to_load)
-        print(f"File {file_to_load} exists: {saved_ptype_exists}", flush=True)
-        if not saved_ptype_exists:
-            continue
+        # # Check if the prototype is saved. If it is not saved, skip it.
+        # file_to_load = os.path.join(
+        #     save_analysis_path,
+        #     'top-%d_class_prototypes' % (i+1),
+        #     'top-%d_activated_prototype.npy' % prototype_cnt)
+        # saved_ptype_exists = os.path.exists(file_to_load)
+        # print(f"File {file_to_load} exists: {saved_ptype_exists}", flush=True)
+        # if not saved_ptype_exists:
+        #     continue
 
         save_act_map(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1), 'top-%d_prototype_activation_map.npy' % prototype_cnt),
                         prototype_activation_patterns[:, prototype_index].cpu().detach().numpy())
