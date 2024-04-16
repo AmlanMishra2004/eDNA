@@ -70,6 +70,8 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
 
     num_classes = prototype_network_parallel.num_classes
 
+    print(f"Global max proto act before pushing on each batch: {global_max_proto_act}")
+
     for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
         '''
         start_index_of_search keeps track of the index of the image
@@ -115,7 +117,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     #         prototype_update)
 
 
-    print(f"Global max proto act: {global_max_proto_act}")
+    print(f"Global max proto act 2: {global_max_proto_act}")
     if proto_epoch_dir is not None:
         for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
             save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
