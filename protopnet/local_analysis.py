@@ -48,9 +48,10 @@ config = {
     # Whether or not to augment the test set.
     'augment_test_data': True,
     'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files
-    'train_batch_size': 156, # prev. 64. 1,2,3,4,5,6,10,12,13,15,20,26,30,39,52,60,65,78,130,156,195,260,390,=780
-    'test_batch_size': 94, # 1, 2, 4, 47, 94, 188 NOT # 1,5,7,25,35,175
-    'num_classes': 156
+    'train_batch_size': 156, # 780 oversampled. prev. 64. 1,2,3,4,5,6,10,12,13,15,20,26,30,39,52,60,65,78,130,156,195,260,390,=780
+    'test_batch_size': 35, # 175. 1, 2, 4, 47, 94, 188 NOT # 1,5,7,25,35,175
+    'push_batch_size': 187, # 748 different from train since train is oversampled.
+    'num_classes': 156 
 }
 if config['applying_on_raw_data']:
     config['seq_target_length'] = 150
