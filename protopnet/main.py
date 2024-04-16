@@ -365,13 +365,13 @@ for trial in range(1):
     # These two are also hyperparameters. Feel free to add more values to try.
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
     num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
-    ptype_length = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    ptype_length = [15] #[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0.95], #[0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],                        #0.95 [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],                        #0.95 [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
         'num_warm_epochs':          [35+2*45],                    # random.randint(0, 10) # not set
         'push_start':               [35],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
