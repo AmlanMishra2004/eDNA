@@ -343,7 +343,9 @@ def sequence_to_array(sequence, mode):
             'x':[0.25, 0.25, 0.25, 0.25],
             'n':[0.25, 0.25, 0.25, 0.25]
         }
-        mapping = defaultdict(lambda: [0,0,0,0], mapping)
+        mapping = defaultdict(lambda: [0.25, 0.25, 0.25, 0.25], mapping)
+        # If you use all 0s, it causes issues with the concat_input_latent.
+        # mapping = defaultdict(lambda: [0,0,0,0], mapping)
 
         vector = []
         for base in sequence.lower():
