@@ -38,7 +38,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     global_max_fmap_patches = np.zeros(
         [n_prototypes,
          prototype_shape[1],
-         prototype_shape[2]])
+         prototype_shape[2]], dtype=np.float64)
 
     '''
     proto_rf_boxes and proto_bound_boxes column:
