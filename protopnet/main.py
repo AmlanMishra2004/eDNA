@@ -346,7 +346,7 @@ for trial in range(1):
     print('push set size: {0}'.format(len(pushloader.dataset)))
     print('test set size: {0}'.format(len(testloader.dataset)))
     print('train batch size: {0}'.format(config['train_batch_size']))
-    print('test batch size: {0}'.format(config['test_batch_size'])) # TODO: why is there a remainder
+    print('test batch size: {0}'.format(config['test_batch_size'])) # TODO: why is there a remainder of 13 if you print out x.shape in ppnet's forward function?
 
     num_latent_channels = 512
   

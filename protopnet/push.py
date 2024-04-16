@@ -118,7 +118,7 @@ def push_prototypes(dataloader, # pytorch dataloader
 
 
     # print(f"Global max proto act after pushing on each batch: {global_max_proto_act}")
-    
+
     # if proto_epoch_dir is not None:
     #     for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
     #         save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
@@ -160,7 +160,7 @@ def push_prototypes(dataloader, # pytorch dataloader
                 prototype_activation_function_in_numpy=prototype_activation_function_in_numpy
             )
         # print(f"global_max_proto_act after sanity check: {global_max_proto_act}") # should be a tensor of 1s, or 1/sqrt(25)
-        wait = input("PAUSE")
+        # wait = input("PAUSE")
 
 # update each prototype for current search batch
 def update_prototypes_on_batch(search_batch_input,

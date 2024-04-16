@@ -184,7 +184,7 @@ class PPNet(nn.Module):
         # print(f"\t\tShape of self.prototype_vectors[:, -8:]: {self.prototype_vectors[:, -8:].shape}")
         
     def forward(self, x):
-        print(f"SHAPE OF X: {x.shape}")
+        # print(f"SHAPE OF X: {x.shape}")
         # print("Starting forward()!")
         distances = self.prototype_distances(x)
         '''
