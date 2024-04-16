@@ -114,14 +114,14 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     #                     'prototype_vectors.npy'), 
     #         prototype_update)
 
-    
-    # if proto_epoch_dir is not None:
-    #     for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
-    #         save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
-    #                             prototype_network_parallel=prototype_network_parallel,
-    #                             search_batch_input=search_batch_input,
-    #                             search_y=search_y,
-    #                             num_classes=num_classes)
+
+    if proto_epoch_dir is not None:
+        for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
+            save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
+                                prototype_network_parallel=prototype_network_parallel,
+                                search_batch_input=search_batch_input,
+                                search_y=search_y,
+                                num_classes=num_classes)
 
     
     # prototype_network_parallel.cuda()
@@ -445,7 +445,8 @@ def save_self_activations(dir_for_saving_prototypes,
         proto_act_j = proto_act_[class_to_seq_index_dict[target_class]][:,j,:]
 
         batch_max_proto_act_j = np.amax(proto_act_j)
-        if batch_max_proto_act_j >= 0.999:
+        print(f"\tbatch_max_proto_act_j: {batch_max_proto_act_j}")
+        if batch_max_proto_act_j >= 0.99: # was 0.999
             print("Grabbed activation map for prototype {}".format(j))
             batch_argmax_proto_act_j = \
                 list(np.unravel_index(np.argmax(proto_act_j, axis=None),
