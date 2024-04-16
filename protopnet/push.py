@@ -115,6 +115,7 @@ def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0
     #         prototype_update)
 
 
+    print(f"Global max proto act: {global_max_proto_act}")
     if proto_epoch_dir is not None:
         for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
             save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
@@ -445,7 +446,7 @@ def save_self_activations(dir_for_saving_prototypes,
         proto_act_j = proto_act_[class_to_seq_index_dict[target_class]][:,j,:]
 
         batch_max_proto_act_j = np.amax(proto_act_j)
-        print(f"\tbatch_max_proto_act_j: {batch_max_proto_act_j}")
+        # print(f"\tbatch_max_proto_act_j: {batch_max_proto_act_j}")
         if batch_max_proto_act_j >= 0.99: # was 0.999
             print("Grabbed activation map for prototype {}".format(j))
             batch_argmax_proto_act_j = \
