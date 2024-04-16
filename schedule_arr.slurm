@@ -8,7 +8,7 @@
 #SBATCH --time=72:00:00		# Time limit, hrs:min:sec
 #SBATCH --gres=gpu:1			# Request 1 gpu            
 #SBATCH --output=slurm_outputs/out.%A_%a.log    # job id is %j, array index is %a
-#SBATCH --array=1-8%10       # creates 500 jobs, do %15 at a time. creates a separate .out file for each
+#SBATCH --array=1-11%10       # creates 500 jobs, do %15 at a time. creates a separate .out file for each
 
 # Load versions of modules
 module load singularity
