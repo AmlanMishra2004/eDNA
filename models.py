@@ -312,7 +312,7 @@ class Small_Best_Updated(nn.Module):
         self.conv_layers.append(nn.Dropout(0.5))
         self.conv_layers.append(nn.MaxPool1d(kernel_size=2, stride=2))
 
-        self.linear_layer = nn.Linear(17920, 156)
+        self.linear_layer = nn.Linear(128000, 225)
 
         self.leakyrelu = nn.LeakyReLU()
         self.softmax = nn.Softmax(dim=1)
@@ -323,8 +323,9 @@ class Small_Best_Updated(nn.Module):
         # print(f"Shape after conv layers: {x.shape}")
         # UNCOMMENT these lines for evaluate_model.py, and
         # COMMENT these lines for main.py!
-        # x = x.view(x.size(0), -1)
-        # x = self.linear_layer(x)
+        x = x.view(x.size(0), -1)
+        x = self.linear_layer(x)
+        x = self.softmax(x)
         return x
     
     def reset_params(self):

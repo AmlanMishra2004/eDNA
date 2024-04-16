@@ -21,7 +21,7 @@ import time
 import warnings
 
 from joblib import dump, load
-import numpy as npf
+import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
@@ -211,6 +211,8 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
                 except:
                     print(f"Error: Unable to run example through model.")
                     return
+                # print(f"{outputs}, with shape:{outputs.shape}, type: {outputs.dtype}")
+                # print(f"{labels} with shape:{labels.shape}, type: {labels.dtype}")
                 loss = loss_function(outputs, labels)  # Computes the loss.
                 loss.backward()  # Performs backward pass, updating weights.
                 optimizer.step()  # Performs optimization.
@@ -487,12 +489,12 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         all_test_targets,
         classes=list(range(num_classes))
     )
-    roc_auc = roc_auc_score(
-        all_targets_one_hot,
-        all_test_outputs,
-        multi_class='ovr',
-        average='macro'
-    )
+    # roc_auc = roc_auc_score(
+    #     all_targets_one_hot,
+    #     all_test_outputs,
+    #     multi_class='ovr',
+    #     average='macro'
+    # )
 
     if k_iters >= 1:
         avg_val_acc = sum(fold_val_metrics['acc']) / k_iters
@@ -518,7 +520,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     test_metrics = {
         'Metric': ['Micro Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1 Score', 'Weighted F1 Score',
                    'Balanced Accuracy', 'Macro OVR ROC-AUC'],
-        'Value': [test_acc, test_m_precision, test_m_recall, test_m_f1, test_w_f1, test_bal_acc, roc_auc]
+        'Value': [test_acc, test_m_precision, test_m_recall, test_m_f1, test_w_f1, test_bal_acc]
     }
     print("\nTest Metrics")
     print(tabulate(test_metrics, headers='keys', tablefmt='pretty'))
@@ -551,7 +553,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         'test_weighted_recall': test_w_recall,
         'test_weighted_f1-score': test_w_f1,
         'test_balanced_accuracy': test_bal_acc,
-        'test_macro_ovr_roc_auc_score': roc_auc,
+        # 'test_macro_ovr_roc_auc_score': roc_auc,
         'test_time': test_time,
 
         # hyperparameters
@@ -668,8 +670,8 @@ if __name__ == '__main__':
     # If set, this will skip the preprocessing and read in an existing train
     # and test csv (that are presumably already processed). For my train and 
     # test file, all semutations have been added, so no need for online augmentation.Whether set or not, it still must be truncated/padded and turned intovectors.
-    run_my_model = False
-    run_arch_search = True  # search through architectures, in addition to lr, batch size
+    run_my_model = True
+    run_arch_search = False  # search through architectures, in addition to lr, batch size
     run_autokeras = False
     run_baselines = False
 
@@ -701,12 +703,12 @@ if __name__ == '__main__':
         'applying_on_raw_data': False,
         # Whether or not to augment the test set.
         'augment_test_data': True,
-        'load_existing_train_test': True,
+        'load_existing_train_test': False,
         # use the same train/test split as Zurich, already saved in two different csv files
         'verbose': False
     }
     if config['applying_on_raw_data']:
-        config['seq_target_length'] = 8494  # TODO: try 1000, 500, 16000, 8494
+        config['seq_target_length'] = 1000  # TODO: try 1000, 500, 16000, 8494
         config['addTagAndPrimer'] = True
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
@@ -724,7 +726,7 @@ if __name__ == '__main__':
 
     cols = ['Species']
 
-    df = pd.read_csv(config['train_path'], sep=config['sep'])
+    df = pd.read_csv(config['train_path'], sep=config['sep'], index_col=None)
     le = LabelEncoder()
     df[config['species_col']] = le.fit_transform(df[config['species_col']])
     dump(le, './datasets/label_encoder.joblib')
@@ -794,8 +796,8 @@ if __name__ == '__main__':
         # pause = input("PAUSE")
 
     elif config['load_existing_train_test']:
-        train = pd.read_csv(config['train_path'], sep=',')
-        test = pd.read_csv(config['test_path'], sep=',')
+        train = pd.read_csv(config['train_path'], sep=',', index_col=None)
+        test = pd.read_csv(config['test_path'], sep=',', index_col=None)
 
     if run_arch_search:  # TODO: LR TO EXPLORE
 
@@ -846,7 +848,7 @@ if __name__ == '__main__':
         #######
         # TODO: Explore k folds and kiters. k is searching folds
         #######
-        k_folds = 5
+        k_folds = 10
         k_iters = 5  # Should be int [0 - k_folds]. Set to 0 to skip validation.
 
         # Grid search: Evaluates each model with a combination of
@@ -889,7 +891,7 @@ if __name__ == '__main__':
         num_cnn_layers = [1]
         num_channels = [512]
         conv_kernel_sizes = [7]
-        stride_lengths = [1,2]
+        stride_lengths = [1, 2]
         padding_lengths = [3]
         dropout_rates = [0.5]
         pool_kernel_sizes = [-1]  # ALWAYS kernel=2, stride=2
@@ -1982,7 +1984,7 @@ if __name__ == '__main__':
                 'train_weighted_recall': train_weighted_recall,
                 'train_weighted_f1-score': train_weighted_f1,
                 'train_balanced_accuracy': train_bal_acc,
-                'train_macro_ovr_roc_auc_score': train_roc_auc,
+                # 'train_macro_ovr_roc_auc_score': train_roc_auc,
 
                 'test_macro_f1-score': test_macro_f1,
                 'test_macro_recall': test_macro_recall,
@@ -1992,7 +1994,7 @@ if __name__ == '__main__':
                 'test_weighted_recall': test_weighted_recall,
                 'test_weighted_f1-score': test_weighted_f1,
                 'test_balanced_accuracy': test_bal_acc,
-                'test_macro_ovr_roc_auc_score': test_roc_auc,
+                # 'test_macro_ovr_roc_auc_score': test_roc_auc,
             }
 
             return results

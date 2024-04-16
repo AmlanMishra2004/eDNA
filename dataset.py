@@ -63,7 +63,7 @@ class Sequence_Data(Dataset):
         
         # Copies X and y s.t. original dataframes/series are not modified.
         self.sequences = X.to_numpy()
-        self.labels = torch.tensor(y.axes[0].values).long()
+        self.labels = torch.tensor(y.array).long()
         self.insertions = insertions
         self.deletions = deletions
         self.mutation_rate = mutation_rate
