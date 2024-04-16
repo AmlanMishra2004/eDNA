@@ -10,7 +10,7 @@ import time
 from helpers import makedir, find_high_activation_crop
 
 # push each prototype to the nearest patch in the training set
-def push_prototypes(dataloader, # pytorch dataloader (must be unnormalized in [0,1])
+def push_prototypes(dataloader, # pytorch dataloader
                     prototype_network_parallel, # pytorch network with prototype_vectors
                     class_specific=True,
                     preprocess_input_function=None, # normalize if needed
