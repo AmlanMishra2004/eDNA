@@ -813,7 +813,7 @@ for trial in range(1):
                     root_dir_for_saving_prototypes='./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log,
-                    sanity_check=False
+                    sanity_check=True
                 )
                 pushes_completed += 1
 
