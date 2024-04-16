@@ -70,7 +70,7 @@ def push_prototypes(dataloader, # pytorch dataloader
 
     num_classes = prototype_network_parallel.num_classes
 
-    print(f"Global max proto act before pushing on each batch: {global_max_proto_act}")
+    # print(f"Global max proto act before pushing on each batch: {global_max_proto_act}")
 
     for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
         '''
@@ -117,14 +117,15 @@ def push_prototypes(dataloader, # pytorch dataloader
     #         prototype_update)
 
 
-    print(f"Global max proto act after pushing on each batch: {global_max_proto_act}")
-    if proto_epoch_dir is not None:
-        for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
-            save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
-                                prototype_network_parallel=prototype_network_parallel,
-                                search_batch_input=search_batch_input,
-                                search_y=search_y,
-                                num_classes=num_classes)
+    # print(f"Global max proto act after pushing on each batch: {global_max_proto_act}")
+    
+    # if proto_epoch_dir is not None:
+    #     for push_iter, (search_batch_input, search_y) in enumerate(dataloader):
+    #         save_self_activations(dir_for_saving_prototypes=proto_epoch_dir,
+    #                             prototype_network_parallel=prototype_network_parallel,
+    #                             search_batch_input=search_batch_input,
+    #                             search_y=search_y,
+    #                             num_classes=num_classes)
 
     
     # prototype_network_parallel.cuda()
@@ -158,7 +159,7 @@ def push_prototypes(dataloader, # pytorch dataloader
                 prototype_self_act_filename_prefix=prototype_self_act_filename_prefix,
                 prototype_activation_function_in_numpy=prototype_activation_function_in_numpy
             )
-        print(f"global_max_proto_act after sanity check: {global_max_proto_act}") # should be a tensor of 1s, or 1/sqrt(25)
+        # print(f"global_max_proto_act after sanity check: {global_max_proto_act}") # should be a tensor of 1s, or 1/sqrt(25)
         wait = input("PAUSE")
 
 # update each prototype for current search batch
@@ -449,8 +450,8 @@ def save_self_activations(dir_for_saving_prototypes,
 
         batch_max_proto_act_j = np.amax(proto_act_j)
         # print(f"\tbatch_max_proto_act_j: {batch_max_proto_act_j}")
-        if batch_max_proto_act_j >= 0.99: # was 0.999
-            print("Grabbed activation map for prototype {}".format(j))
+        if batch_max_proto_act_j >= 0.999:
+            # print("Grabbed activation map for prototype {}".format(j))
             batch_argmax_proto_act_j = \
                 list(np.unravel_index(np.argmax(proto_act_j, axis=None),
                                       proto_act_j.shape))

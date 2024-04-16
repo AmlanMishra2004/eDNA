@@ -359,7 +359,6 @@ for trial in range(1):
     distributions below.
     """
 
-    # 3/23/24 getting last layer lr and epochs
     # These two are also hyperparameters. Feel free to add more values to try.
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
     num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
