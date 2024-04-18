@@ -48,18 +48,20 @@ def extract_number(file_path):
 # with open('out.1855241.log', 'r') as file: # to find l1
 # with open('out.1855240.log', 'r') as file: # to find ptype length
 # with open('out.1857478.log', 'r') as file: # to find joint lrs after 2 pushes
-# with open('out.1852546.log', 'r') as file: # to look back (do not save) 1842207? 
-    # data = file.read()
+with open('out.1875496.log', 'r') as file: # to look back (do not save) 1842207? 
+    data = file.read()
 
-job_ID = 1859293
-data = ""
-file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
-print(file_paths)
-for file_path in file_paths:
-    with open(file_path, 'r') as file:
-        data += file.read()
+avg_last_25_epochs = {}
 
-def moving_average(a, n=3):
+# job_ID = 1875497
+# data = ""
+# file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
+# print(file_paths)
+# for file_path in file_paths:
+#     with open(file_path, 'r') as file:
+#         data += file.read()
+
+def moving_average(a, n=15):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
@@ -79,11 +81,11 @@ if not fancy:
     # new files start at combination 1. these loops should start at 1, they 
     # correspond directly with the combination number
 
-    # for i in range(1, len(combinations)):
+    for i in range(1, len(combinations)):
     # for i in range(7, len(combinations)):
     # for i in range(1, 35, 7):
     # for i in range(1, 8):
-    for i in [4]:
+    # for i in [4]:
         print(i)
         # print(combinations[i])
         # Extract the validation accuracies
@@ -93,6 +95,8 @@ if not fancy:
         accs = [float(acc) for acc in accs]
         # Apply moving average
         accs_smooth = moving_average(np.array(accs))
+        if len(accs_smooth) >= 25:
+            avg_last_25_epochs[i] = np.mean(accs_smooth[-25:])
         # Add to the graph
         plt.plot(accs_smooth, label=f'Combination {i}')
 
@@ -102,24 +106,35 @@ if not fancy:
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
     plt.legend()
-    plt.ylim(.70, 1)
+    plt.ylim(.20, 1)
     # plt.xlim(300, 500)
+    plt.show()
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(avg_last_25_epochs.keys(), avg_last_25_epochs.values())
+    plt.title('Average Accuracy for Last 25 Epochs for All Combinations')
+    plt.xlabel('Combination')
+    plt.ylabel('Average Validation Accuracy')
+    plt.grid(True)
+    plt.ylim(.70, 1)
     plt.show()
 
 elif fancy:
     # FANCY VERSION (for use of creating graphs to put in the thesis)
 
+    labels = [str(x) for x in range(1, 36, 2)]
     # labels = ['11', '17', '25', '29']
-    labels = [str(x) for x in range(11, 30, 2)]
+    # labels = [str(x) for x in range(11, 30, 2)]
     # labels = ['0', '5e-06', '1e-05', '5e-05', '0.0001', '0.0005']
     # labels = ['0.5', '0.1', '0.05', '0.01', '0.005', '0.001', '0.0005', '0.0001']
     # [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.95, 0.09, 0.85, 0.08, 0.75, 0.07, 0.65, 0.06, 0.55, 0.05]
 
     print(len(combinations))
+    print(labels)
     print(len(labels))
-    # for i in range(1, len(combinations)):
+    for i in range(1, len(combinations)):
     # for i in range(0,8):
-    for i in [1, 4, 8, 10]:
+    # for i in [1, 4, 8, 10]:
         print(f"i is {i}")
         # print(combinations[i])
         # Extract the validation accuracies
@@ -129,6 +144,8 @@ elif fancy:
         accs = [float(acc) for acc in accs]
         # Apply moving average
         accs_smooth = moving_average(np.array(accs))
+        if len(accs_smooth) >= 25:
+            avg_last_25_epochs[i] = np.mean(accs_smooth[-25:])
         # Add to the graph
         plt.plot(accs_smooth, label=labels[i-1])  # Use the corresponding label
 
@@ -139,6 +156,15 @@ elif fancy:
     plt.grid(True)
     plt.legend()
     # Show the graph
+    plt.show()
+
+    plt.figure(figsize=(10, 6))
+    plt.bar(avg_last_25_epochs.keys(), avg_last_25_epochs.values())
+    plt.title('Accuracy for Different Prototype Lengths')
+    plt.xlabel('Prototype Length')
+    plt.ylabel('End Validation Accuracy')
+    plt.grid(True)
+    plt.ylim(.875, 1)
     plt.show()
 
 
