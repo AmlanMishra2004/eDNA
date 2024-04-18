@@ -85,12 +85,12 @@ class PPNet(nn.Module):
     # normalizes along each channel then returns the summed dot product
     # for each prototype
     def cosine_similarity(self, x, prototypes):
-        # Shape of X: without -8: torch.Size([64, 512, 30])(old) with: ([94, 512, 35])
-        # 64 examples (in one batch), each with 512 channels and 30 sequence length
+        # Shape of X: without -8: torch.Size([64, 512, 35])(old) with: ([94, 512, 35])
+        # 64 examples (in one batch), each with 512 channels and 35 sequence length
         # Shape of prototypes: torch.Size([1560, 512, 5])
         # 1560 prototypes (10 for each class), each with 512 channels and 5 sequence length
         # Normalize for each position in the sequence.
-        # x_normalized will have the same shape as x, but each 30-element
+        # x_normalized will have the same shape as x, but each 35-element
         # vector along the last dimension will be a unit vector. This means
         # that the Euclidean norm (or length) of each of these vectors will
         # be 1. The same for p_normalized.
@@ -141,7 +141,7 @@ class PPNet(nn.Module):
         # Run the input through the convolutional layers -> (batch=156, channels=512, width=30)
         conv_features = self.conv_features(x)
         # avg_pooled_x = F.avg_pool1d(x, kernel_size=2, stride=2)
-        # CHANGED: concatenate (stack, below) instead of average (above). Doubles the # of channels.
+        # CHANGED: concatenate (stack, below) instead of average (above). Doubles the # of channels, but that doesn't matter in the conv operation when calculating distance.
         even_indexes = [a*2 for a in range(int(x.shape[-1]/2))]
         odd_indexes = [a+1 for a in even_indexes]
         x_stacked = torch.concat([
@@ -150,8 +150,8 @@ class PPNet(nn.Module):
         ], dim=1)
 
         # The average method halved the length and kept the number of channels
-        # Concat halves the length of the raw sequences and doubles the number of channels
-        # If x were a single batch:
+        # Concat halves the length of the raw sequences and doubles the number of channels, batch size stays the same.
+        # If x were a single example in a batch:
         # [[[0, 1, 2, 3,..., 69],
         #   [0, 1, 2, 3,..., 69],
         #   [0, 1, 2, 3,..., 69],
