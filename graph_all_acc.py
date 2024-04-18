@@ -49,17 +49,18 @@ def extract_number(file_path):
 # with open('out.1855240.log', 'r') as file: # to find ptype length
 # with open('out.1857478.log', 'r') as file: # to find joint lrs after 2 pushes
 # with open('out.1875496.log', 'r') as file: # to look back (do not save) 1842207? 
-#     data = file.read()
+with open('out.1877399.log', 'r') as file: # to look back (do not save) 1842207? 
+    data = file.read()
 
 avg_last_25_epochs = {}
 
-job_ID = 1876793
-data = ""
-file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
-print(file_paths)
-for file_path in file_paths:
-    with open(file_path, 'r') as file:
-        data += file.read()
+# job_ID = 1876793
+# data = ""
+# file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
+# print(file_paths)
+# for file_path in file_paths:
+#     with open(file_path, 'r') as file:
+#         data += file.read()
 
 def moving_average(a, n=15):
     ret = np.cumsum(a, dtype=float)
@@ -73,7 +74,7 @@ combinations = data.split('Attempting combination')
 # Create the figure
 plt.figure(figsize=(10, 6))
 
-fancy = False
+fancy = True
 
 if not fancy:
     # NON FANCY  (for anaylsis)
@@ -106,7 +107,7 @@ if not fancy:
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
     plt.legend()
-    plt.ylim(.20, 1)
+    plt.ylim(.925, 1)
     # plt.xlim(300, 500)
     plt.show()
 
@@ -116,13 +117,14 @@ if not fancy:
     plt.xlabel('Combination')
     plt.ylabel('Average Validation Accuracy')
     plt.grid(True)
-    plt.ylim(.70, 1)
+    plt.ylim(.925, 1)
     plt.show()
 
 elif fancy:
     # FANCY VERSION (for use of creating graphs to put in the thesis)
 
-    labels = [str(x) for x in range(1, 36, 2)]
+    labels = [str(x) for x in range(1, 7)]
+    # labels = [str(x) for x in range(1, 36, 2)]
     # labels = ['11', '17', '25', '29']
     # labels = [str(x) for x in range(11, 30, 2)]
     # labels = ['0', '5e-06', '1e-05', '5e-05', '0.0001', '0.0005']
@@ -151,6 +153,7 @@ elif fancy:
 
     # Add labels, title, and legend
     plt.title('Comparing Prototype Lengths (Smoothed, n=20)')
+    # plt.title('Comparing Prototype Lengths (Smoothed, n=20)')
     plt.xlabel('Epoch')
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
@@ -160,8 +163,10 @@ elif fancy:
 
     plt.figure(figsize=(10, 6))
     plt.bar(avg_last_25_epochs.keys(), avg_last_25_epochs.values())
-    plt.title('Accuracy for Different Prototype Lengths')
-    plt.xlabel('Prototype Length')
+    plt.title('Accuracies When Starting Joint Training at Different Pushes')
+    # plt.title('Accuracy for Different Prototype Lengths')
+    plt.xlabel('Push Number')
+    # plt.xlabel('Prototype Length')
     plt.ylabel('End Validation Accuracy')
     plt.grid(True)
     plt.ylim(.875, 1)
