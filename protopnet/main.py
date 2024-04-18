@@ -414,7 +414,7 @@ for trial in range(1):
         'joint_weight_decay':       [0.000005],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'joint_lr_step_size':       [10], #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_gamma':              [0.9],
-        'joint_feature_lr':         [0.0000005],                           #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
+        'joint_feature_lr':         [0.00007],#[0.0000005],                           #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
         'joint_ptype_lr':           [0.0005]                           #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
     }
 

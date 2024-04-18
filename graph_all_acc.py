@@ -48,18 +48,18 @@ def extract_number(file_path):
 # with open('out.1855241.log', 'r') as file: # to find l1
 # with open('out.1855240.log', 'r') as file: # to find ptype length
 # with open('out.1857478.log', 'r') as file: # to find joint lrs after 2 pushes
-with open('out.1875496.log', 'r') as file: # to look back (do not save) 1842207? 
-    data = file.read()
+# with open('out.1875496.log', 'r') as file: # to look back (do not save) 1842207? 
+#     data = file.read()
 
 avg_last_25_epochs = {}
 
-# job_ID = 1875497
-# data = ""
-# file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
-# print(file_paths)
-# for file_path in file_paths:
-#     with open(file_path, 'r') as file:
-#         data += file.read()
+job_ID = 1876793
+data = ""
+file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
+print(file_paths)
+for file_path in file_paths:
+    with open(file_path, 'r') as file:
+        data += file.read()
 
 def moving_average(a, n=15):
     ret = np.cumsum(a, dtype=float)
