@@ -144,7 +144,7 @@ else:
         {ppnet.num_prototypes} prototypes belong identify most strongly with \
             their own class")
     
-wait = input("PAUSE")
+# wait = input("PAUSE")
 
 prototype_shape = ppnet.prototype_shape
 class_specific = True
