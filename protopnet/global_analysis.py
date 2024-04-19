@@ -1,63 +1,22 @@
+##### MODEL AND DATA LOADING
+import argparse
 import torch
 import torch.utils.data
 import numpy as np
 import pandas as pd
 
-import re
+import os
 import sys
 
-import os
-from log import create_logger
 from helpers import makedir
-
-import argparse
+from log import create_logger
 
 sys.path.append('..')
 from dataset import Sequence_Data
 import utils
 from torch.utils.data import DataLoader
 
-# Usage: python3 global_analysis.py -modeldir='./saved_models/' -model=''
-parser = argparse.ArgumentParser()
-parser.add_argument('-gpuid', nargs=1, type=str, default='0')
-parser.add_argument('-modeldir', nargs=1, type=str)
-parser.add_argument('-model', nargs=1, type=str)
-parser.add_argument('-prototypeind', nargs=1, type=int)
 
-#parser.add_argument('-dataset', nargs=1, type=str, default='cub200')
-args = parser.parse_args()
-
-os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
-load_model_dir = args.modeldir[0]
-load_model_name = args.model[0]
-prot_ind=args.prototypeind[0]
-
-load_model_path = os.path.join(load_model_dir, load_model_name)
-start_epoch_number = 259
-
-# load the model
-ppnet = torch.load(load_model_path)
-ppnet = ppnet.cuda()
-ppnet_multi = ppnet
-# ppnet_multi = torch.nn.DataParallel(ppnet)
-
-save_dir= './test_global'
-model_base_architecture = 'small_best_updated'
-experiment_run = '/'.join([load_model_name])
-save_analysis_path = os.path.join(save_dir, model_base_architecture,
-                                  experiment_run, load_model_name)
-makedir(save_analysis_path)
-log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'global_analysis.log'))
-
-
-prototype_shape = ppnet.prototype_shape
-#max_dist = prototype_shape[1] * prototype_shape[2] * prototype_shape[3]
-
-class_specific = True
-
-
-# load the data
-# must use unaugmented (original) dataset
 
 config = {
     # IUPAC ambiguity codes represent if we are unsure if a base is one of
@@ -112,8 +71,54 @@ elif not config['augment_test_data']:
 assert config['seq_target_length'] % 2 == 0, \
     "Error: sequence length must be even"
 
-sequence_length = 70
+# /protopnet/local_results/epoch-n/[prototype_n_original.npy, prototype_n_activations.npy, prototype_n_patch.npy]
 
+# Usage: python3 global_analysis.py -modeldir='./saved_models/' -model=''
+parser = argparse.ArgumentParser()
+parser.add_argument('-gpuid', nargs=1, type=str, default='0')
+parser.add_argument('-modeldir', nargs=1, type=str)
+parser.add_argument('-model', nargs=1, type=str)
+parser.add_argument('-prototypeind', nargs=1, type=int)
+
+args = parser.parse_args()
+
+os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
+
+# specify the test image to be analyzed
+save_dir = args.savedir[0] #'./local_analysis/Painted_Bunting_Class15_0081/'
+test_sequence = args.sequence[0] #'Painted_Bunting_0081_15230.jpg'
+test_sequence_label = args.seqclass[0] #15
+target_row = args.targetrow[0] # The index of the test data sequence you want to analyze.
+
+# load the model
+load_model_dir = args.modeldir[0] #'./saved_models/vgg19/003/', now 1857326_0.9894.pth
+load_model_name = args.model[0] #'10_18push0.7822.pth'
+prot_ind=args.prototypeind[0]
+model_base_architecture = 'small_best_updated' #load_model_dir.split('/')[2]
+experiment_run = '/'.join([load_model_name])
+load_model_path = os.path.join(load_model_dir, load_model_name)
+save_analysis_path = os.path.join(save_dir, model_base_architecture,
+                                  experiment_run, load_model_name)
+# ./local_results/test_local_seq_$IND / small_best_updated / 1857326_0.9894.pth / 1857326_0.9894.pth
+makedir(save_analysis_path)
+
+# create the logger
+log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'local_analysis.log'))
+
+start_epoch_number = 259
+
+log('load model from ' + load_model_path)
+log('model base architecture: ' + model_base_architecture)
+log('experiment run: ' + experiment_run + '\n\n\n')
+
+ppnet = torch.load(load_model_path)
+ppnet = ppnet.cuda()
+# ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
+# ppnet.to(torch.device('cuda'))
+
+prototype_shape = ppnet.prototype_shape
+class_specific = True
+sequence_length = 70
 
 train = pd.read_csv(config['train_path'], sep=',')
 test = pd.read_csv(config['test_path'], sep=',')
@@ -141,14 +146,36 @@ test_dataset = Sequence_Data(
     encoding_mode=config['encoding_mode'],
     seq_len=config['seq_target_length']
 )
+trainloader = DataLoader(
+    train_dataset, 
+    batch_size=config['train_batch_size'],
+    shuffle=True
+)
+testloader = DataLoader(
+    test_dataset,
+    batch_size=config['test_batch_size'],
+    shuffle=False
+)
 
-print('load model from ' + load_model_path)
-print('model base architecture: ' + model_base_architecture)
-print('experiment run: ' + experiment_run + '\n\n\n')
+if target_row is not None:
+    seq, label = test_dataset.__getitem__(target_row)
+    test_sequence = seq
+    test_sequence_label = label
 
+load_img_dir = 'local_results'
 
-class_specific = True
-load_img_dir = os.path.join(load_model_dir, 'seq')
+##### SANITY CHECK
+# confirm prototype class identity
+prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
+log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
+log('Their class identities are: ' + str(prototype_img_identity))
+# confirm prototype connects most strongly to its own class
+prototype_max_connection = torch.argmax(ppnet.last_layer.weight, dim=0)
+prototype_max_connection = prototype_max_connection.cpu().numpy()
+if np.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_prototypes:
+    log('All prototypes connect most strongly to their respective classes.')
+else:
+    log('WARNING: Not all prototypes connect most strongly to their respective classes.')
 
 ##### HELPER FUNCTIONS FOR PLOTTING
 def save_prototype(fname, epoch, index):
