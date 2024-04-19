@@ -139,7 +139,7 @@ if np.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_proto
     log('All prototypes connect most strongly to their respective classes.')
 else:
     log('WARNING: Not all prototypes connect most strongly to their respective classes.')
-    log(f"{np.sum(prototype_max_connection == prototype_img_identity)} out of \
+    print(f"{np.sum(prototype_max_connection == prototype_img_identity)} out of \
         {ppnet.num_prototypes} prototypes belong identify most strongly with \
             their own class")
     
