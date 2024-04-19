@@ -464,29 +464,28 @@ def save_self_activations(dir_for_saving_prototypes,
             original_seq_j = original_seq_j.numpy()
             center_loc = batch_argmax_proto_act_j[1]
 
-
-
-            img_space_start = center_loc * upsampling_factor
-            img_space_end = (center_loc + proto_h) * upsampling_factor # was + upsampling_factor
-
-            if img_space_start < 0 or img_space_end > original_seq_j.shape[-1]:
-                print("Error with index of start position of prototype mapped back to input space")
-                assert False
+            # # What it was originally
+            # img_space_start = (center_loc - proto_h // 2) * upsampling_factor
+            # img_space_end = (center_loc + proto_h // 2) * upsampling_factor + upsampling_factor
             # if img_space_start < 0:
             #     # Handle zero padding
             #     high_act_region = original_seq_j[:, :img_space_end]
-
             #     zeros = np.zeros((original_seq_j.shape[0], -(img_space_start)))
             #     high_act_region = np.concatenate((zeros, high_act_region), axis=-1)
 
-            # elif img_space_end > original_seq_j.shape[-1]:
-            #     # Handle zero padding
-            #     high_act_region = original_seq_j[:, img_space_start:]
-                
-            #     zeros = np.zeros((original_seq_j.shape[0], img_space_end - original_seq_j.shape[-1]))
-            #     high_act_region = np.concatenate((high_act_region, zeros), axis=-1)
-            # else:
-            #    high_act_region = original_seq_j[:, img_space_start:img_space_end]
+            # # What you suggested we change it to (what produced these prototypes)
+            # img_space_start = center_loc * upsampling_factor
+            # img_space_end = (center_loc + proto_h) * upsampling_factor # was + upsampling_factor
+            # if img_space_start < 0 or img_space_end > original_seq_j.shape[-1]:
+            #     print("Error with index of start position of prototype mapped back to input space")
+            #     assert False
+
+            # What seems logical to me?
+            img_space_start = (center_loc - proto_h // 2) * upsampling_factor
+            img_space_end = (center_loc + proto_h // 2) * upsampling_factor + 1
+            if img_space_start < 0 or img_space_end > original_seq_j.shape[-1]:
+                print("\n\n\nERROR with index of start position of prototype mapped back to input space\n\n\n")
+                assert False
 
             high_act_region = original_seq_j[:, img_space_start:img_space_end]
 

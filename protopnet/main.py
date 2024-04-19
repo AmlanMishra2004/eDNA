@@ -285,13 +285,13 @@ pushloader = DataLoader(
 )
 
 
-# UNCOMMENT BELOW TO EVALUATE A SAVED MODEL
+# UNCOMMENT BELOW TO EVALUATE A SAVED MODEL (OR TO RUN PUSH FOR ANALYSIS)
 
 # model = torch.load('saved_ppn_models/1857326_0.9681.pth') # 93, 88 val, test acc
 # model = torch.load('saved_ppn_models/1857326_0.9787.pth') # 94, 88 val, test acc
 # model = torch.load('saved_ppn_models/1857326_0.9894.pth') # 95.2, 90.8 val, test acc
-# model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
-# model.to('cuda')
+model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
+model.to('cuda')
 
 # def calculate_accuracy(dataloader):
 #     correct = 0
@@ -319,7 +319,18 @@ pushloader = DataLoader(
 # print(f'Validation Accuracy: {val_accuracy}')
 # print(f'Test Accuracy: {test_accuracy}')
 
-# pause = input("Pause")
+
+push_prototypes(
+    pushloader, # pytorch dataloader (must be unnormalized in [0,1])
+    prototype_network_parallel=model, # pytorch network with prototype_vectors
+    preprocess_input_function=None, # normalize if needed
+    root_dir_for_saving_prototypes='./local_results_2', # if not None, prototypes will be saved here # sam: previously seq_dir
+    epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
+    log=log
+)
+
+
+pause = input("Pause")
 
 
 
