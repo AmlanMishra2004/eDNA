@@ -362,7 +362,7 @@ for trial in range(1):
     # These two are also hyperparameters. Feel free to add more values to try.
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
     num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
-    ptype_length = [5] #[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    ptype_length = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
@@ -415,8 +415,8 @@ for trial in range(1):
         'joint_weight_decay':       [0.000005],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'joint_lr_step_size':       [10],                           #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_gamma':              [0.7],
-        'joint_feature_lr':         [0.001, 0.0005, 0.0001],                           #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
-        'joint_ptype_lr':           [0.05, 0.01, 0.005]                             #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
+        'joint_feature_lr':         [0.0001],                           #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
+        'joint_ptype_lr':           [0.02]                             #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
     }
 
     hyperparameters['p0_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p0_warm_ptype_step_size']]
