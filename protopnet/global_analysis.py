@@ -218,7 +218,7 @@ save_prototype_patch(os.path.join(save_analysis_path,
 #to loop over
 activation_pattern_table=[]
 proto_act={}
-test_dataset_len=int(len(test_dataset.dataset))
+test_dataset_len=int(len(test_dataset))
 print('test_dataset_len: ', test_dataset_len)
 arg_max_list=[]
 for i in range(test_dataset_len):
