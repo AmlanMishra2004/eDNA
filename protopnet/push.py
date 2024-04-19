@@ -481,8 +481,9 @@ def save_self_activations(dir_for_saving_prototypes,
             #     assert False
 
             # What seems logical to me?
-            img_space_start = (center_loc - proto_h // 2) * upsampling_factor
-            img_space_end = (center_loc + proto_h // 2) * upsampling_factor + 1
+            img_space_start = max((center_loc - proto_h // 2) * upsampling_factor, 0)
+            img_space_end = min((center_loc + proto_h // 2) * upsampling_factor + 1, original_seq_j.shape[-1])
+            # Because of max and min, neither of these errors should raise.
             if img_space_start < 0:
                 print(f"\n\n\nERROR: start index mapped back to input space ({img_space_start}) is <0\n\n\n")
                 assert False
