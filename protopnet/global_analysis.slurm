@@ -19,7 +19,7 @@ echo "==========================================="
 pwd; hostname; date;
 echo "==========================================="
 
-for IND in 0 #50 100 150 200 250 300 350 400 450 500
+for IND in 0 50 # 100 150 200 250 300 350 400 450 500
 do
     singularity run --nv ~/containers/pytorch-waggoner2.simg python3 global_analysis.py \
                                     -gpuid 0 \
