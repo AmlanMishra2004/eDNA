@@ -110,7 +110,7 @@ load_model_path = os.path.join(load_model_dir, load_model_name)
 save_analysis_path = os.path.join(save_dir, model_base_architecture,
                                   experiment_run, load_model_name)
 # ./local_results/test_local_seq_$IND / small_best_updated / 1857326_0.9894.pth / 1857326_0.9894.pth
-makedir(save_analysis_path)
+# makedir(save_analysis_path) # UNCOMMENT THIS
 
 # create the logger
 log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'local_analysis.log'))
@@ -123,8 +123,25 @@ log('experiment run: ' + experiment_run + '\n\n\n')
 
 ppnet = torch.load(load_model_path)
 ppnet = ppnet.cuda()
-# ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
-# ppnet.to(torch.device('cuda'))
+
+
+##### SANITY CHECK
+# confirm prototype class identity
+prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
+log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
+log('Their class identities are: ' + str(prototype_img_identity))
+# confirm prototype connects most strongly to its own class
+prototype_max_connection = torch.argmax(ppnet.last_layer.weight, dim=0)
+prototype_max_connection = prototype_max_connection.cpu().numpy()
+if np.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_prototypes:
+    log('All prototypes connect most strongly to their respective classes.')
+else:
+    log('WARNING: Not all prototypes connect most strongly to their respective classes.')
+    log(f"{np.sum(prototype_max_connection == prototype_img_identity)} out of \
+        {ppnet.num_prototypes} prototypes belong identify most strongly with \
+            their own class")
+    
+wait = input("PAUSE")
 
 prototype_shape = ppnet.prototype_shape
 class_specific = True
@@ -172,20 +189,8 @@ if target_row is not None:
     test_sequence = seq
     test_sequence_label = label
 
-load_img_dir = 'local_results'
+load_img_dir = 'local_results' 
 
-##### SANITY CHECK
-# confirm prototype class identity
-prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
-log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
-log('Their class identities are: ' + str(prototype_img_identity))
-# confirm prototype connects most strongly to its own class
-prototype_max_connection = torch.argmax(ppnet.last_layer.weight, dim=0)
-prototype_max_connection = prototype_max_connection.cpu().numpy()
-if np.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_prototypes:
-    log('All prototypes connect most strongly to their respective classes.')
-else:
-    log('WARNING: Not all prototypes connect most strongly to their respective classes.')
 
 ##### HELPER FUNCTIONS FOR PLOTTING
 def save_prototype(fname, epoch, index):
