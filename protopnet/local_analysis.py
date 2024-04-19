@@ -135,11 +135,11 @@ prototype_max_connection = torch.argmax(ppnet.last_layer.weight, dim=0)
 prototype_max_connection = prototype_max_connection.cpu()
 print(f"The maximum connection from each prototype to any node (class) in the classification layer is: \
     {prototype_max_connection}")
-if np.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_prototypes:
+if torch.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_prototypes:
     log('All prototypes connect most strongly to their respective classes.')
 else:
     log('WARNING: Not all prototypes connect most strongly to their respective classes.')
-    print(f"{np.sum(prototype_max_connection == prototype_img_identity)} out of \
+    print(f"{torch.sum(prototype_max_connection == prototype_img_identity)} out of \
         {ppnet.num_prototypes} prototypes belong identify most strongly with \
             their own class")
     
