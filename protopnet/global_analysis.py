@@ -84,13 +84,8 @@ args = parser.parse_args()
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 
-# specify the test image to be analyzed
-save_dir = args.savedir[0] #'./local_analysis/Painted_Bunting_Class15_0081/'
-test_sequence = args.sequence[0] #'Painted_Bunting_0081_15230.jpg'
-test_sequence_label = args.seqclass[0] #15
-target_row = args.targetrow[0] # The index of the test data sequence you want to analyze.
-
 # load the model
+save_dir= './test_global'
 load_model_dir = args.modeldir[0] #'./saved_models/vgg19/003/', now 1857326_0.9894.pth
 load_model_name = args.model[0] #'10_18push0.7822.pth'
 prot_ind=args.prototypeind[0]
@@ -156,11 +151,6 @@ testloader = DataLoader(
     batch_size=config['test_batch_size'],
     shuffle=False
 )
-
-if target_row is not None:
-    seq, label = test_dataset.__getitem__(target_row)
-    test_sequence = seq
-    test_sequence_label = label
 
 load_img_dir = 'local_results'
 
