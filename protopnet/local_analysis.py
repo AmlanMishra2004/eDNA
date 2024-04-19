@@ -110,12 +110,13 @@ load_model_path = os.path.join(load_model_dir, load_model_name)
 save_analysis_path = os.path.join(save_dir, model_base_architecture,
                                   experiment_run, load_model_name)
 # ./local_results/test_local_seq_$IND / small_best_updated / 1857326_0.9894.pth / 1857326_0.9894.pth
-# makedir(save_analysis_path) # UNCOMMENT THIS
+
+makedir(save_analysis_path) # UNCOMMENT THIS
 
 # create the logger
 log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'local_analysis.log'))
 
-start_epoch_number = 259
+start_epoch_number = 9999 # 259
 
 log('load model from ' + load_model_path)
 log('model base architecture: ' + model_base_architecture)

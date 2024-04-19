@@ -25,7 +25,7 @@ do
             -gpuid '0' \
             -modeldir './saved_ppn_models' \
             -model '1857326_0.9894.pth' \
-            -savedir "./local_results/test_local_seq_$IND" \
+            -savedir "./local_results_2/test_local_seq_$IND" \
             -targetrow $IND \
             -sequence 'ACGTCGTGTGTGTGTGTGTGGGT' \
             -seqclass 1

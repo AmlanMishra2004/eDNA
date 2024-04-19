@@ -85,7 +85,7 @@ args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 
 # load the model
-save_dir= './test_global'
+save_dir= './test_global_2'
 load_model_dir = args.modeldir[0] #'./saved_models/vgg19/003/', now 1857326_0.9894.pth
 load_model_name = args.model[0] #'10_18push0.7822.pth'
 prot_ind=args.prototypeind[0]
@@ -100,7 +100,7 @@ makedir(save_analysis_path)
 # create the logger
 log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'local_analysis.log'))
 
-start_epoch_number = 259
+start_epoch_number = 9999 # 259
 
 log('load model from ' + load_model_path)
 log('model base architecture: ' + model_base_architecture)
