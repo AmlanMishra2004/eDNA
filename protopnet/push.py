@@ -483,8 +483,11 @@ def save_self_activations(dir_for_saving_prototypes,
             # What seems logical to me?
             img_space_start = (center_loc - proto_h // 2) * upsampling_factor
             img_space_end = (center_loc + proto_h // 2) * upsampling_factor + 1
-            if img_space_start < 0 or img_space_end > original_seq_j.shape[-1]:
-                print("\n\n\nERROR with index of start position of prototype mapped back to input space\n\n\n")
+            if img_space_start < 0:
+                print(f"\n\n\nERROR: start index mapped back to input space ({img_space_start}) is <0\n\n\n")
+                assert False
+            if img_space_end > original_seq_j.shape[-1]:
+                print(f"\n\n\nERROR: end index mapped back to input space ({img_space_end}) is past the end of the original sequence length {original_seq_j.shape[-1]}\n\n\n")
                 assert False
 
             high_act_region = original_seq_j[:, img_space_start:img_space_end]
