@@ -49,27 +49,27 @@ def extract_number(file_path):
 # with open('out.1855240.log', 'r') as file: # to find ptype length
 # with open('out.1857478.log', 'r') as file: # to find joint lrs after 2 pushes
 # with open('out.1875496.log', 'r') as file: # to look back (do not save) 1842207? 
-with open('out.1877399.log', 'r') as file: # to look back (do not save) 1842207? 
-    data = file.read()
+# with open('out.1877399.log', 'r') as file: # to look back (do not save) 1842207? 
+#     data = file.read()
 
 avg_last_25_epochs = {}
 
-# job_ID = 1876793
-# data = ""
-# file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
-# print(file_paths)
-# for file_path in file_paths:
-#     with open(file_path, 'r') as file:
-#         data += file.read()
+job_ID = 1875497
+data = ""
+file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
+print(file_paths)
+for file_path in file_paths:
+    with open(file_path, 'r') as file:
+        data += file.read()
 
-def moving_average(a, n=15):
+def moving_average(a, n=3):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
 # Split the data into different combinations
 combinations = data.split('Attempting combination')
-# print(len(combinations))
+print(len(combinations))
 # print(combinations[34])
 # Create the figure
 plt.figure(figsize=(10, 6))
@@ -123,7 +123,8 @@ if not fancy:
 elif fancy:
     # FANCY VERSION (for use of creating graphs to put in the thesis)
 
-    labels = [str(x) for x in range(1, 7)]
+    labels = [str(x) for x in range(1, 36, 2)]
+    # labels = [format(x*0.1, '.1f') for x in range(0, 11)]
     # labels = [str(x) for x in range(1, 36, 2)]
     # labels = ['11', '17', '25', '29']
     # labels = [str(x) for x in range(11, 30, 2)]
@@ -131,12 +132,14 @@ elif fancy:
     # labels = ['0.5', '0.1', '0.05', '0.01', '0.005', '0.001', '0.0005', '0.0001']
     # [0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1, 0.95, 0.09, 0.85, 0.08, 0.75, 0.07, 0.65, 0.06, 0.55, 0.05]
 
+    print(f"Labels: {labels}")
+
     print(len(combinations))
     print(labels)
     print(len(labels))
     for i in range(1, len(combinations)):
     # for i in range(0,8):
-    # for i in [1, 4, 8, 10]:
+    # for i in [3]:
         print(f"i is {i}")
         # print(combinations[i])
         # Extract the validation accuracies
@@ -144,15 +147,20 @@ elif fancy:
         accs = [acc[0] if acc[0] != '' else acc[1] for acc in accs]
         # Convert to floats
         accs = [float(acc) for acc in accs]
+        print(f"Length of accs: {len(accs)}")
         # Apply moving average
         accs_smooth = moving_average(np.array(accs))
+        print(np.mean(accs_smooth[470:489]))
         if len(accs_smooth) >= 25:
-            avg_last_25_epochs[i] = np.mean(accs_smooth[-25:])
+            if i != 18:
+                avg_last_25_epochs[i] = np.mean(accs_smooth[470:489])#-25: 470:489
+            else:
+                avg_last_25_epochs[i] = np.mean(accs_smooth[710:731])#-25: 470:489
         # Add to the graph
         plt.plot(accs_smooth, label=labels[i-1])  # Use the corresponding label
 
     # Add labels, title, and legend
-    plt.title('Comparing Prototype Lengths (Smoothed, n=20)')
+    plt.title('Comparing Latent Weights (Smoothed, n=15)')
     # plt.title('Comparing Prototype Lengths (Smoothed, n=20)')
     plt.xlabel('Epoch')
     plt.ylabel('Validation Accuracy')
@@ -161,16 +169,47 @@ elif fancy:
     # Show the graph
     plt.show()
 
-    plt.figure(figsize=(10, 6))
-    plt.bar(avg_last_25_epochs.keys(), avg_last_25_epochs.values())
-    plt.title('Accuracies When Starting Joint Training at Different Pushes')
-    # plt.title('Accuracy for Different Prototype Lengths')
-    plt.xlabel('Push Number')
-    # plt.xlabel('Prototype Length')
+    bars = []  # List to store the bars
+    bar_labels = []  # List to store the bar labels
+
+    for i in avg_last_25_epochs.keys():
+        bar = plt.bar(i, avg_last_25_epochs[i], color='C0')
+        bars.append(bar)  # Add the bar to the list
+        bar_labels.append(labels[i-1])  # Add the corresponding label to the list
+
+    plt.title('Latent Weight vs. Raw Input Weight')
+    plt.xlabel('Latent Weight')
     plt.ylabel('End Validation Accuracy')
     plt.grid(True)
-    plt.ylim(.875, 1)
+    plt.ylim(.90, 1)
+    # Set the x-axis labels to the 'labels' list
+    plt.xticks(ticks=range(1, len(labels)+1), labels=labels)
     plt.show()
+
+    # plt.figure(figsize=(7, 4))
+    # plt.bar(avg_last_25_epochs.keys(), avg_last_25_epochs.values()) # np.ndarray(list(avg_last_25_epochs.keys()))*0.1
+    # # plt.bar(avg_last_25_epochs.keys(), avg_last_25_epochs.values())
+    # plt.title('Latent Weight vs. Raw Input Weight (Smoothed, n=15)')
+    # # plt.title('Accuracies When Starting Joint Training at Different Pushes')
+    # # plt.title('Accuracy for Different Prototype Lengths')
+    # plt.xlabel('Latent Weight')
+    # # plt.xlabel('Push Number')
+    # # plt.xlabel('Prototype Length')
+    # plt.ylabel('End Validation Accuracy')
+    # plt.grid(True)
+    # plt.ylim(.875, 1)
+    # plt.show()
+
+    # plt.figure(figsize=(10, 6))
+    # for i in avg_last_25_epochs.keys():
+    #     plt.bar(i, avg_last_25_epochs[i], label=labels[i-1])
+    # plt.title('Latent Weight vs. Raw Input Weight (Smoothed, n=15)')
+    # plt.xlabel('Latent Weight')
+    # plt.ylabel('End Validation Accuracy')
+    # plt.grid(True)
+    # plt.ylim(.875, 1)
+    # plt.legend()  # Add this line to show the legend in the bar plot
+    # plt.show()
 
 
 
