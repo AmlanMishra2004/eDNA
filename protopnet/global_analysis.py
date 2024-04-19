@@ -152,7 +152,7 @@ testloader = DataLoader(
     shuffle=False
 )
 
-load_img_dir = 'local_results'
+load_img_dir = 'local_results_2'
 
 ##### SANITY CHECK
 # confirm prototype class identity
