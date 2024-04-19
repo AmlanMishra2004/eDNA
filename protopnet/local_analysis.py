@@ -191,7 +191,7 @@ if target_row is not None:
     test_sequence = seq
     test_sequence_label = label
 
-load_img_dir = 'local_results' 
+load_img_dir = 'local_results_2' 
 
 
 ##### HELPER FUNCTIONS FOR PLOTTING
