@@ -19,7 +19,7 @@ echo "==========================================="
 pwd; hostname; date;
 echo "==========================================="
 
-for IND in 25 50 75 100 125 150 175 # up to 175, test set size
+for IND in 25 50 75 100 125 150 175 # up to 156*3, number of prototypes
 do
     singularity run --nv ~/containers/pytorch-waggoner2.simg python3 global_analysis.py \
                                     -gpuid 0 \
