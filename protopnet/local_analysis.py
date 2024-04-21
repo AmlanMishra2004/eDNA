@@ -26,7 +26,7 @@ config = {
             'b':'v', 'd':'h', 'h':'d', 'v':'b',
             's':'w', 'w':'s', 'n':'n', 'z':'z'},
     'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
-    'train_path': '../datasets/train.csv',
+    'train_path': '../datasets/train_no_dup.csv',
     'test_path': '../datasets/test.csv',
     'sep': ';',                       # separator character in the csv file
     'species_col': 'species_cat',     # name of column containing species
@@ -192,7 +192,28 @@ if target_row is not None:
     test_sequence = seq
     test_sequence_label = label
 
-load_img_dir = 'local_results_2' 
+def array_to_str(arr):
+    # print(f"arr.shape: {arr.shape}")
+    res_str = ""
+    for i in range(arr.shape[1]):
+        if arr[0, i] == 1:
+            res_str = res_str + 'A'
+        elif arr[1, i] == 1:
+            res_str = res_str + 'T'
+        elif arr[2, i] == 1:
+            res_str = res_str + 'C'
+        elif arr[3, i] == 1:
+            res_str = res_str + 'G'
+        else:
+            res_str = res_str + '_'
+    return res_str
+
+print(f"Array: {array_to_str(seq)}")
+print(f"Label: {label}")
+
+# pause = input("PAUSE")
+
+load_img_dir = 'local_results' 
 
 
 ##### HELPER FUNCTIONS FOR PLOTTING
@@ -233,21 +254,50 @@ def save_act_map(fname, act_map):
     print(f"Activation map: {act_map}")
     np.save(fname, act_map)
 
+def printinfo(varname, arr):
+    print(f"{varname}: {arr}")
+    print(f"{varname} shape: {arr.shape}")
+
 
 # Load the test image and forward it through the network
+# Add a dimension to the front 
 if type(test_sequence) is str:
     test_sequence_numpy = np.expand_dims(test_dataset.sequence_to_array(test_sequence), axis=0)
 else:
     test_sequence_numpy = np.expand_dims(test_sequence, axis=0)
 
-sequence_test = torch.tensor(test_sequence_numpy).cuda()
-labels_test = torch.tensor([test_sequence_label])
+print(f"test_sequence_numpy.shape: {test_sequence_numpy.shape}") # (1, 4, 70)
+print(f"test_sequence_label: {test_sequence_label}") # integer
+
+
+sequence_test = torch.tensor(test_sequence_numpy).cuda() # (1, 4, 70)
+labels_test = torch.tensor([test_sequence_label]) # (1)
+
+save_test_seq(os.path.join(save_analysis_path, 'original_seq.npy'),
+                                     test_sequence_numpy)
+
 
 log(f"Test sequence: {sequence_test}")
 log(f"Test label: {labels_test}")
 logits, prototype_activations = ppnet(sequence_test)
 conv_output, prototype_activation_patterns = ppnet.push_forward(sequence_test)
 
+print(f"logits: {logits}")
+print(f"logits.shape: {logits.shape}") # torch.Size([1, 156]) a bunch of -30 to -34 values
+print(f"prototype_activations: {prototype_activations}") 
+print(f"prototype_activations.shape: {prototype_activations.shape}") # torch.Size([1, 468 (156*3)])
+print(f"conv_output: {conv_output}") # torch.Size([1, 520, 35])
+print(f"conv_output.shape: {conv_output.shape}")
+print(f"prototype_activation_patterns: {prototype_activation_patterns}")
+print(f"prototype_activation_patterns.shape: {prototype_activation_patterns.shape}") # torch.Size([1, 468 (156*3), 7]) 7 because 35 - ptype_length + 1 = 7
+
+print(f"Prototype shape: {ppnet.prototype_shape}") # (468, 520, 29)
+printinfo("ppnet.prototype_vectors", ppnet.prototype_vectors)
+# print(f"ppnet.prototype_vectors: {ppnet.prototype_vectors}") # 
+# print(f"ppnet.prototype_vectors.shape: {ppnet.prototype_vectors.shape}") # 
+
+
+# <# test images> long, where each entry has the index of the test image and a tuple (predicted class, actual class)
 tables = []
 for i in range(logits.size(0)):
     tables.append((torch.argmax(logits, dim=1)[i].item(), labels_test[i].item()))
@@ -259,17 +309,17 @@ correct_cls = tables[idx][1]
 log('Predicted: ' + str(predicted_cls))
 log('Actual: ' + str(correct_cls))
 
-save_test_seq(os.path.join(save_analysis_path, 'original_seq.npy'),
-                                     test_sequence_numpy)
+pause = input("PAUSE")
 
 ##### MOST ACTIVATED (NEAREST) 10 PROTOTYPES OF THIS IMAGE
 # (from any class)
 makedir(os.path.join(save_analysis_path, 'most_activated_prototypes'))
 
 log('Most activated 10 prototypes of this image:')
-array_act, sorted_indices_act = torch.sort(prototype_activations[idx])
+sorted_array_acts, sorted_indices_act = torch.sort(prototype_activations[idx])
 log(f"sorted_indices_act: {sorted_indices_act}")
-log(f"array_act: {array_act}")
+log(f"sorted_array_acts: {sorted_array_acts}")
+
 i = 1
 i_completed = 0
 while True: # for 10 iterations
@@ -318,7 +368,7 @@ while True: # for 10 iterations
     log('prototype class identity: {0}'.format(prototype_img_identity[sorted_indices_act[-i].item()]))
     if prototype_max_connection[sorted_indices_act[-i].item()] != prototype_img_identity[sorted_indices_act[-i].item()]:
         log('prototype connection identity: {0}'.format(prototype_max_connection[sorted_indices_act[-i].item()]))
-    log('activation value (similarity score): {0}'.format(array_act[-i]))
+    log('activation value (similarity score): {0}'.format(sorted_array_acts[-i]))
     log('last layer connection with predicted class: {0}'.format(ppnet.last_layer.weight[predicted_cls][sorted_indices_act[-i].item()]))
     
     # log('most highly activated patch of the chosen image by this prototype:')

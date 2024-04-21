@@ -32,6 +32,7 @@ do
     
 done
 
+# python3 local_analysis.py -gpuid '0' -modeldir './saved_ppn_models' -model '1857326_0.9894.pth' -savedir "./local_results_2/test_local_seq_25" -targetrow 25 -sequence 'ACGTCGTGTGTGTGTGTGTGGGT' -seqclass 1
     
 
 

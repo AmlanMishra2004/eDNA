@@ -298,27 +298,27 @@ pushloader = DataLoader(
 # model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
 # model.to('cuda')
 
-# from sklearn.metrics import precision_score, recall_score, f1_score
+from sklearn.metrics import precision_score, recall_score, f1_score
 
-# def calculate_metrics(dataloader):
-#     all_labels = []
-#     all_predictions = []
-#     with torch.no_grad():
-#         for data in dataloader:
-#             inputs, labels = data[0].to('cuda'), data[1].to('cuda')
-#             outputs = model(inputs) # returns (logits, max_similarities)
-#             _, predicted = torch.max(outputs[0], 1)
-#             all_labels.extend(labels.cpu().numpy())
-#             all_predictions.extend(predicted.cpu().numpy())
-#     accuracy = (np.array(all_labels) == np.array(all_predictions)).mean()
-#     precision = precision_score(all_labels, all_predictions, average='macro')
-#     recall = recall_score(all_labels, all_predictions, average='macro')
-#     f1 = f1_score(all_labels, all_predictions, average='macro')
-#     return accuracy, precision, recall, f1
+def calculate_metrics(model, dataloader):
+    all_labels = []
+    all_predictions = []
+    with torch.no_grad():
+        for data in dataloader:
+            inputs, labels = data[0].to('cuda'), data[1].to('cuda')
+            outputs = model(inputs) # returns (logits, max_similarities)
+            _, predicted = torch.max(outputs[0], 1)
+            all_labels.extend(labels.cpu().numpy())
+            all_predictions.extend(predicted.cpu().numpy())
+    accuracy = (np.array(all_labels) == np.array(all_predictions)).mean()
+    precision = precision_score(all_labels, all_predictions, average='macro')
+    recall = recall_score(all_labels, all_predictions, average='macro')
+    f1 = f1_score(all_labels, all_predictions, average='macro')
+    return accuracy, precision, recall, f1
 
 # # Calculate and print the train, validation, and test metrics
 # print("Calculating test metrics")
-# test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(testloader)
+# test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(model, testloader)
 
 # print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
 
@@ -375,7 +375,7 @@ for trial in range(1):
 
     # These two are also hyperparameters. Feel free to add more values to try.
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
-    num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
+    num_ptypes_per_class = [3, 3, 3, 3, 3] #random.randint(1, 3) # not set, 3 was better than 2
     ptype_length = [36] #[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
@@ -388,7 +388,7 @@ for trial in range(1):
         'num_warm_epochs':          [35+4*45],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
         'push_start':               [35],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'push_gap':                 [45],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
-        'num_pushes':               [5],                            # 3-5?
+        'num_pushes':               [4],                            # 3-5?
 
         'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
         'clst_weight':              [-1],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
@@ -677,21 +677,36 @@ for trial in range(1):
                         log=print
                     )
 
-                # # Get the final model validation and test scores
-                # print(f"Getting final validation and test accuracy after training.")
-                # val_actual, val_predicted, val_ptype_results  = tnt.test(
-                #     model=ppnet_multi,
-                #     dataloader=valloader,
-                #     class_specific=class_specific,
-                #     log=log
-                # )
-                # test_actual, test_predicted, test_ptype_results = tnt.test(
-                #     model=ppnet_multi,
-                #     dataloader=testloader,
-                #     class_specific=class_specific,
-                #     log=log
-                # )
+                # Get the final model train, validation, and test scores
+                print(f"Getting final train, validation, and test accuracy after training.")
+                train_actual, train_predicted, train_ptype_results = tnt.test(
+                    model=ppnet_multi,
+                    dataloader=trainloader,
+                    class_specific=class_specific,
+                    log=log
+                )
+                val_actual, val_predicted, val_ptype_results  = tnt.test(
+                    model=ppnet_multi,
+                    dataloader=valloader,
+                    class_specific=class_specific,
+                    log=log
+                )
+                test_actual, test_predicted, test_ptype_results = tnt.test(
+                    model=ppnet_multi,
+                    dataloader=testloader,
+                    class_specific=class_specific,
+                    log=log
+                )
 
+                # Calculate and print the train, validation, and test metrics
+                print("Calculating metrics")
+                train_accuracy, train_precision, train_recall, train_f1 = calculate_metrics(ppnet, trainloader)
+                print(f'\nTrain Accuracy: {train_accuracy}\n Train Precision: {train_precision}\n Train Recall: {train_recall}\n Train F1: {train_f1}')
+                val_accuracy, val_precision, val_recall, val_f1 = calculate_metrics(ppnet, valloader)
+                print(f'\nValidation Accuracy: {val_accuracy}\n Validation Precision: {val_precision}\n Validation Recall: {val_recall}\n Validation F1: {val_f1}')
+                test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(ppnet, testloader)
+                print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
+                
                 # # Compute metrics for validation set
                 # print(f"Computing and storing results metrics")
                 # val_m_f1 = metrics.f1_score(val_actual, val_predicted, average='macro')
