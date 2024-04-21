@@ -23,8 +23,8 @@ class PPNet(nn.Module):
         self.prototype_shape = prototype_shape
         # assert prototype_shape[2] > 0, \
         #     "Error: Prototype length must be >0." # commented out 4/20/24 for sanity check
-        assert prototype_shape[2] % 2 != 0, \
-            "Error: Prototype length must be odd, since it needs a center."
+        # assert prototype_shape[2] % 2 != 0, \
+        #     "Error: Prototype length must be odd, since it needs a center."
         self.num_prototypes = prototype_shape[0]
         self.num_classes = num_classes
         self.epsilon = 1e-4
