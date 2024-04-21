@@ -727,7 +727,7 @@ if __name__ == '__main__':
                 'b':'v', 'd':'h', 'h':'d', 'v':'b',
                 's':'w', 'w':'s', 'n':'n', 'z':'z'},
         'data_path': './datasets/v4_combined_reference_sequences.csv',
-        'train_path': './datasets/train.csv',
+        'train_path': './datasets/train_no_dup.csv',
         'test_path': './datasets/test.csv',
         'sep': ';',                       # separator character in the csv file
         'species_col': 'species_cat',     # name of column containing species
@@ -743,7 +743,7 @@ if __name__ == '__main__':
         'applying_on_raw_data': False,
         # Whether or not to augment the test set.
         'augment_test_data': True,
-        'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files
+        'load_existing_train_test': False, # use the same train/test split as Zurich, already saved in two different csv files
         'verbose': False
     }
     if config['applying_on_raw_data']:
@@ -815,8 +815,12 @@ if __name__ == '__main__':
         # pause = input("PAUSE")
 
     elif config['load_existing_train_test']:
+        cols = ['species']
         train = pd.read_csv(config['train_path'], sep=',')
+        utils.print_descriptive_stats(train, cols)
         test = pd.read_csv(config['test_path'], sep=',')
+        utils.print_descriptive_stats(test, cols)
+        # wait = input("PAUSE")
 
     if run_arch_search:
         

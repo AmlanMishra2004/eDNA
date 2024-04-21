@@ -49,12 +49,12 @@ def extract_number(file_path):
 # with open('out.1855240.log', 'r') as file: # to find ptype length
 # with open('out.1857478.log', 'r') as file: # to find joint lrs after 2 pushes
 # with open('out.1875496.log', 'r') as file: # to look back (do not save) 1842207? 
-# with open('out.1877399.log', 'r') as file: # to look back (do not save) 1842207? 
-#     data = file.read()
+# with open('out.1878229.log', 'r') as file: # to look back (do not save) 1842207? 
+    # data = file.read()
 
 avg_last_25_epochs = {}
 
-job_ID = 1875497
+job_ID = 1878231
 data = ""
 file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
 print(file_paths)
@@ -62,7 +62,7 @@ for file_path in file_paths:
     with open(file_path, 'r') as file:
         data += file.read()
 
-def moving_average(a, n=3):
+def moving_average(a, n=10):
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
@@ -160,8 +160,8 @@ elif fancy:
         plt.plot(accs_smooth, label=labels[i-1])  # Use the corresponding label
 
     # Add labels, title, and legend
-    plt.title('Comparing Latent Weights (Smoothed, n=15)')
-    # plt.title('Comparing Prototype Lengths (Smoothed, n=20)')
+    # plt.title('Comparing Latent Weights (Smoothed, n=15)')
+    plt.title('Comparing Prototype Lengths (Smoothed, n=20)')
     plt.xlabel('Epoch')
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
@@ -177,8 +177,10 @@ elif fancy:
         bars.append(bar)  # Add the bar to the list
         bar_labels.append(labels[i-1])  # Add the corresponding label to the list
 
-    plt.title('Latent Weight vs. Raw Input Weight')
-    plt.xlabel('Latent Weight')
+    plt.title('Comparing Prototype Lengths')
+    # plt.title('Latent Weight vs. Raw Input Weight')
+    plt.xlabel('Prototype Length')
+    # plt.xlabel('Latent Weight')
     plt.ylabel('End Validation Accuracy')
     plt.grid(True)
     plt.ylim(.90, 1)

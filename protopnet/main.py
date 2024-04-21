@@ -89,7 +89,7 @@ config = {
             'b':'v', 'd':'h', 'h':'d', 'v':'b',
             's':'w', 'w':'s', 'n':'n', 'z':'z'},
     'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
-    'train_path': '../datasets/train.csv',
+    'train_path': '../datasets/train_dup.csv',
     'test_path': '../datasets/test.csv',
     'sep': ';',                       # separator character in the csv file
     'species_col': 'species_cat',     # name of column containing species
@@ -196,7 +196,7 @@ except:
 # )
 
 log = print
-random.seed(36)
+# random.seed(36)
 warnings.filterwarnings('ignore', 'y_pred contains classes not in y_true')
 
 # split data into train, validation, and test
@@ -208,7 +208,7 @@ X_train, X_val, y_train, y_val = train_test_split(
     train[config['species_col']], # y
     test_size=val_portion,
     random_state=42,
-    stratify = train[config['species_col']]
+    stratify=train[config['species_col']]
 )
 # print(X_train.shape)
 # print(y_train.shape)
@@ -218,13 +218,18 @@ X_train, X_val, y_train, y_val = train_test_split(
 train = X_train.to_frame().join(y_train.to_frame()) # USED TO BE train = pd.concat([X_train, y_train], axis=1)
 
 # orig_train = pd.concat([[1,2,3],[3,2,3]], axis=1)
-
+print("Before oversampling:")
+utils.print_descriptive_stats(train, ['species_cat'])
 if config['oversample']:
     train = utils.oversample_underrepresented_species(
         train,
         config['species_col'],
         config['verbose']
     )
+# print("After oversampling")
+# utils.print_descriptive_stats(train, ['species_cat'])
+# wait=input("PAUSE")
+
 train_dataset = Sequence_Data(
     X=train[config['seq_col']],
     y=train[config['species_col']],
@@ -290,47 +295,45 @@ pushloader = DataLoader(
 # model = torch.load('saved_ppn_models/1857326_0.9681.pth') # 93, 88 val, test acc
 # model = torch.load('saved_ppn_models/1857326_0.9787.pth') # 94, 88 val, test acc
 # model = torch.load('saved_ppn_models/1857326_0.9894.pth') # 95.2, 90.8 val, test acc
-model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
-model.to('cuda')
+# model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
+# model.to('cuda')
 
-# def calculate_accuracy(dataloader):
-#     correct = 0
-#     total = 0
+# from sklearn.metrics import precision_score, recall_score, f1_score
+
+# def calculate_metrics(dataloader):
+#     all_labels = []
+#     all_predictions = []
 #     with torch.no_grad():
 #         for data in dataloader:
 #             inputs, labels = data[0].to('cuda'), data[1].to('cuda')
 #             outputs = model(inputs) # returns (logits, max_similarities)
-#             # print(outputs)
-#             # pause = input("Pause")
 #             _, predicted = torch.max(outputs[0], 1)
-#             total += labels.size(0)
-#             correct += (predicted == labels).sum().item()
-#     return correct / total
+#             all_labels.extend(labels.cpu().numpy())
+#             all_predictions.extend(predicted.cpu().numpy())
+#     accuracy = (np.array(all_labels) == np.array(all_predictions)).mean()
+#     precision = precision_score(all_labels, all_predictions, average='macro')
+#     recall = recall_score(all_labels, all_predictions, average='macro')
+#     f1 = f1_score(all_labels, all_predictions, average='macro')
+#     return accuracy, precision, recall, f1
 
-# # Calculate and print the train, validation, and test accuracies
-# print("Calculating train acc")
-# train_accuracy = calculate_accuracy(trainloader)
-# print("Calculating val acc")
-# val_accuracy = calculate_accuracy(valloader)
-# print("Calculating test acc")
-# test_accuracy = calculate_accuracy(testloader)
+# # Calculate and print the train, validation, and test metrics
+# print("Calculating test metrics")
+# test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(testloader)
 
-# print(f'\nTrain Accuracy: {train_accuracy}')
-# print(f'Validation Accuracy: {val_accuracy}')
-# print(f'Test Accuracy: {test_accuracy}')
+# print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
 
+# wait = input("PAUSE")
 
-push_prototypes(
-    pushloader, # pytorch dataloader (must be unnormalized in [0,1])
-    prototype_network_parallel=model, # pytorch network with prototype_vectors
-    preprocess_input_function=None, # normalize if needed
-    root_dir_for_saving_prototypes='./local_results_2', # if not None, prototypes will be saved here # sam: previously seq_dir
-    epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
-    log=log
-)
+# push_prototypes(
+#     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
+#     prototype_network_parallel=model, # pytorch network with prototype_vectors
+#     preprocess_input_function=None, # normalize if needed
+#     root_dir_for_saving_prototypes='./local_results_2', # if not None, prototypes will be saved here # sam: previously seq_dir
+#     epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
+#     log=log
+# )
 
-
-pause = input("Pause")
+# wait = input("Pause")
 
 
 
@@ -373,7 +376,7 @@ for trial in range(1):
     # These two are also hyperparameters. Feel free to add more values to try.
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
     num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
-    ptype_length = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    ptype_length = [0] #[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
