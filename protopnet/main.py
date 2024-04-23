@@ -329,7 +329,7 @@ push_prototypes(
     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
     prototype_network_parallel=model, # pytorch network with prototype_vectors
     preprocess_input_function=None, # normalize if needed
-    root_dir_for_saving_prototypes='./local_results_2', # if not None, prototypes will be saved here # sam: previously seq_dir
+    root_dir_for_saving_prototypes='./local_results_3', # if not None, prototypes will be saved here # sam: previously seq_dir
     epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
     log=log
 )
