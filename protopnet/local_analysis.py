@@ -357,6 +357,7 @@ while True: # for 10 iterations
     upsampling_factor = 2
     proto_h = prototype_shape[-1]
     prototype_layer_stride = 1
+    center_loc = argmax_proto_act[2]
 
     patch_start = center_loc * upsampling_factor
     patch_end = (center_loc + proto_h) * upsampling_factor
