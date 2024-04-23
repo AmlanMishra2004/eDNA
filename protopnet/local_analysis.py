@@ -26,7 +26,7 @@ config = {
             'b':'v', 'd':'h', 'h':'d', 'v':'b',
             's':'w', 'w':'s', 'n':'n', 'z':'z'},
     'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
-    'train_path': '../datasets/train_no_dup.csv',
+    'train_path': '../datasets/train.csv',
     'test_path': '../datasets/test.csv',
     'sep': ';',                       # separator character in the csv file
     'species_col': 'species_cat',     # name of column containing species
