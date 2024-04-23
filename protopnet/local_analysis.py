@@ -309,7 +309,7 @@ correct_cls = tables[idx][1]
 log('Predicted: ' + str(predicted_cls))
 log('Actual: ' + str(correct_cls))
 
-pause = input("PAUSE")
+# pause = input("PAUSE")
 
 ##### MOST ACTIVATED (NEAREST) 10 PROTOTYPES OF THIS IMAGE
 # (from any class)
