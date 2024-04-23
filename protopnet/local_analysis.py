@@ -357,8 +357,12 @@ while True: # for 10 iterations
     upsampling_factor = 2
     proto_h = prototype_shape[-1]
     prototype_layer_stride = 1
-    patch_start = upsampling_factor * (argmax_proto_act[2] * prototype_layer_stride - proto_h // 2)
-    patch_end = upsampling_factor * (argmax_proto_act[2] + proto_h // 2) + upsampling_factor
+
+    patch_start = center_loc * upsampling_factor
+    patch_end = (center_loc + proto_h) * upsampling_factor
+    # patch_start = upsampling_factor * (argmax_proto_act[2] * prototype_layer_stride - proto_h // 2)
+    # patch_end = upsampling_factor * (argmax_proto_act[2] + proto_h // 2) + upsampling_factor
+
     print(argmax_proto_act[2], patch_start, patch_end)
     save_test_seq_patch(os.path.join(save_analysis_path, 'most_activated_prototypes',
                                 'top-%d_activated_test_patch.npy' % i),

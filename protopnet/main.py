@@ -89,7 +89,7 @@ config = {
             'b':'v', 'd':'h', 'h':'d', 'v':'b',
             's':'w', 'w':'s', 'n':'n', 'z':'z'},
     'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
-    'train_path': '../datasets/train.csv',
+    'train_path': '../datasets/traing.csv',
     'test_path': '../datasets/test.csv',
     'sep': ';',                       # separator character in the csv file
     'species_col': 'species_cat',     # name of column containing species
@@ -296,7 +296,8 @@ pushloader = DataLoader(
 # model = torch.load('saved_ppn_models/1857326_0.9787.pth') # 94, 88 val, test acc
 # model = torch.load('saved_ppn_models/1857326_0.9894.pth') # 95.2, 90.8 val, test acc
 # model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
-# model.to('cuda')
+model = torch.load('saved_ppn_models/1878231_3_-1.pth') # 
+model.to('cuda')
 
 from sklearn.metrics import precision_score, recall_score, f1_score
 
@@ -316,24 +317,24 @@ def calculate_metrics(model, dataloader):
     f1 = f1_score(all_labels, all_predictions, average='macro')
     return accuracy, precision, recall, f1
 
-# # Calculate and print the train, validation, and test metrics
-# print("Calculating test metrics")
-# test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(model, testloader)
+# Calculate and print the train, validation, and test metrics
+print("Calculating test metrics")
+test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(model, testloader)
 
-# print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
+print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
 
 # wait = input("PAUSE")
 
-# push_prototypes(
-#     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
-#     prototype_network_parallel=model, # pytorch network with prototype_vectors
-#     preprocess_input_function=None, # normalize if needed
-#     root_dir_for_saving_prototypes='./local_results_2', # if not None, prototypes will be saved here # sam: previously seq_dir
-#     epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
-#     log=log
-# )
+push_prototypes(
+    pushloader, # pytorch dataloader (must be unnormalized in [0,1])
+    prototype_network_parallel=model, # pytorch network with prototype_vectors
+    preprocess_input_function=None, # normalize if needed
+    root_dir_for_saving_prototypes='./local_results_2', # if not None, prototypes will be saved here # sam: previously seq_dir
+    epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
+    log=log
+)
 
-# wait = input("Pause")
+wait = input("Pause")
 
 
 
