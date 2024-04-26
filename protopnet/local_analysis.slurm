@@ -25,14 +25,14 @@ do
             -gpuid '0' \
             -modeldir './saved_ppn_models' \
             -model '1878231_3_-1.pth' \
-            -savedir "./local_results_3/test_local_seq_$IND" \
+            -savedir "./local_results/test_local_seq_$IND" \
             -targetrow $IND \
             -sequence 'ACGTCGTGTGTGTGTGTGTGGGT' \
             -seqclass 1
     
 done
 
-# python3 local_analysis.py -gpuid '0' -modeldir './saved_ppn_models' -model '1857326_0.9894.pth' -savedir "./local_results_2/test_local_seq_25" -targetrow 25 -sequence 'ACGTCGTGTGTGTGTGTGTGGGT' -seqclass 1
+# python3 local_analysis.py -gpuid '0' -modeldir './saved_ppn_models' -model '1857326_0.9894.pth' -savedir "./local_results/test_local_seq_25" -targetrow 25 -sequence 'ACGTCGTGTGTGTGTGTGTGGGT' -seqclass 1
     
 
 

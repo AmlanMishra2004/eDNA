@@ -357,7 +357,7 @@ def save_self_activations(dir_for_saving_prototypes,
             #     zeros = np.zeros((original_seq_j.shape[0], -(img_space_start)))
             #     high_act_region = np.concatenate((zeros, high_act_region), axis=-1)
 
-            # # What you suggested we change it to (what produced these prototypes)
+            # # What Jon suggested we change it to (what produced these prototypes)
             img_space_start = center_loc * upsampling_factor
             img_space_end = (center_loc + proto_h) * upsampling_factor # was + upsampling_factor
             if img_space_start < 0 or img_space_end > original_seq_j.shape[-1]:

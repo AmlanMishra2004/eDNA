@@ -7,6 +7,7 @@ import pandas as pd
 
 import os
 import sys
+import re
 
 from helpers import makedir
 from log import create_logger
@@ -116,7 +117,9 @@ makedir(save_analysis_path) # UNCOMMENT THIS
 # create the logger
 log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'local_analysis.log'))
 
-start_epoch_number = 9999 # 259
+# start_epoch_number = 9999 # 259 # 1878231_3_-1.pth
+load_model_path = os.path.join(load_model_dir, load_model_name)
+start_epoch_number = int(re.search(r'\d+', load_model_name).group(0))
 
 log('load model from ' + load_model_path)
 log('model base architecture: ' + model_base_architecture)
@@ -213,7 +216,7 @@ print(f"Label: {label}")
 
 # pause = input("PAUSE")
 
-load_img_dir = 'local_results_3' 
+load_img_dir = 'local_results' 
 
 
 ##### HELPER FUNCTIONS FOR PLOTTING
@@ -321,21 +324,23 @@ log(f"sorted_indices_act: {sorted_indices_act}")
 log(f"sorted_array_acts: {sorted_array_acts}")
 
 i = 1
-i_completed = 0
+# i_completed = 0
 while True: # for 10 iterations
-    if i_completed == 11:
+    if i == 11:
         break
+    # if i_completed == 11:
+    #     break
 
-    # Check if the prototype is saved. If it is not saved, skip it.
-    file_to_load = os.path.join(
-        load_img_dir,
-        'epoch-'+str(start_epoch_number),
-        'prototype_'+ str(sorted_indices_act[-i].item()) + '_original.npy')
-    saved_ptype_exists = os.path.exists(file_to_load)
-    print(f"File {file_to_load} exists: {saved_ptype_exists}", flush=True)
-    if not saved_ptype_exists:
-        i += 1
-        continue
+    # # Check if the prototype is saved. If it is not saved, skip it.
+    # file_to_load = os.path.join(
+    #     load_img_dir,
+    #     'epoch-'+str(start_epoch_number),
+    #     'prototype_'+ str(sorted_indices_act[-i].item()) + '_original.npy')
+    # saved_ptype_exists = os.path.exists(file_to_load)
+    # print(f"File {file_to_load} exists: {saved_ptype_exists}", flush=True)
+    # if not saved_ptype_exists:
+    #     i += 1
+    #     continue
 
     log('top {0} activated prototype for this image:'.format(i))
     log('Saving activation map')
@@ -348,7 +353,7 @@ while True: # for 10 iterations
                    epoch=start_epoch_number, index=sorted_indices_act[-i].item())
     log('Saving prototype patch')
     save_prototype_patch(os.path.join(save_analysis_path, 'most_activated_prototypes',
-                                'top-%d_activated_prototype_patch.npy' % i_completed),
+                                'top-%d_activated_prototype_patch.npy' % i),
                    start_epoch_number, sorted_indices_act[-i].item())
 
     argmax_proto_act = \
@@ -382,7 +387,8 @@ while True: # for 10 iterations
     # log('most highly activated patch by this prototype shown in the original image:')
     
     print('--------------------------------------------------------------', flush=True)
-    i_completed += 1
+    # i_completed += 1
+    i += 1
 
 log("\n\n\n\nFinished finding nearest 10 prototypes of all prototypes.")
 log("Now, finding the top-activated prototypes for the top k classes\n\n\n\n")
