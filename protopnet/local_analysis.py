@@ -117,9 +117,9 @@ makedir(save_analysis_path) # UNCOMMENT THIS
 # create the logger
 log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'local_analysis.log'))
 
-# start_epoch_number = 9999 # 259 # 1878231_3_-1.pth
-load_model_path = os.path.join(load_model_dir, load_model_name)
-start_epoch_number = int(re.search(r'\d+', load_model_name).group(0))
+start_epoch_number = 9999 # 259 # 1878231_3_-1.pth
+# load_model_path = os.path.join(load_model_dir, load_model_name)
+# start_epoch_number = int(re.search(r'\d+', load_model_name).group(0))
 
 log('load model from ' + load_model_path)
 log('model base architecture: ' + model_base_architecture)
