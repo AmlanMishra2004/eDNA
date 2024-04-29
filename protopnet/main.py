@@ -296,8 +296,8 @@ pushloader = DataLoader(
 # model = torch.load('saved_ppn_models/1857326_0.9787.pth') # 94, 88 val, test acc
 # model = torch.load('saved_ppn_models/1857326_0.9894.pth') # 95.2, 90.8 val, test acc
 # model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
-model = torch.load('saved_ppn_models/1878231_3_-1.pth') # 
-model.to('cuda')
+# model = torch.load('saved_ppn_models/1878231_3_-1.pth') # 
+# model.to('cuda')
 
 from sklearn.metrics import precision_score, recall_score, f1_score
 
@@ -317,24 +317,24 @@ def calculate_metrics(model, dataloader):
     f1 = f1_score(all_labels, all_predictions, average='macro')
     return accuracy, precision, recall, f1
 
-# Calculate and print the train, validation, and test metrics
-print("Calculating test metrics")
-test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(model, testloader)
+# # Calculate and print the train, validation, and test metrics
+# print("Calculating test metrics")
+# test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(model, testloader)
 
-print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
+# print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
 
-# wait = input("PAUSE")
+# # wait = input("PAUSE")
 
-push_prototypes(
-    pushloader, # pytorch dataloader (must be unnormalized in [0,1])
-    prototype_network_parallel=model, # pytorch network with prototype_vectors
-    preprocess_input_function=None, # normalize if needed
-    root_dir_for_saving_prototypes='./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
-    epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
-    log=log
-)
+# push_prototypes(
+#     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
+#     prototype_network_parallel=model, # pytorch network with prototype_vectors
+#     preprocess_input_function=None, # normalize if needed
+#     root_dir_for_saving_prototypes='./saved_prototypes', # if not None, prototypes will be saved here # sam: previously seq_dir
+#     epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
+#     log=log
+# )
 
-wait = input("Pause")
+# wait = input("Pause")
 
 
 
@@ -376,20 +376,20 @@ for trial in range(1):
 
     # These two are also hyperparameters. Feel free to add more values to try.
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
-    num_ptypes_per_class = [3, 3, 3, 3, 3] #random.randint(1, 3) # not set, 3 was better than 2
+    num_ptypes_per_class = [3] #random.randint(1, 3) # not set, 3 was better than 2
     ptype_length = [5] #[1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate jon's original settings
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [1],                        #0.95 [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],                        #0.95 [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
 
         'num_warm_epochs':          [35+4*45],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
-        'push_start':               [35],                            # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_start':               [4],  # 35                          # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'push_gap':                 [45],                           # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
-        'num_pushes':               [4],                            # 3-5?
+        'num_pushes':               [1],  # 4                           # 4. 3-5?
 
         'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
         'clst_weight':              [-1],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
@@ -609,7 +609,7 @@ for trial in range(1):
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                     preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes='./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
+                    root_dir_for_saving_prototypes= os.path.join('saved_prototypes', f"{str(args.arr_job_id)}_{str(args.comb_num)}_-1_latent_{params['latent_weight']}"), # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log
                 )
@@ -840,7 +840,7 @@ for trial in range(1):
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                     preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes='./local_results', # if not None, prototypes will be saved here # sam: previously seq_dir
+                    root_dir_for_saving_prototypes=None,#'./saved_prototypes', # if not None, prototypes will be saved here # sam: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log,
                     sanity_check=True

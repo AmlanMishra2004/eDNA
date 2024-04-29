@@ -24,10 +24,9 @@ do
     singularity run --nv ~/containers/pytorch-waggoner2.simg python3 global_analysis.py \
                                     -gpuid 0 \
                                     -modeldir './saved_ppn_models' \
-                                    -model '1857326_0.9894.pth' \
+                                    -model '1878231_3_-1.pth' \
                                     -prototypeind $IND
 
 done
-                                
-
-
+# previously used 1857326_0.9894.pth
+# python3 global_analysis.py -gpuid 0 -modeldir './saved_ppn_models' -model '1878231_3_-1.pth' -prototypeind 25                

@@ -27,7 +27,7 @@ config = {
             'b':'v', 'd':'h', 'h':'d', 'v':'b',
             's':'w', 'w':'s', 'n':'n', 'z':'z'},
     'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
-    'train_path': '../datasets/train.csv',
+    'train_path': '../datasets/train_no_dup.csv',
     'test_path': '../datasets/test.csv',
     'sep': ';',                       # separator character in the csv file
     'species_col': 'species_cat',     # name of column containing species
@@ -104,12 +104,34 @@ target_row = args.targetrow[0] # The index of the test data sequence you want to
 
 # load the model
 load_model_dir = args.modeldir[0] #'./saved_models/vgg19/003/', now 1857326_0.9894.pth
+print(f"Load model dir: {load_model_dir}")
 load_model_name = args.model[0] #'10_18push0.7822.pth'
+print(f"load_model_name: {load_model_name}")
 model_base_architecture = 'small_best_updated' #load_model_dir.split('/')[2]
+print(f"model_base_architecture: {model_base_architecture}")
 experiment_run = '/'.join([load_model_name])
+print(f"experiment_run: {experiment_run}")
 load_model_path = os.path.join(load_model_dir, load_model_name)
+print(f"load_model_path: {load_model_path}")
 save_analysis_path = os.path.join(save_dir, model_base_architecture,
                                   experiment_run, load_model_name)
+# print(f"save_analysis_path: {save_analysis_path}")
+
+
+
+# load_model_dir = './saved_ppn_models'  # Example: './saved_models/vgg19/003/'
+# load_model_name = '1878231_3_-1.pth'    # Example: '10_18push0.7822.pth'
+# model_base_architecture = 'small_best_updated'  # Example: 'vgg19'
+
+# # Construct the full model path
+# load_model_path = os.path.join(load_model_dir, load_model_name)
+
+# # Print the constructed path
+# print(f"Constructed model path: {load_model_path}")
+# ppnet = torch.load(load_model_path)
+# wait = input("PAUSE")
+
+
 # ./local_results/test_local_seq_$IND / small_best_updated / 1857326_0.9894.pth / 1857326_0.9894.pth
 
 makedir(save_analysis_path) # UNCOMMENT THIS
@@ -125,9 +147,13 @@ log('load model from ' + load_model_path)
 log('model base architecture: ' + model_base_architecture)
 log('experiment run: ' + experiment_run + '\n\n\n')
 
-ppnet = torch.load(load_model_path)
-ppnet = ppnet.cuda()
+print(f"CWD: {os.getcwd()}")
+print(f"Model path: {load_model_path}")
+load_model_path = './saved_ppn_models/1878231_3_-1.pth'
+ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
+# ppnet = ppnet.cuda()
 
+# wait = input("PAUSE")
 
 ##### SANITY CHECK
 # confirm prototype class identity
@@ -265,7 +291,7 @@ def printinfo(varname, arr):
 # Load the test image and forward it through the network
 # Add a dimension to the front 
 if type(test_sequence) is str:
-    test_sequence_numpy = np.expand_dims(test_dataset.sequence_to_array(test_sequence), axis=0)
+    test_sequence_numpy = np.expand_dims(utils.sequence_to_array(test_sequence, 'probability'), axis=0)
 else:
     test_sequence_numpy = np.expand_dims(test_sequence, axis=0)
 
@@ -273,7 +299,7 @@ print(f"test_sequence_numpy.shape: {test_sequence_numpy.shape}") # (1, 4, 70)
 print(f"test_sequence_label: {test_sequence_label}") # integer
 
 
-sequence_test = torch.tensor(test_sequence_numpy).cuda() # (1, 4, 70)
+sequence_test = torch.tensor(test_sequence_numpy)#.cuda() # (1, 4, 70)
 labels_test = torch.tensor([test_sequence_label]) # (1)
 
 save_test_seq(os.path.join(save_analysis_path, 'original_seq.npy'),
@@ -324,23 +350,23 @@ log(f"sorted_indices_act: {sorted_indices_act}")
 log(f"sorted_array_acts: {sorted_array_acts}")
 
 i = 1
-# i_completed = 0
+i_completed = 0
 while True: # for 10 iterations
     if i == 11:
         break
-    # if i_completed == 11:
-    #     break
+    if i_completed == 11:
+        break
 
-    # # Check if the prototype is saved. If it is not saved, skip it.
-    # file_to_load = os.path.join(
-    #     load_img_dir,
-    #     'epoch-'+str(start_epoch_number),
-    #     'prototype_'+ str(sorted_indices_act[-i].item()) + '_original.npy')
-    # saved_ptype_exists = os.path.exists(file_to_load)
-    # print(f"File {file_to_load} exists: {saved_ptype_exists}", flush=True)
-    # if not saved_ptype_exists:
-    #     i += 1
-    #     continue
+    # Check if the prototype is saved. If it is not saved, skip it.
+    file_to_load = os.path.join(
+        load_img_dir,
+        'epoch-'+str(start_epoch_number),
+        'prototype_'+ str(sorted_indices_act[-i].item()) + '_original.npy')
+    saved_ptype_exists = os.path.exists(file_to_load)
+    if not saved_ptype_exists:
+        print(f"File {file_to_load} does not exist.", flush=True)
+        i += 1
+        continue
 
     log('top {0} activated prototype for this image:'.format(i))
     log('Saving activation map')
@@ -387,7 +413,7 @@ while True: # for 10 iterations
     # log('most highly activated patch by this prototype shown in the original image:')
     
     print('--------------------------------------------------------------', flush=True)
-    # i_completed += 1
+    i_completed += 1
     i += 1
 
 log("\n\n\n\nFinished finding nearest 10 prototypes of all prototypes.")

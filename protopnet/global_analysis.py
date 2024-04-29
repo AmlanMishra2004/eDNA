@@ -26,7 +26,7 @@ config = {
             'b':'v', 'd':'h', 'h':'d', 'v':'b',
             's':'w', 'w':'s', 'n':'n', 'z':'z'},
     'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
-    'train_path': '../datasets/train.csv',
+    'train_path': '../datasets/train_no_dup.csv',
     'test_path': '../datasets/test.csv',
     'sep': ';',                       # separator character in the csv file
     'species_col': 'species_cat',     # name of column containing species
@@ -85,7 +85,7 @@ args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 
 # load the model
-save_dir= './test_global_2'
+save_dir= './test_global'
 load_model_dir = args.modeldir[0] #'./saved_models/vgg19/003/', now 1857326_0.9894.pth
 load_model_name = args.model[0] #'10_18push0.7822.pth'
 prot_ind=args.prototypeind[0]
@@ -106,8 +106,12 @@ log('load model from ' + load_model_path)
 log('model base architecture: ' + model_base_architecture)
 log('experiment run: ' + experiment_run + '\n\n\n')
 
-ppnet = torch.load(load_model_path)
-ppnet = ppnet.cuda()
+print(f"CWD: {os.getcwd()}")
+print(f"Model path: {load_model_path}")
+load_model_path = './saved_ppn_models/1878231_3_-1.pth'
+ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
+# ppnet = torch.load(load_model_path)
+# ppnet = ppnet.cuda()
 # ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
 # ppnet.to(torch.device('cuda'))
 
@@ -226,11 +230,11 @@ for i in range(test_dataset_len):
     seq, label = test_dataset.__getitem__(i)
     test_sequence = seq
     if type(test_sequence) is str:
-        test_sequence_numpy = np.expand_dims(test_dataset.sequence_to_array(test_sequence), axis=0)
+        test_sequence_numpy = np.expand_dims(utils.sequence_to_array(test_sequence, 'probability'), axis=0)
     else:
         test_sequence_numpy = np.expand_dims(test_sequence, axis=0)
 
-    sequence_test = torch.tensor(test_sequence_numpy).cuda()
+    sequence_test = torch.tensor(test_sequence_numpy)#.cuda()
 
     conv_output, prototype_activation_patterns = ppnet.push_forward(sequence_test)
     activation_pattern_table.append(prototype_activation_patterns[:, prot_ind].cpu().detach().numpy())
@@ -256,7 +260,7 @@ for i in range(1, 11):
     # print(proto_act_sorted[-i][0])
     seq, label = test_dataset.__getitem__(proto_act_sorted[-i][0])
     if type(seq) is str:
-        test_sequence_numpy = np.expand_dims(train_dataset.sequence_to_array(seq), axis=0)
+        test_sequence_numpy = np.expand_dims(utils.sequence_to_array(seq, 'probability'), axis=0)
     else:
         test_sequence_numpy = np.expand_dims(seq, axis=0)
 
@@ -267,8 +271,12 @@ for i in range(1, 11):
     upsampling_factor = 2
     proto_h = prototype_shape[-1]
     prototype_layer_stride = 1
-    patch_start = upsampling_factor * (arg_max_list[proto_act_sorted[-i][0]] * prototype_layer_stride - proto_h // 2)
-    patch_end = upsampling_factor * (arg_max_list[proto_act_sorted[-i][0]] + proto_h // 2) + upsampling_factor
+    center_loc = arg_max_list[proto_act_sorted[-i][0]]
+
+    patch_start = center_loc * upsampling_factor
+    patch_end = (center_loc + proto_h) * upsampling_factor
+    # patch_start = upsampling_factor * (arg_max_list[proto_act_sorted[-i][0]] * prototype_layer_stride - proto_h // 2)
+    # patch_end = upsampling_factor * (arg_max_list[proto_act_sorted[-i][0]] + proto_h // 2) + upsampling_factor
     save_test_seq_patch(os.path.join(save_analysis_path, 'most_activated_patches_for_prot_'+str(prot_ind),
                                 'top-{}_activated_test_patch.npy'.format(i)),
                                 patch_start, patch_end, test_sequence_numpy)
