@@ -111,7 +111,9 @@ model_base_architecture = 'small_best_updated' #load_model_dir.split('/')[2]
 print(f"model_base_architecture: {model_base_architecture}")
 experiment_run = '/'.join([load_model_name])
 print(f"experiment_run: {experiment_run}")
+
 load_model_path = os.path.join(load_model_dir, load_model_name)
+
 print(f"load_model_path: {load_model_path}")
 save_analysis_path = os.path.join(save_dir, model_base_architecture,
                                   experiment_run, load_model_name)
@@ -149,7 +151,7 @@ log('experiment run: ' + experiment_run + '\n\n\n')
 
 print(f"CWD: {os.getcwd()}")
 print(f"Model path: {load_model_path}")
-load_model_path = './saved_ppn_models/1878231_3_-1.pth'
+# load_model_path = './saved_ppn_models/1878231_3_-1.pth'
 ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
 # ppnet = ppnet.cuda()
 
@@ -243,6 +245,7 @@ print(f"Label: {label}")
 # pause = input("PAUSE")
 
 load_img_dir = 'local_results' 
+load_saved_ptypes_dir = 'saved_prototypes'
 
 
 ##### HELPER FUNCTIONS FOR PLOTTING
@@ -306,18 +309,18 @@ save_test_seq(os.path.join(save_analysis_path, 'original_seq.npy'),
                                      test_sequence_numpy)
 
 
-log(f"Test sequence: {sequence_test}")
+# log(f"Test sequence: {sequence_test}")
 log(f"Test label: {labels_test}")
 logits, prototype_activations = ppnet(sequence_test)
 conv_output, prototype_activation_patterns = ppnet.push_forward(sequence_test)
 
-print(f"logits: {logits}")
+# print(f"logits: {logits}")
 print(f"logits.shape: {logits.shape}") # torch.Size([1, 156]) a bunch of -30 to -34 values
-print(f"prototype_activations: {prototype_activations}") 
+# print(f"prototype_activations: {prototype_activations}") 
 print(f"prototype_activations.shape: {prototype_activations.shape}") # torch.Size([1, 468 (156*3)])
-print(f"conv_output: {conv_output}") # torch.Size([1, 520, 35])
+# print(f"conv_output: {conv_output}") # torch.Size([1, 520, 35])
 print(f"conv_output.shape: {conv_output.shape}")
-print(f"prototype_activation_patterns: {prototype_activation_patterns}")
+# print(f"prototype_activation_patterns: {prototype_activation_patterns}")
 print(f"prototype_activation_patterns.shape: {prototype_activation_patterns.shape}") # torch.Size([1, 468 (156*3), 7]) 7 because 35 - ptype_length + 1 = 7
 
 print(f"Prototype shape: {ppnet.prototype_shape}") # (468, 520, 29)
@@ -346,8 +349,8 @@ makedir(os.path.join(save_analysis_path, 'most_activated_prototypes'))
 
 log('Most activated 10 prototypes of this image:')
 sorted_array_acts, sorted_indices_act = torch.sort(prototype_activations[idx])
-log(f"sorted_indices_act: {sorted_indices_act}")
-log(f"sorted_array_acts: {sorted_array_acts}")
+# log(f"sorted_indices_act: {sorted_indices_act}")
+# log(f"sorted_array_acts: {sorted_array_acts}")
 
 i = 1
 i_completed = 0
@@ -359,7 +362,8 @@ while True: # for 10 iterations
 
     # Check if the prototype is saved. If it is not saved, skip it.
     file_to_load = os.path.join(
-        load_img_dir,
+        load_saved_ptypes_dir,
+        model_name,
         'epoch-'+str(start_epoch_number),
         'prototype_'+ str(sorted_indices_act[-i].item()) + '_original.npy')
     saved_ptype_exists = os.path.exists(file_to_load)

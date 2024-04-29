@@ -32,6 +32,7 @@ do
     
 done
 
+# model WAS 1878231_3_-1.pth, changed to 1878231_3_-1_latent_1_old
 # python3 local_analysis.py -gpuid '0' -modeldir './saved_ppn_models' -model '1857326_0.9894.pth' -savedir "./local_results/test_local_seq_25" -targetrow 25 -sequence 'ACGTCGTGTGTGTGTGTGTGGGT' -seqclass 1
     
 
