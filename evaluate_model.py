@@ -1619,32 +1619,32 @@ if __name__ == '__main__':
                 # takes ~ 45 seconds
                 ft_3 = np.load('./datasets/ft_3.npy').astype(np.uint8)
                 ft_5 = np.load('./datasets/ft_5.npy').astype(np.uint8)
-                ft_8 = np.load('./datasets/ft_8.npy').astype(np.uint8)
+                # ft_8 = np.load('./datasets/ft_8.npy').astype(np.uint8)
                 # ft_10 = np.load('./datasets/ft_10.npy').astype(np.uint8)
                 print(f"MAX VALUE in ft_3: {np.amax(ft_3)}")
                 print(f"MAX VALUE in ft_5: {np.amax(ft_5)}")
-                print(f"MAX VALUE in ft_8: {np.amax(ft_8)}")
+                # print(f"MAX VALUE in ft_8: {np.amax(ft_8)}")
                 # print(f"MAX VALUE in ft_10: {np.amax(ft_10)}")
 
                 ft_3_test = np.load('./datasets/ft_3_test.npy').astype(np.uint8)
                 ft_5_test = np.load('./datasets/ft_5_test.npy').astype(np.uint8)
-                ft_8_test = np.load('./datasets/ft_8_test.npy').astype(np.uint8)
+                # ft_8_test = np.load('./datasets/ft_8_test.npy').astype(np.uint8)
                 # ft_10_test = np.load('./datasets/ft_10_test.npy').astype(np.uint8)
             elif include_iupac:
                 print("Searching for pre-created k-mer feature tables including ambiguity codes...", flush=True)
                 # takes ~ ? seconds
                 ft_3 = np.load('./datasets/ft_3_iupac.npy').astype(np.uint8)
                 ft_5 = np.load('./datasets/ft_5_iupac.npy').astype(np.uint8)
-                ft_8 = np.load('./datasets/ft_8_iupac.npy').astype(np.uint8)
+                # ft_8 = np.load('./datasets/ft_8_iupac.npy').astype(np.uint8)
                 # ft_10 = np.load('./datasets/ft_10_iupac.npy').astype(np.uint8)
                 print(f"MAX VALUE in ft_3_iupac: {np.amax(ft_3)}")
                 print(f"MAX VALUE in ft_5_iupac: {np.amax(ft_5)}")
-                print(f"MAX VALUE in ft_8_iupac: {np.amax(ft_8)}")
+                # print(f"MAX VALUE in ft_8_iupac: {np.amax(ft_8)}")
                 # print(f"MAX VALUE in ft_10_iupac: {np.amax(ft_10)}")
 
                 ft_3_test = np.load('./datasets/ft_3_test_iupac.npy').astype(np.uint8)
                 ft_5_test = np.load('./datasets/ft_5_test_iupac.npy').astype(np.uint8)
-                ft_8_test = np.load('./datasets/ft_8_test_iupac.npy').astype(np.uint8)
+                # ft_8_test = np.load('./datasets/ft_8_test_iupac.npy').astype(np.uint8)
                 # ft_10_test = np.load('./datasets/ft_10_test_iupac.npy').astype(np.uint8)
 
         except FileNotFoundError:
@@ -1653,37 +1653,37 @@ if __name__ == '__main__':
             ft_3 = utils.create_feature_table_with_np(X_train, 3, include_iupac)
             print(f"Creating k-mer feature table for k-mer=5 iupac={include_iupac} (expect 1/ minute)...", flush=True)
             ft_5 = utils.create_feature_table_with_np(X_train, 5, include_iupac)
-            print(f"Creating k-mer feature table for k-mer=8 iupac={include_iupac} (expect 1/ minute)...", flush=True)
-            ft_8 = utils.create_feature_table_with_np(X_train, 8, include_iupac)
-            print(f"Creating k-mer feature table for k-mer=10 iupac={include_iupac} (expect 25/?  mins)...", flush=True)
+            # print(f"Creating k-mer feature table for k-mer=8 iupac={include_iupac} (expect 1/ minute)...", flush=True)
+            # ft_8 = utils.create_feature_table_with_np(X_train, 8, include_iupac)
+            # print(f"Creating k-mer feature table for k-mer=10 iupac={include_iupac} (expect 25/?  mins)...", flush=True)
             # ft_10 = utils.create_feature_table_with_np(X_train, 10, include_iupac)
             
             print(f"Creating k-mer feature tables for test sets 3,5,8, and 10", flush=True)
             ft_3_test = utils.create_feature_table_with_np(X_test, 3, include_iupac)
             ft_5_test = utils.create_feature_table_with_np(X_test, 5, include_iupac)
-            ft_8_test = utils.create_feature_table_with_np(X_test, 8, include_iupac)
+            # ft_8_test = utils.create_feature_table_with_np(X_test, 8, include_iupac)
             # ft_10_test = utils.create_feature_table_with_np(X_test, 10, include_iupac)
 
             if not include_iupac:
                 np.save('./datasets/ft_3.npy', ft_3)
                 np.save('./datasets/ft_5.npy', ft_5)
-                np.save('./datasets/ft_8.npy', ft_8)
+                # np.save('./datasets/ft_8.npy', ft_8)
                 # np.save('./datasets/ft_10.npy', ft_10)
 
                 np.save('./datasets/ft_3_test.npy', ft_3_test)
                 np.save('./datasets/ft_5_test.npy', ft_5_test)
-                np.save('./datasets/ft_8_test.npy', ft_8_test)
+                # np.save('./datasets/ft_8_test.npy', ft_8_test)
                 # np.save('./datasets/ft_10_test.npy', ft_10_test)
 
             elif include_iupac:
                 np.save('./datasets/ft_3_iupac.npy', ft_3)
                 np.save('./datasets/ft_5_iupac.npy', ft_5)
-                np.save('./datasets/ft_8_iupac.npy', ft_8)
+                # np.save('./datasets/ft_8_iupac.npy', ft_8)
                 # np.save('./datasets/ft_10_iupac.npy', ft_10)
 
                 np.save('./datasets/ft_3_test_iupac.npy', ft_3_test)
                 np.save('./datasets/ft_5_test_iupac.npy', ft_5_test)
-                np.save('./datasets/ft_8_test_iupac.npy', ft_8_test)
+                # np.save('./datasets/ft_8_test_iupac.npy', ft_8_test)
                 # np.save('./datasets/ft_10_test_iupac.npy', ft_10_test)
 
         if not include_iupac:
@@ -1699,7 +1699,7 @@ if __name__ == '__main__':
         print(f"Shapes:")
         print(f"Ft_3: {ft_3.shape}")
         print(f"Ft_5: {ft_5.shape}")
-        print(f"Ft_8: {ft_8.shape}")
+        # print(f"Ft_8: {ft_8.shape}")
         # print(f"Ft_10: {ft_10.shape}")
         print(f"X_train: {X_train.shape}")
         print(f"y_train: {y_train.shape}")
@@ -1728,16 +1728,16 @@ if __name__ == '__main__':
                 knn5_5 = load('./datasets/knn5_5.joblib')
                 knn5_7 = load('./datasets/knn5_7.joblib')
                 knn5_9 = load('./datasets/knn5_9.joblib')
-                knn8_1 = load('./datasets/knn8_1.joblib')
-                knn8_3 = load('./datasets/knn8_3.joblib')
-                knn8_5 = load('./datasets/knn8_5.joblib')
-                knn8_7 = load('./datasets/knn8_7.joblib')
-                knn8_9 = load('./datasets/knn8_9.joblib')
-                knn10_1 = load('./datasets/knn10_1.joblib')
-                knn10_3 = load('./datasets/knn10_3.joblib')
-                knn10_5 = load('./datasets/knn10_5.joblib')
-                knn10_7 = load('./datasets/knn10_7.joblib')
-                knn10_9 = load('./datasets/knn10_9.joblib')
+                # knn8_1 = load('./datasets/knn8_1.joblib')
+                # knn8_3 = load('./datasets/knn8_3.joblib')
+                # knn8_5 = load('./datasets/knn8_5.joblib')
+                # knn8_7 = load('./datasets/knn8_7.joblib')
+                # knn8_9 = load('./datasets/knn8_9.joblib')
+                # knn10_1 = load('./datasets/knn10_1.joblib')
+                # knn10_3 = load('./datasets/knn10_3.joblib')
+                # knn10_5 = load('./datasets/knn10_5.joblib')
+                # knn10_7 = load('./datasets/knn10_7.joblib')
+                # knn10_9 = load('./datasets/knn10_9.joblib')
             elif include_iupac:
                 knn3_1 = load('./datasets/knn3_1_iupac.joblib')
                 knn3_3 = load('./datasets/knn3_3_iupac.joblib')
@@ -1749,16 +1749,16 @@ if __name__ == '__main__':
                 knn5_5 = load('./datasets/knn5_5_iupac.joblib')
                 knn5_7 = load('./datasets/knn5_7_iupac.joblib')
                 knn5_9 = load('./datasets/knn5_9_iupac.joblib')
-                knn8_1 = load('./datasets/knn8_1_iupac.joblib')
-                knn8_3 = load('./datasets/knn8_3_iupac.joblib')
-                knn8_5 = load('./datasets/knn8_5_iupac.joblib')
-                knn8_7 = load('./datasets/knn8_7_iupac.joblib')
-                knn8_9 = load('./datasets/knn8_9_iupac.joblib')
-                knn10_1 = load('./datasets/knn10_1_iupac.joblib')
-                knn10_3 = load('./datasets/knn10_3_iupac.joblib')
-                knn10_5 = load('./datasets/knn10_5_iupac.joblib')
-                knn10_7 = load('./datasets/knn10_7_iupac.joblib')
-                knn10_9 = load('./datasets/knn10_9_iupac.joblib')
+                # knn8_1 = load('./datasets/knn8_1_iupac.joblib')
+                # knn8_3 = load('./datasets/knn8_3_iupac.joblib')
+                # knn8_5 = load('./datasets/knn8_5_iupac.joblib')
+                # knn8_7 = load('./datasets/knn8_7_iupac.joblib')
+                # knn8_9 = load('./datasets/knn8_9_iupac.joblib')
+                # knn10_1 = load('./datasets/knn10_1_iupac.joblib')
+                # knn10_3 = load('./datasets/knn10_3_iupac.joblib')
+                # knn10_5 = load('./datasets/knn10_5_iupac.joblib')
+                # knn10_7 = load('./datasets/knn10_7_iupac.joblib')
+                # knn10_9 = load('./datasets/knn10_9_iupac.joblib')
 
         except FileNotFoundError:
             print("Training KNN models. (expect ~? mins)", flush=True)
@@ -1767,7 +1767,7 @@ if __name__ == '__main__':
             # run this again in order to test them, so that they can be loaded
             # into variables in the try: section above.
 
-            kmer_lengths = [3, 5, 8, 10]
+            kmer_lengths = [3, 5] # 8, 10
             neighbors = [1, 3, 5, 7, 9]
             
             # In order to use raw data you would have to flatten it, which
@@ -1797,14 +1797,14 @@ if __name__ == '__main__':
                 print("Searching for pretrained naive bayes models...")
                 nb_3 = load('./datasets/nb3.joblib')
                 nb_5 = load('./datasets/nb5.joblib')
-                nb_8 = load('./datasets/nb8.joblib')
-                nb_10 = load('./datasets/nb10.joblib')
+                # nb_8 = load('./datasets/nb8.joblib')
+                # nb_10 = load('./datasets/nb10.joblib')
             elif include_iupac:
                 print("Searching for pretrained naive bayes models with iupac...")
                 nb_3 = load('./datasets/nb3_iupac.joblib')
                 nb_5 = load('./datasets/nb5_iupac.joblib')
-                nb_8 = load('./datasets/nb8_iupac.joblib')
-                nb_10 = load('./datasets/nb10_iupac.joblib')
+                # nb_8 = load('./datasets/nb8_iupac.joblib')
+                # nb_10 = load('./datasets/nb10_iupac.joblib')
 
         except FileNotFoundError:
             if not include_iupac:
@@ -1818,9 +1818,9 @@ if __name__ == '__main__':
                 nb_5.fit(ft_5, y_train)
                 dump(nb_5, './datasets/nb5.joblib')
 
-                nb_8 = MultinomialNB()
-                nb_8.fit(ft_8, y_train)
-                dump(nb_8, './datasets/nb8.joblib')
+                # nb_8 = MultinomialNB()
+                # nb_8.fit(ft_8, y_train)
+                # dump(nb_8, './datasets/nb8.joblib')
 
                 # nb_10 = MultinomialNB()
                 # nb_10.fit(ft_10, y_train)
@@ -1836,9 +1836,9 @@ if __name__ == '__main__':
                 nb_5.fit(ft_5, y_train)
                 dump(nb_5, './datasets/nb5_iupac.joblib')
 
-                nb_8 = MultinomialNB()
-                nb_8.fit(ft_8, y_train)
-                dump(nb_8, './datasets/nb8_iupac.joblib')
+                # nb_8 = MultinomialNB()
+                # nb_8.fit(ft_8, y_train)
+                # dump(nb_8, './datasets/nb8_iupac.joblib')
 
                 # nb_10 = MultinomialNB()
                 # nb_10.fit(ft_10, y_train)
@@ -1850,14 +1850,14 @@ if __name__ == '__main__':
                 print("Searching for pretrained decision tree models...")
                 dt_3 = load('./datasets/dt3.joblib')
                 dt_5 = load('./datasets/dt5.joblib')
-                dt_8 = load('./datasets/dt8.joblib')
-                dt_10 = load('./datasets/dt10.joblib')
+                # dt_8 = load('./datasets/dt8.joblib')
+                # dt_10 = load('./datasets/dt10.joblib')
             elif include_iupac:
                 print("Searching for pretrained decision tree models with iupac...")
                 dt_3 = load('./datasets/dt3_iupac.joblib')
                 dt_5 = load('./datasets/dt5_iupac.joblib')
-                dt_8 = load('./datasets/dt8_iupac.joblib')
-                dt_10 = load('./datasets/dt10_iupac.joblib')
+                # dt_8 = load('./datasets/dt8_iupac.joblib')
+                # dt_10 = load('./datasets/dt10_iupac.joblib')
 
         except FileNotFoundError:
             if not include_iupac:
@@ -1871,9 +1871,9 @@ if __name__ == '__main__':
                 dt_5.fit(ft_5, y_train)
                 dump(dt_5, './datasets/dt5.joblib')
 
-                dt_8 = tree.DecisionTreeClassifier(random_state=1327)
-                dt_8.fit(ft_8, y_train)
-                dump(dt_8, './datasets/dt8.joblib')
+                # dt_8 = tree.DecisionTreeClassifier(random_state=1327)
+                # dt_8.fit(ft_8, y_train)
+                # dump(dt_8, './datasets/dt8.joblib')
 
                 # dt_10 = tree.DecisionTreeClassifier(random_state=1327)
                 # dt_10.fit(ft_10, y_train)
@@ -1889,9 +1889,9 @@ if __name__ == '__main__':
                 dt_5.fit(ft_5, y_train)
                 dump(dt_5, './datasets/dt5_iupac.joblib')
 
-                dt_8 = tree.DecisionTreeClassifier(random_state=1327)
-                dt_8.fit(ft_8, y_train)
-                dump(dt_8, './datasets/dt8_iupac.joblib')
+                # dt_8 = tree.DecisionTreeClassifier(random_state=1327)
+                # dt_8.fit(ft_8, y_train)
+                # dump(dt_8, './datasets/dt8_iupac.joblib')
 
                 # dt_10 = tree.DecisionTreeClassifier(random_state=1327)
                 # dt_10.fit(ft_10, y_train)
@@ -1903,14 +1903,14 @@ if __name__ == '__main__':
                 print("Searching for pretrained support vector machine models...")
                 svm_3 = load('./datasets/svm3.joblib')
                 svm_5 = load('./datasets/svm5.joblib')
-                svm_8 = load('./datasets/svm8.joblib')
-                svm_10 = load('./datasets/svm10.joblib')
+                # svm_8 = load('./datasets/svm8.joblib')
+                # svm_10 = load('./datasets/svm10.joblib')
             elif include_iupac:
                 print("Searching for pretrained support vector machine models with iupac...")
                 svm_3 = load('./datasets/svm3_iupac.joblib')
                 svm_5 = load('./datasets/svm5_iupac.joblib')
-                svm_8 = load('./datasets/svm8_iupac.joblib')
-                svm_10 = load('./datasets/svm10_iupac.joblib')
+                # svm_8 = load('./datasets/svm8_iupac.joblib')
+                # svm_10 = load('./datasets/svm10_iupac.joblib')
 
         except FileNotFoundError:
             if not include_iupac:
@@ -1924,9 +1924,9 @@ if __name__ == '__main__':
                 svm_5.fit(ft_5, y_train)
                 dump(svm_5, './datasets/svm5.joblib')
 
-                svm_8 = svm.SVC(kernel='linear', decision_function_shape='ovo')
-                svm_8.fit(ft_8, y_train)
-                dump(svm_8, './datasets/svm8.joblib')
+                # svm_8 = svm.SVC(kernel='linear', decision_function_shape='ovo')
+                # svm_8.fit(ft_8, y_train)
+                # dump(svm_8, './datasets/svm8.joblib')
 
                 # svm_10 = svm.SVC(kernel='linear', decision_function_shape='ovo')
                 # svm_10.fit(ft_10, y_train)
@@ -1942,9 +1942,9 @@ if __name__ == '__main__':
                 svm_5.fit(ft_5, y_train)
                 dump(svm_5, './datasets/svm5_iupac.joblib')
 
-                svm_8 = svm.SVC(kernel='linear', decision_function_shape='ovo')
-                svm_8.fit(ft_8, y_train)
-                dump(svm_8, './datasets/svm8_iupac.joblib')
+                # svm_8 = svm.SVC(kernel='linear', decision_function_shape='ovo')
+                # svm_8.fit(ft_8, y_train)
+                # dump(svm_8, './datasets/svm8_iupac.joblib')
 
                 # svm_10 = svm.SVC(kernel='linear', decision_function_shape='ovo')
                 # svm_10.fit(ft_10, y_train)
@@ -1956,13 +1956,13 @@ if __name__ == '__main__':
                 print("Searching for pretrained logistic regression models...")
                 lr_3 = load('./datasets/lr3.joblib')
                 lr_5 = load('./datasets/lr5.joblib')
-                lr_8 = load('./datasets/lr8.joblib')
-                lr_10 = load('./datasets/lr10.joblib')
+                # lr_8 = load('./datasets/lr8.joblib')
+                # lr_10 = load('./datasets/lr10.joblib')
             elif include_iupac:
                 print("Searching for pretrained logistic regression models with iupac...")
                 lr_3 = load('./datasets/lr3_iupac.joblib')
                 lr_5 = load('./datasets/lr5_iupac.joblib')
-                lr_8 = load('./datasets/lr8_iupac.joblib')
+                # lr_8 = load('./datasets/lr8_iupac.joblib')
                 # lr_10 = load('./datasets/lr10_iupac.joblib')
 
         except FileNotFoundError:
@@ -1977,9 +1977,10 @@ if __name__ == '__main__':
                 lr_5.fit(ft_5, y_train)
                 dump(lr_5, './datasets/lr5.joblib')
 
-                lr_8 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
-                lr_8.fit(ft_8, y_train)
-                dump(lr_8, './datasets/lr8.joblib')
+                # lr_8 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
+                # lr_8.fit(ft_8, y_train)
+                # dump(lr_8, './datasets/lr8.joblib')
+
             elif include_iupac:
                 print("Training logistic regression models with iupac. (expect ~? mins)", flush=True)
                 
@@ -1991,9 +1992,9 @@ if __name__ == '__main__':
                 lr_5.fit(ft_5, y_train)
                 dump(lr_5, './datasets/lr5_iupac.joblib')
 
-                lr_8 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
-                lr_8.fit(ft_8, y_train)
-                dump(lr_8, './datasets/lr8_iupac.joblib')
+                # lr_8 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
+                # lr_8.fit(ft_8, y_train)
+                # dump(lr_8, './datasets/lr8_iupac.joblib')
 
             # numpy.core._exceptions._ArrayMemoryError: Unable to allocate 30.5 GiB for an array with shape (4089451480,) and data type float64
             # I tried comverting to uint8, but it seems sklearn automatically translates it to float to deal with probabilities.
@@ -2010,12 +2011,12 @@ if __name__ == '__main__':
             rf5_15 = load(f'./datasets/rf5_15{ending}.joblib')
             rf5_30 = load(f'./datasets/rf5_30{ending}.joblib')
             rf5_45 = load(f'./datasets/rf5_45{ending}.joblib')
-            rf8_15 = load(f'./datasets/rf8_15{ending}.joblib')
-            rf8_30 = load(f'./datasets/rf8_30{ending}.joblib')
-            rf8_45 = load(f'./datasets/rf8_45{ending}.joblib')
-            rf10_15 = load(f'./datasets/rf10_15{ending}.joblib')
-            rf10_30 = load(f'./datasets/rf10_30{ending}.joblib')
-            rf10_45 = load(f'./datasets/rf10_45{ending}.joblib')
+            # rf8_15 = load(f'./datasets/rf8_15{ending}.joblib')
+            # rf8_30 = load(f'./datasets/rf8_30{ending}.joblib')
+            # rf8_45 = load(f'./datasets/rf8_45{ending}.joblib')
+            # rf10_15 = load(f'./datasets/rf10_15{ending}.joblib')
+            # rf10_30 = load(f'./datasets/rf10_30{ending}.joblib')
+            # rf10_45 = load(f'./datasets/rf10_45{ending}.joblib')
 
         except FileNotFoundError:
             print("Training random forest classifiers. (expect ~3 mins)", flush=True)
@@ -2046,18 +2047,18 @@ if __name__ == '__main__':
             rf5_45.fit(ft_5, y_train)
             dump(rf5_45, f'./datasets/rf5_45{ending}.joblib')
 
-            # For feature set 8
-            rf8_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
-            rf8_15.fit(ft_8, y_train)
-            dump(rf8_15, f'./datasets/rf8_15{ending}.joblib')
+            # # For feature set 8
+            # rf8_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
+            # rf8_15.fit(ft_8, y_train)
+            # dump(rf8_15, f'./datasets/rf8_15{ending}.joblib')
 
-            rf8_30 = RandomForestClassifier(n_estimators=30, random_state=1327)
-            rf8_30.fit(ft_8, y_train)
-            dump(rf8_30, f'./datasets/rf8_30{ending}.joblib')
+            # rf8_30 = RandomForestClassifier(n_estimators=30, random_state=1327)
+            # rf8_30.fit(ft_8, y_train)
+            # dump(rf8_30, f'./datasets/rf8_30{ending}.joblib')
 
-            rf8_45 = RandomForestClassifier(n_estimators=45, random_state=1327)
-            rf8_45.fit(ft_8, y_train)
-            dump(rf8_45, f'./datasets/rf8_45{ending}.joblib')
+            # rf8_45 = RandomForestClassifier(n_estimators=45, random_state=1327)
+            # rf8_45.fit(ft_8, y_train)
+            # dump(rf8_45, f'./datasets/rf8_45{ending}.joblib')
 
             # For feature set 10
             # rf10_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
@@ -2081,12 +2082,12 @@ if __name__ == '__main__':
             abdt5_15_3 = load(f'./datasets/abdt5_15_3{ending}.joblib')
             abdt5_30_3 = load(f'./datasets/abdt5_30_3{ending}.joblib')
             abdt5_45_3 = load(f'./datasets/abdt5_45_3{ending}.joblib')
-            abdt8_15_3 = load(f'./datasets/abdt8_15_3{ending}.joblib')
-            abdt8_30_3 = load(f'./datasets/abdt8_30_3{ending}.joblib')
-            abdt8_45_3 = load(f'./datasets/abdt8_45_3{ending}.joblib')
-            abdt10_15_3 = load(f'./datasets/abdt10_15_3{ending}.joblib')
-            abdt10_30_3 = load(f'./datasets/abdt10_30_3{ending}.joblib')
-            abdt10_45_3 = load(f'./datasets/abdt10_45_3{ending}.joblib')
+            # abdt8_15_3 = load(f'./datasets/abdt8_15_3{ending}.joblib')
+            # abdt8_30_3 = load(f'./datasets/abdt8_30_3{ending}.joblib')
+            # abdt8_45_3 = load(f'./datasets/abdt8_45_3{ending}.joblib')
+            # abdt10_15_3 = load(f'./datasets/abdt10_15_3{ending}.joblib')
+            # abdt10_30_3 = load(f'./datasets/abdt10_30_3{ending}.joblib')
+            # abdt10_45_3 = load(f'./datasets/abdt10_45_3{ending}.joblib')
             
             abdt3_15_8 = load(f'./datasets/abdt3_15_8{ending}.joblib')
             abdt3_30_8 = load(f'./datasets/abdt3_30_8{ending}.joblib')
@@ -2094,12 +2095,12 @@ if __name__ == '__main__':
             abdt5_15_8 = load(f'./datasets/abdt5_15_8{ending}.joblib')
             abdt5_30_8 = load(f'./datasets/abdt5_30_8{ending}.joblib')
             abdt5_45_8 = load(f'./datasets/abdt5_45_8{ending}.joblib')
-            abdt8_15_8 = load(f'./datasets/abdt8_15_8{ending}.joblib')
-            abdt8_30_8 = load(f'./datasets/abdt8_30_8{ending}.joblib')
-            abdt8_45_8 = load(f'./datasets/abdt8_45_8{ending}.joblib')
-            abdt10_15_8 = load(f'./datasets/abdt10_15_8{ending}.joblib')
-            abdt10_30_8 = load(f'./datasets/abdt10_30_8{ending}.joblib')
-            abdt10_45_8 = load(f'./datasets/abdt10_45_8{ending}.joblib')
+            # abdt8_15_8 = load(f'./datasets/abdt8_15_8{ending}.joblib')
+            # abdt8_30_8 = load(f'./datasets/abdt8_30_8{ending}.joblib')
+            # abdt8_45_8 = load(f'./datasets/abdt8_45_8{ending}.joblib')
+            # abdt10_15_8 = load(f'./datasets/abdt10_15_8{ending}.joblib')
+            # abdt10_30_8 = load(f'./datasets/abdt10_30_8{ending}.joblib')
+            # abdt10_45_8 = load(f'./datasets/abdt10_45_8{ending}.joblib')
 
             abdt3_15_18 = load(f'./datasets/abdt3_15_18{ending}.joblib')
             abdt3_30_18 = load(f'./datasets/abdt3_30_18{ending}.joblib')
@@ -2107,12 +2108,12 @@ if __name__ == '__main__':
             abdt5_15_18 = load(f'./datasets/abdt5_15_18{ending}.joblib')
             abdt5_30_18 = load(f'./datasets/abdt5_30_18{ending}.joblib')
             abdt5_45_18 = load(f'./datasets/abdt5_45_18{ending}.joblib')
-            abdt8_15_18 = load(f'./datasets/abdt8_15_18{ending}.joblib')
-            abdt8_30_18 = load(f'./datasets/abdt8_30_18{ending}.joblib')
-            abdt8_45_18 = load(f'./datasets/abdt8_45_18{ending}.joblib')
-            abdt10_15_18 = load(f'./datasets/abdt10_15_18{ending}.joblib')
-            abdt10_30_18 = load(f'./datasets/abdt10_30_18{ending}.joblib')
-            abdt10_45_18 = load(f'./datasets/abdt10_45_18{ending}.joblib')
+            # abdt8_15_18 = load(f'./datasets/abdt8_15_18{ending}.joblib')
+            # abdt8_30_18 = load(f'./datasets/abdt8_30_18{ending}.joblib')
+            # abdt8_45_18 = load(f'./datasets/abdt8_45_18{ending}.joblib')
+            # abdt10_15_18 = load(f'./datasets/abdt10_15_18{ending}.joblib')
+            # abdt10_30_18 = load(f'./datasets/abdt10_30_18{ending}.joblib')
+            # abdt10_45_18 = load(f'./datasets/abdt10_45_18{ending}.joblib')
 
 
         except FileNotFoundError:
@@ -2147,13 +2148,13 @@ if __name__ == '__main__':
                     model.fit(ft_5, y_train)
                     dump(model, f'./datasets/abdt5_{n_estimators}_{max_depth}{ending}.joblib')
 
-            # For feature set 8
-            print("Training feature set 8")
-            for n_estimators in [15, 30, 45]:
-                for max_depth in [3, 8, 18]:
-                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
-                    model.fit(ft_8, y_train)
-                    dump(model, f'./datasets/abdt8_{n_estimators}_{max_depth}{ending}.joblib')
+            # # For feature set 8
+            # print("Training feature set 8")
+            # for n_estimators in [15, 30, 45]:
+            #     for max_depth in [3, 8, 18]:
+            #         model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
+            #         model.fit(ft_8, y_train)
+            #         dump(model, f'./datasets/abdt8_{n_estimators}_{max_depth}{ending}.joblib')
 
             # # For feature set 10
             # print("Training feature set 10")
@@ -2184,7 +2185,7 @@ if __name__ == '__main__':
             print("Searching for pretrained XGBoost models...")
             xgb_3 = load(f'./datasets/xgb3{ending}.joblib')
             xgb_5 = load(f'./datasets/xgb5{ending}.joblib')
-            xgb_8 = load(f'./datasets/xgb8{ending}.joblib')
+            # xgb_8 = load(f'./datasets/xgb8{ending}.joblib')
             # xgb_10 = load('./datasets/xgb10.joblib')
 
         except FileNotFoundError:
@@ -2198,9 +2199,9 @@ if __name__ == '__main__':
             xgb_5.fit(ft_5, y_train)
             dump(xgb_5, f'./datasets/xgb5{ending}.joblib')
 
-            xgb_8 = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
-            xgb_8.fit(ft_8, y_train)
-            dump(xgb_8, f'./datasets/xgb8{ending}.joblib')
+            # xgb_8 = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+            # xgb_8.fit(ft_8, y_train)
+            # dump(xgb_8, f'./datasets/xgb8{ending}.joblib')
 
             # I got several errors when I tried to run this, including "hard
             # stop" and making my IDE freeze.
@@ -2294,11 +2295,11 @@ if __name__ == '__main__':
             ,(knn5_5,f"knn5_5{ending}",ft_5_test,y_test,ft_5,y_train)
             ,(knn5_7,f"knn5_7{ending}",ft_5_test,y_test,ft_5,y_train)
             ,(knn5_9,f"knn5_9{ending}",ft_5_test,y_test,ft_5,y_train)
-            ,(knn8_1,f"knn8_1{ending}",ft_8_test,y_test,ft_8,y_train)
-            ,(knn8_3,f"knn8_3{ending}",ft_8_test,y_test,ft_8,y_train)
-            ,(knn8_5,f"knn8_5{ending}",ft_8_test,y_test,ft_8,y_train)
-            ,(knn8_7,f"knn8_7{ending}",ft_8_test,y_test,ft_8,y_train)
-            ,(knn8_9,f"knn8_9{ending}",ft_8_test,y_test,ft_8,y_train)
+            # ,(knn8_1,f"knn8_1{ending}",ft_8_test,y_test,ft_8,y_train)
+            # ,(knn8_3,f"knn8_3{ending}",ft_8_test,y_test,ft_8,y_train)
+            # ,(knn8_5,f"knn8_5{ending}",ft_8_test,y_test,ft_8,y_train)
+            # ,(knn8_7,f"knn8_7{ending}",ft_8_test,y_test,ft_8,y_train)
+            # ,(knn8_9,f"knn8_9{ending}",ft_8_test,y_test,ft_8,y_train)
             # ,(knn10_1,f"knn10_1{ending}",ft_10_test,y_test,ft_10,y_train)
             # ,(knn10_3,f"knn10_3{ending}",ft_10_test,y_test,ft_10,y_train)
             # ,(knn10_5,f"knn10_5{ending}",ft_10_test,y_test,ft_10,y_train)
@@ -2307,7 +2308,7 @@ if __name__ == '__main__':
 
             ,(nb_3, f"nb_3{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(nb_5, f"nb_5{ending}", ft_5_test, y_test, ft_5, y_train)
-            ,(nb_8, f"nb_8{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(nb_8, f"nb_8{ending}", ft_8_test, y_test, ft_8, y_train)
             # ,(nb_10, f"nb_10{ending}", ft_10_test, y_test, ft_10, y_train)
 
             ,(rf3_15, f"rf3_15{ending}", ft_3_test, y_test, ft_3, y_train)
@@ -2316,31 +2317,31 @@ if __name__ == '__main__':
             ,(rf5_15, f"rf5_15{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(rf5_30, f"rf5_30{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(rf5_45, f"rf5_45{ending}", ft_5_test, y_test, ft_5, y_train)
-            ,(rf8_15, f"rf8_15{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(rf8_30, f"rf8_30{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(rf8_45, f"rf8_45{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(rf8_15, f"rf8_15{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(rf8_30, f"rf8_30{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(rf8_45, f"rf8_45{ending}", ft_8_test, y_test, ft_8, y_train)
             # ,(rf10_15, f"rf10_15{ending}", ft_10_test, y_test, ft_10, y_train)
             # ,(rf10_30, f"rf10_30{ending}", ft_10_test, y_test, ft_10, y_train)
             # ,(rf10_45, f"rf10_45{ending}", ft_10_test, y_test, ft_10, y_train)
 
             ,(dt_3, f"dt_3{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(dt_5, f"dt_5{ending}", ft_5_test, y_test, ft_5, y_train)
-            ,(dt_8, f"dt_8{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(dt_8, f"dt_8{ending}", ft_8_test, y_test, ft_8, y_train)
             # ,(dt_10, f"dt_10{ending}", ft_10_test, y_test, ft_10, y_train)
 
             ,(svm_3, f"svm_3{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(svm_5, f"svm_5{ending}", ft_5_test, y_test, ft_5, y_train)
-            ,(svm_8, f"svm_8{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(svm_8, f"svm_8{ending}", ft_8_test, y_test, ft_8, y_train)
             # ,(svm_10, f"svm_10{ending}", ft_10_test, y_test, ft_10, y_train)
 
             ,(lr_3, f"lr_3{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(lr_5, f"lr_5{ending}", ft_5_test, y_test, ft_5, y_train)
-            ,(lr_8, f"lr_8{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(lr_8, f"lr_8{ending}", ft_8_test, y_test, ft_8, y_train)
             # ,(lr_10, "lr_10", ft_10_test, y_test, ft_10, y_train)
 
             ,(xgb_3, f"xgb_3{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(xgb_5, f"xgb_5{ending}", ft_5_test, y_test, ft_5, y_train)
-            ,(xgb_8, f"xgb_8{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(xgb_8, f"xgb_8{ending}", ft_8_test, y_test, ft_8, y_train)
             # ,(xgb_10, "xgb_10", ft_10_test, y_test, ft_10, y_train)
 
             ,(abdt3_15_3, f"abdt3_15_3{ending}", ft_3_test, y_test, ft_3, y_train)
@@ -2349,9 +2350,9 @@ if __name__ == '__main__':
             ,(abdt5_15_3, f"abdt5_15_3{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(abdt5_30_3, f"abdt5_30_3{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(abdt5_45_3, f"abdt5_45_3{ending}", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt8_15_3, f"abdt8_15_3{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_30_3, f"abdt8_30_3{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_45_3, f"abdt8_45_3{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(abdt8_15_3, f"abdt8_15_3{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(abdt8_30_3, f"abdt8_30_3{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(abdt8_45_3, f"abdt8_45_3{ending}", ft_8_test, y_test, ft_8, y_train)
             # ,(abdt10_15_3, f"abdt10_15_3{ending}", ft_10_test, y_test, ft_10, y_train)
             # ,(abdt10_30_3, f"abdt10_30_3{ending}", ft_10_test, y_test, ft_10, y_train)
             # ,(abdt10_45_3, f"abdt10_45_3{ending}", ft_10_test, y_test, ft_10, y_train)
@@ -2362,9 +2363,9 @@ if __name__ == '__main__':
             ,(abdt5_15_8, f"abdt5_15_8{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(abdt5_30_8, f"abdt5_30_8{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(abdt5_45_8, f"abdt5_45_8{ending}", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt8_15_8, f"abdt8_15_8{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_30_8, f"abdt8_30_8{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_45_8, f"abdt8_45_8{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(abdt8_15_8, f"abdt8_15_8{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(abdt8_30_8, f"abdt8_30_8{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(abdt8_45_8, f"abdt8_45_8{ending}", ft_8_test, y_test, ft_8, y_train)
             # ,(abdt10_15_8, f"abdt10_15_8{ending}", ft_10_test, y_test, ft_10, y_train)
             # ,(abdt10_30_8, f"abdt10_30_8{ending}", ft_10_test, y_test, ft_10, y_train)
             # ,(abdt10_45_8, f"abdt10_45_8{ending}", ft_10_test, y_test, ft_10, y_train)
@@ -2375,9 +2376,9 @@ if __name__ == '__main__':
             ,(abdt5_15_18, f"abdt5_15_18{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(abdt5_30_18, f"abdt5_30_18{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(abdt5_45_18, f"abdt5_45_18{ending}", ft_5_test, y_test, ft_5, y_train)
-            ,(abdt8_15_18, f"abdt8_15_18{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_30_18, f"abdt8_30_18{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt8_45_18, f"abdt8_45_18{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(abdt8_15_18, f"abdt8_15_18{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(abdt8_30_18, f"abdt8_30_18{ending}", ft_8_test, y_test, ft_8, y_train)
+            # ,(abdt8_45_18, f"abdt8_45_18{ending}", ft_8_test, y_test, ft_8, y_train)
             # ,(abdt10_15_18, f"abdt10_15_18{ending}", ft_10_test, y_test, ft_10, y_train)
             # ,(abdt10_30_18, f"abdt10_30_18{ending}", ft_10_test, y_test, ft_10, y_train)
             # ,(abdt10_45_18, f"abdt10_45_18{ending}", ft_10_test, y_test, ft_10, y_train)
