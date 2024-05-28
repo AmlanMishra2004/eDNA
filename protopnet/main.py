@@ -144,7 +144,7 @@ parser.add_argument('--arr_job_id', nargs=1, type=int, default=-1) # same for al
 parser.add_argument('--comb_num', nargs=1, type=int, default=-1)
 args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
-print(os.environ['CUDA_VISIBLE_DEVICES'])
+print(f"Available CUDA devices: {os.environ['CUDA_VISIBLE_DEVICES']}")
 try:
     args.comb_num = args.comb_num[0]
 except:
@@ -383,7 +383,7 @@ for trial in range(1):
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1],                        #0.95 [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0, 0.333, 0.666, 1],                        #0.95 [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
 
         'num_warm_epochs':          [35+4*45],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set

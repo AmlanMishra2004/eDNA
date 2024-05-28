@@ -49,18 +49,18 @@ def extract_number(file_path):
 # with open('out.1855240.log', 'r') as file: # to find ptype length
 # with open('out.1857478.log', 'r') as file: # to find joint lrs after 2 pushes
 # with open('out.1875496.log', 'r') as file: # to look back (do not save) 1842207? 
-with open('out.1881381.log', 'r') as file: # to look back (do not save) 1842207? 
-    data = file.read()
+# with open('out.1881381.log', 'r') as file: # to look back (do not save) 1842207? 
+#     data = file.read()
 
 avg_last_25_epochs = {}
 
-# job_ID = 1878231
-# data = ""
-# file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
-# print(file_paths)
-# for file_path in file_paths:
-#     with open(file_path, 'r') as file:
-#         data += file.read()
+job_ID = 1892566
+data = ""
+file_paths = sorted(glob.glob(f'slurm_outputs/out.{str(job_ID)}_*.log'), key=extract_number)
+print(file_paths)
+for file_path in file_paths:
+    with open(file_path, 'r') as file:
+        data += file.read()
 
 def moving_average(a, n=10):
     ret = np.cumsum(a, dtype=float)
@@ -107,7 +107,7 @@ if not fancy:
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
     plt.legend()
-    plt.ylim(.925, 1)
+    # plt.ylim(.925, 1)
     # plt.xlim(300, 500)
     plt.show()
 
@@ -123,9 +123,11 @@ if not fancy:
 elif fancy:
     # FANCY VERSION (for use of creating graphs to put in the thesis)
 
-    labels = [str(x) for x in range(1, 36, 2)]
-    # labels = [format(x*0.1, '.1f') for x in range(0, 11)]
     # labels = [str(x) for x in range(1, 36, 2)]
+    labels = [format(x*0.1, '.1f') for x in range(0, 11)]
+    # labels = ['0', '0.2', '0.4', '0.6', '0.8', '1', '-1', '-1', '-1']
+    # labels = [str(x) for x in range(1, 36, 2)]
+    # labels = [str(x) for x in range(1, 22, 2)]
     # labels = ['11', '17', '25', '29']
     # labels = [str(x) for x in range(11, 30, 2)]
     # labels = ['0', '5e-06', '1e-05', '5e-05', '0.0001', '0.0005']
@@ -137,7 +139,9 @@ elif fancy:
     print(len(combinations))
     print(labels)
     print(len(labels))
-    for i in range(1, len(combinations)):
+    # for i in range(1, len(combinations)):
+    # for i in [0, 2, 4, 6, 8, 10]:
+    for i in [1, 3, 5, 7, 9, 11]:
     # for i in range(0,8):
     # for i in [3]:
         print(f"i is {i}")
@@ -160,8 +164,8 @@ elif fancy:
         plt.plot(accs_smooth, label=labels[i-1])  # Use the corresponding label
 
     # Add labels, title, and legend
-    # plt.title('Comparing Latent Weights (Smoothed, n=15)')
-    plt.title('Comparing Prototype Lengths (Smoothed, n=20)')
+    plt.title('Comparing Latent Weights (Smoothed, n=10)')
+    # plt.title('Comparing Prototype Lengths (Smoothed, n=20)')
     plt.xlabel('Epoch')
     plt.ylabel('Validation Accuracy')
     plt.grid(True)
@@ -177,13 +181,13 @@ elif fancy:
         bars.append(bar)  # Add the bar to the list
         bar_labels.append(labels[i-1])  # Add the corresponding label to the list
 
-    plt.title('Comparing Prototype Lengths')
-    # plt.title('Latent Weight vs. Raw Input Weight')
-    plt.xlabel('Prototype Length')
-    # plt.xlabel('Latent Weight')
+    # plt.title('Comparing Prototype Lengths')
+    plt.title('Latent Weight vs. Raw Input Weight')
+    # plt.xlabel('Prototype Length')
+    plt.xlabel('Latent Weight')
     plt.ylabel('End Validation Accuracy')
     plt.grid(True)
-    plt.ylim(.90, 1)
+    plt.ylim(.9, 1)
     # Set the x-axis labels to the 'labels' list
     plt.xticks(ticks=range(1, len(labels)+1), labels=labels)
     plt.show()

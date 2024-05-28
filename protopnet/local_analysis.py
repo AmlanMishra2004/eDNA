@@ -78,19 +78,23 @@ parser = argparse.ArgumentParser()
 parser.add_argument('-gpuid', nargs=1, type=str, default='0')
 parser.add_argument('-modeldir', nargs=1, type=str)
 parser.add_argument('-model', nargs=1, type=str)
+parser.add_argument('-experimentname', nargs=1, type=str)
 parser.add_argument('-savedir', nargs=1, type=str)
 # sequence should be the entire string representation of the target sequence
 parser.add_argument('-targetrow', nargs=1, type=int)
 parser.add_argument('-sequence', nargs=1, type=str, default='NA')
-parser.add_argument('-seqclass', nargs=1, type=int, default=-1)
+parser.add_argument('-trainortest', nargs=1, type=str)
+parser.add_argument('-seqclass', nargs=1, type=int, default=[-1])
 args = parser.parse_args()
 print("\n\n\n\n\n\n\n\n\n")
 print(f"gpuid: {args.gpuid[0]}")
 print(f"modeldir: {args.modeldir[0]}")
 print(f"model: {args.model[0]}")
+print(f"experimentname: {args.experimentname[0]}")
 print(f"savedir: {args.savedir[0]}")
 print(f"targetrow: {args.targetrow[0]}")
 print(f"sequence: {args.sequence[0]}")
+print(f"trainortest: {args.trainortest[0]}")
 print(f"seqclass: {args.seqclass[0]}")
 print("\n\n\n\n\n\n\n\n\n")
 
@@ -98,59 +102,44 @@ os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 
 # specify the test image to be analyzed
 save_dir = args.savedir[0] #'./local_analysis/Painted_Bunting_Class15_0081/'
+
+# The following two will be overridden if a valid target_row is provided
 test_sequence = args.sequence[0] #'Painted_Bunting_0081_15230.jpg'
 test_sequence_label = args.seqclass[0] #15
+
 target_row = args.targetrow[0] # The index of the test data sequence you want to analyze.
+train_or_test = args.trainortest[0] # Whether to grab the sequence from the train or test set
 
-# load the model
 load_model_dir = args.modeldir[0] #'./saved_models/vgg19/003/', now 1857326_0.9894.pth
-print(f"Load model dir: {load_model_dir}")
 load_model_name = args.model[0] #'10_18push0.7822.pth'
-print(f"load_model_name: {load_model_name}")
+experiment_name = args.experimentname[0] #'1892566_8_-1_latent_0.7' foldername to load the prototypes from
 model_base_architecture = 'small_best_updated' #load_model_dir.split('/')[2]
-print(f"model_base_architecture: {model_base_architecture}")
-experiment_run = '/'.join([load_model_name])
-print(f"experiment_run: {experiment_run}")
 
-load_model_path = os.path.join(load_model_dir, load_model_name)
-
-print(f"load_model_path: {load_model_path}")
+load_ptype_dir = os.path.join('saved_prototypes', experiment_name) # ./saved_prototypes / 1878231_3_-1_latent_1_old /
+load_model_path = os.path.join(load_model_dir, load_model_name) # ./saved_ppn_models / 1878231_3_-1.pth
 save_analysis_path = os.path.join(save_dir, model_base_architecture,
-                                  experiment_run, load_model_name)
-# print(f"save_analysis_path: {save_analysis_path}")
+                                  experiment_name, load_model_name) # "./local_results/test_local_seq_$IND / small_best_updated / 1892566_8_-1_latent_0.7 / 184702_4_0.95.pth /"
 
+makedir(save_analysis_path)
 
+# print(f"experiment_name: {experiment_name}")
+# print(f"model_base_architecture: {model_base_architecture}")
+# print(f"load_model_name: {load_model_name}")
+# print(f"Load model dir: {load_model_dir}")
 
-# load_model_dir = './saved_ppn_models'  # Example: './saved_models/vgg19/003/'
-# load_model_name = '1878231_3_-1.pth'    # Example: '10_18push0.7822.pth'
-# model_base_architecture = 'small_best_updated'  # Example: 'vgg19'
+print(f"CWD: {os.getcwd()}")
+print(f"prototypes are loaded from: {load_ptype_dir}")
+print(f"model is loaded from: {load_model_path}")
+print(f"local results are saved to: {save_analysis_path}\n\n\n")
 
-# # Construct the full model path
-# load_model_path = os.path.join(load_model_dir, load_model_name)
-
-# # Print the constructed path
-# print(f"Constructed model path: {load_model_path}")
-# ppnet = torch.load(load_model_path)
-# wait = input("PAUSE")
-
-
-# ./local_results/test_local_seq_$IND / small_best_updated / 1857326_0.9894.pth / 1857326_0.9894.pth
-
-makedir(save_analysis_path) # UNCOMMENT THIS
 
 # create the logger
 log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'local_analysis.log'))
 
-start_epoch_number = 9999 # 259 # 1878231_3_-1.pth
+start_epoch_number = 214 # 259 # 1878231_3_-1.pth
 # load_model_path = os.path.join(load_model_dir, load_model_name)
 # start_epoch_number = int(re.search(r'\d+', load_model_name).group(0))
 
-log('load model from ' + load_model_path)
-log('model base architecture: ' + model_base_architecture)
-log('experiment run: ' + experiment_run + '\n\n\n')
-
-print(f"CWD: {os.getcwd()}")
-print(f"Model path: {load_model_path}")
 # load_model_path = './saved_ppn_models/1878231_3_-1.pth'
 ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
 # ppnet = ppnet.cuda()
@@ -160,13 +149,13 @@ ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
 ##### SANITY CHECK
 # confirm prototype class identity
 prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
-log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
-log('Their class identities are: ' + str(prototype_img_identity))
+# log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
+# log('Their class identities are: ' + str(prototype_img_identity))
 # confirm prototype connects most strongly to its own class
 prototype_max_connection = torch.argmax(ppnet.last_layer.weight, dim=0)
 prototype_max_connection = prototype_max_connection.cpu()
-print(f"The maximum connection from each prototype to any node (class) in the classification layer is: \
-    {prototype_max_connection}")
+# print(f"The maximum connection from each prototype to any node (class) in the classification layer is: \
+    # {prototype_max_connection}")
 if torch.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_prototypes:
     log('All prototypes connect most strongly to their respective classes.')
 else:
@@ -207,19 +196,12 @@ test_dataset = Sequence_Data(
     encoding_mode=config['encoding_mode'],
     seq_len=config['seq_target_length']
 )
-trainloader = DataLoader(
-    train_dataset, 
-    batch_size=config['train_batch_size'],
-    shuffle=True
-)
-testloader = DataLoader(
-    test_dataset,
-    batch_size=config['test_batch_size'],
-    shuffle=False
-)
 
 if target_row is not None:
-    seq, label = test_dataset.__getitem__(target_row)
+    if train_or_test == 'test':
+        seq, label = test_dataset.__getitem__(target_row)
+    elif train_or_test == 'train':
+        seq, label = train_dataset.__getitem__(target_row)
     test_sequence = seq
     test_sequence_label = label
 
@@ -244,20 +226,17 @@ print(f"Label: {label}")
 
 # pause = input("PAUSE")
 
-load_img_dir = 'local_results' 
-load_saved_ptypes_dir = 'saved_prototypes'
-
 
 ##### HELPER FUNCTIONS FOR PLOTTING
 def save_prototype(fname, epoch, index):
-    file_to_load = os.path.join(load_img_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_original.npy')
+    file_to_load = os.path.join(load_ptype_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_original.npy')
     log(f"File exists: {os.path.exists(file_to_load)}")
     p_seq = np.load(file_to_load)
     #plt.axis('off')
     np.save(fname, p_seq)
 
 def save_prototype_patch(fname, epoch, index):
-    p_seq = np.load(os.path.join(load_img_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_patch.npy'))
+    p_seq = np.load(os.path.join(load_ptype_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_patch.npy'))
     #plt.axis('off')
     np.save(fname, p_seq)
 
@@ -324,7 +303,7 @@ print(f"conv_output.shape: {conv_output.shape}")
 print(f"prototype_activation_patterns.shape: {prototype_activation_patterns.shape}") # torch.Size([1, 468 (156*3), 7]) 7 because 35 - ptype_length + 1 = 7
 
 print(f"Prototype shape: {ppnet.prototype_shape}") # (468, 520, 29)
-printinfo("ppnet.prototype_vectors", ppnet.prototype_vectors)
+# printinfo("ppnet.prototype_vectors", ppnet.prototype_vectors)
 # print(f"ppnet.prototype_vectors: {ppnet.prototype_vectors}") # 
 # print(f"ppnet.prototype_vectors.shape: {ppnet.prototype_vectors.shape}") # 
 
@@ -347,7 +326,7 @@ log('Actual: ' + str(correct_cls))
 # (from any class)
 makedir(os.path.join(save_analysis_path, 'most_activated_prototypes'))
 
-log('Most activated 10 prototypes of this image:')
+log('\n\n\nMost activated 10 prototypes of this image:\n')
 sorted_array_acts, sorted_indices_act = torch.sort(prototype_activations[idx])
 # log(f"sorted_indices_act: {sorted_indices_act}")
 # log(f"sorted_array_acts: {sorted_array_acts}")
@@ -362,8 +341,7 @@ while True: # for 10 iterations
 
     # Check if the prototype is saved. If it is not saved, skip it.
     file_to_load = os.path.join(
-        load_saved_ptypes_dir,
-        model_name,
+        load_ptype_dir,
         'epoch-'+str(start_epoch_number),
         'prototype_'+ str(sorted_indices_act[-i].item()) + '_original.npy')
     saved_ptype_exists = os.path.exists(file_to_load)
@@ -426,16 +404,16 @@ log("Now, finding the top-activated prototypes for the top k classes\n\n\n\n")
 # ./local_results/test_local_seq_$IND / small_best_updated / 1857326_0.9894.pth / 1857326_0.9894.pth
 
 ##### PROTOTYPES FROM TOP-k CLASSES
-# (from the predicted class (which is not necessarily the correct class))
+# (top-1 is the predicted class (which is not necessarily the correct class))
 k = 3
-log('Prototypes from top-%d classes:' % k)
+log(f'\nPrototypes from top-{k} classes:\n')
 topk_logits, topk_classes = torch.topk(logits[idx], k=k)
 print(f"topk_logits: {topk_logits}", flush=True)
 print(f"topk_classes: {topk_classes}", flush=True)
 # For each of the top k predicted classes,
 for i,c in enumerate(topk_classes.detach().cpu().numpy()):
 
-    makedir(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1)))
+    makedir(os.path.join(save_analysis_path, f'top-{i+1}_class_prototypes'))
 
     log('top %d predicted class: %d' % (i+1, c))
     log('logit of the class: %f' % topk_logits[i])
@@ -455,8 +433,8 @@ for i,c in enumerate(topk_classes.detach().cpu().numpy()):
         #     'top-%d_class_prototypes' % (i+1),
         #     'top-%d_activated_prototype.npy' % prototype_cnt)
         # saved_ptype_exists = os.path.exists(file_to_load)
-        # print(f"File {file_to_load} exists: {saved_ptype_exists}", flush=True)
         # if not saved_ptype_exists:
+        #     log(f"The prototype for this class does not exist: {file_to_load}")
         #     continue
 
         save_act_map(os.path.join(save_analysis_path, 'top-%d_class_prototypes' % (i+1), 'top-%d_prototype_activation_map.npy' % prototype_cnt),

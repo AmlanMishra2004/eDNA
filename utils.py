@@ -1081,7 +1081,42 @@ class EarlyStopping:
         self.best_acc = 0
         self.stop = False
 
-def get_all_kmers(k):
+def get_all_kmers_with_np(k, include_iupac=False):
+    """
+    Generates all possible permutations of the letters a, g, t, and c (or IUPAC codes) of length k.
+    Examples:
+        input: get_all_kmers(1)
+        output: ['a', 'g', 't', 'c'] 
+        input: get_all_kmers(2)
+        output: ['aa', 'ag', 'at', 'ac', 'ga', 'gg', ... ]
+    """
+    if not include_iupac:
+        possibilities = np.array(list('agtc'))
+    elif include_iupac:
+        possibilities = np.array(list('agtcrksymwbhdvn'))
+
+    return [''.join(p) for p in product(possibilities, repeat=k)]
+
+    # Generate all indices for the cartesian product
+    indices = np.indices((len(possibilities),) * k).reshape(k, -1).T
+
+    # Map indices to characters
+    all_kmers = possibilities[indices]
+
+    # Concatenate along the second axis to form k-mers
+    all_kmers = np.apply_along_axis(''.join, 1, all_kmers)
+
+    # print(f"Output of get_all_kmers:")
+    # print(all_kmers)
+
+    # print(f"\n\nExample first output of get_all_kmers:")
+    # print(all_kmers[0])
+    # print(f"Example last output of get_all_kmers:")
+    # print(all_kmers[-1])
+
+    return all_kmers.tolist()
+
+def get_all_kmers(k, include_iupac=False):
     """
     generates all possible combinations of the letters a, g, t, and c of length k
     Examples:
@@ -1091,8 +1126,23 @@ def get_all_kmers(k):
         output: ['aa', 'ag', 'at', 'ac', 'ga', 'gg', ... ]
     """
     all_kmers=[]
-    for i in product('agtc', repeat = k):
+
+    if not include_iupac:
+        possibilities = 'agtc'
+    elif include_iupac:
+        possibilities = 'agtcrksymwbhdvn'
+
+    for i in product(possibilities, repeat = k):
         all_kmers.append(''.join(i))
+
+    # print(f"Output of get_all_kmers:")
+    # print(all_kmers)
+
+    # print(f"\n\nExample first output of get_all_kmers:")
+    # print(all_kmers[0])
+    # print(f"Example last output of get_all_kmers:")
+    # print(all_kmers[-1])
+
     return all_kmers
 
 def list_kmers(seq, k):
@@ -1103,7 +1153,8 @@ def list_kmers(seq, k):
         output: ['ag', 'gt', 'tc', 'ca', 'ag', 'gt', 'tc']
     """
     kmers = []
-    # Calculate how many kmers of length k there are
+    # Calculate how many kmers of length k there are. If the sequence is
+    # truncated to 70 beforehand, then this won't matter.
     if len(seq)<200:
         num_kmers=len(seq)-k+1
     else:
@@ -1116,7 +1167,7 @@ def list_kmers(seq, k):
         kmers.append(kmer)
     return kmers
 
-def create_feature_table(sequences,k):
+def create_feature_table(sequences, k, include_iupac=False):
     """
     creates a 2D array (or feature table) where each row corresponds to a sequence
     from the input list sequences, and each column corresponds to a possible k-mer
@@ -1125,9 +1176,46 @@ def create_feature_table(sequences,k):
     """
     feature_table=[]
     for seq in sequences:
-        cv = CountVectorizer(vocabulary=(get_all_kmers(k))) # lists counts of all words
+        # generate all possible permutations of length k of either 'atgc' -- or all iupac ambiguity codes
+        cv = CountVectorizer(vocabulary=(get_all_kmers_with_np(k, include_iupac=include_iupac)))
         # representing sequences as sentences with words that are kmers i.e all kmers separated by space
         features=np.asarray(cv.fit_transform([(" ".join(list_kmers(seq,k)))]).toarray())  
         features=features.flatten().tolist()
         feature_table.append(features)
     return np.asarray(feature_table)
+
+def create_feature_table_with_np(sequences, k, include_iupac=False):
+    """
+    Creates a 2D array (or feature table) where each row corresponds to a sequence
+    from the input list sequences, and each column corresponds to a possible k-mer
+    of length k. The value at a specific row and column is the count of the
+    corresponding k-mer in the corresponding sequence.
+    """
+    # Generate all possible k-mers
+    kmers = get_all_kmers_with_np(k, include_iupac)
+    kmer_index = {kmer: idx for idx, kmer in enumerate(kmers)}
+
+    # Initialize the feature table with zeros
+    feature_table = np.zeros((len(sequences), len(kmers)), dtype=np.uint8)
+
+    for i, seq in enumerate(sequences):
+        # Count k-mers in the sequence
+        for j in range(len(seq) - k + 1):
+            kmer = seq[j:j + k]
+            if kmer in kmer_index:
+                feature_table[i, kmer_index[kmer]] += 1
+
+    return feature_table
+
+'''
+# Example usage:
+sequences = ["agt", "tgcagctatagg", "ctagctag"]
+k = 2
+feature_table = utils.create_feature_table_with_np(sequences, k, True)
+print(feature_table)
+
+sequences = ["agt", "tgcagctatagg", "ctagctag"]
+k = 2
+feature_table = utils.create_feature_table(sequences, k, True)
+print(feature_table)
+'''

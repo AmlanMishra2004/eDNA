@@ -1,0 +1,1 @@
+The data here was all generated with the model 1892566_8, which used a latent weight of 0.7.

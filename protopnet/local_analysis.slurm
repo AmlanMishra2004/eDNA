@@ -31,8 +31,14 @@ do
             -seqclass 1
 done
 
-# python3 local_analysis.py -gpuid '0' -modeldir 'saved_ppn_models' -model '1878231_3_-1.pth' -savedir "local_results/test_local_seq_25" -targetrow 25 -sequence 'ACGTCGTGTGTGTGTGTGTGGGT' -seqclass 1
-    
+# remember to update train or test in the savedir path
+# remember to update targetrow in in the savedir path
+python3 local_analysis.py -modeldir 'saved_ppn_models' -model '1892566_8_-1.pth' -experimentname '1892566_8_-1_latent_0.7' -savedir "local_results/test_local_seq_150" -trainortest "test" -targetrow 150
+
+
+
+# python3 local_analysis.py -gpuid '0' -modeldir 'saved_ppn_models' -model '1878231_3_-1.pth' -savedir "local_results/test_local_seq_25" -targetrow 25 -sequence 'ACGTCGTGTGTGTGTGTGTGGGT' -train_or_test "train" -seqclass 1
+
 
 # srun -u python3 local_analysis.py\
 #                                 -gpuid 0\

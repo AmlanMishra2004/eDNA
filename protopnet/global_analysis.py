@@ -79,36 +79,35 @@ parser.add_argument('-gpuid', nargs=1, type=str, default='0')
 parser.add_argument('-modeldir', nargs=1, type=str)
 parser.add_argument('-model', nargs=1, type=str)
 parser.add_argument('-prototypeind', nargs=1, type=int)
+parser.add_argument('-experimentname', nargs=1, type=str)
+parser.add_argument('-trainortest', nargs=1, type=str)
 
 args = parser.parse_args()
 
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 
-# load the model
-save_dir= './test_global'
 load_model_dir = args.modeldir[0] #'./saved_models/vgg19/003/', now 1857326_0.9894.pth
 load_model_name = args.model[0] #'10_18push0.7822.pth'
 prot_ind=args.prototypeind[0]
 model_base_architecture = 'small_best_updated' #load_model_dir.split('/')[2]
-experiment_run = '/'.join([load_model_name])
-load_model_path = os.path.join(load_model_dir, load_model_name)
-save_analysis_path = os.path.join(save_dir, model_base_architecture,
-                                  experiment_run, load_model_name)
-# ./local_results/test_local_seq_$IND / small_best_updated / 1857326_0.9894.pth / 1857326_0.9894.pth
+experiment_name = args.experimentname[0] #'1892566_8_-1_latent_0.7' foldername to load the prototypes from
+train_or_test = args.trainortest[0] # Whether to grab the sequence from the train or test set
+
+load_ptype_dir = os.path.join('saved_prototypes', experiment_name) # ./saved_prototypes / 1878231_3_-1_latent_1_old /
+load_model_path = os.path.join(load_model_dir, load_model_name) # ./saved_ppn_models / 1878231_3_-1.pth
+save_analysis_path = os.path.join('global_results', model_base_architecture,
+                                  experiment_name, load_model_name)
 makedir(save_analysis_path)
 
 # create the logger
-log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'local_analysis.log'))
+log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'global_analysis.log'))
 
-start_epoch_number = 9999 # 259
+start_epoch_number = 214 # 259 or 9999
 
-log('load model from ' + load_model_path)
-log('model base architecture: ' + model_base_architecture)
-log('experiment run: ' + experiment_run + '\n\n\n')
+log(f"CWD: {os.getcwd()}")
+log('load model from: ' + load_model_path)
+log('saving analysis to: ' + save_analysis_path + '\n\n\n')
 
-print(f"CWD: {os.getcwd()}")
-print(f"Model path: {load_model_path}")
-load_model_path = './saved_ppn_models/1878231_3_-1.pth'
 ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
 # ppnet = torch.load(load_model_path)
 # ppnet = ppnet.cuda()
@@ -145,40 +144,49 @@ test_dataset = Sequence_Data(
     encoding_mode=config['encoding_mode'],
     seq_len=config['seq_target_length']
 )
-trainloader = DataLoader(
-    train_dataset, 
-    batch_size=config['train_batch_size'],
-    shuffle=True
-)
-testloader = DataLoader(
-    test_dataset,
-    batch_size=config['test_batch_size'],
-    shuffle=False
-)
-
-load_img_dir = 'local_results'
 
 ##### SANITY CHECK
 # confirm prototype class identity
 prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
-log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
-log('Their class identities are: ' + str(prototype_img_identity))
+# log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
+# log('Their class identities are: ' + str(prototype_img_identity))
 # confirm prototype connects most strongly to its own class
 prototype_max_connection = torch.argmax(ppnet.last_layer.weight, dim=0)
-prototype_max_connection = prototype_max_connection.cpu().numpy()
-if np.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_prototypes:
+prototype_max_connection = prototype_max_connection.cpu()
+# print(f"The maximum connection from each prototype to any node (class) in the classification layer is: \
+    # {prototype_max_connection}")
+if torch.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_prototypes:
     log('All prototypes connect most strongly to their respective classes.')
 else:
     log('WARNING: Not all prototypes connect most strongly to their respective classes.')
+    print(f"{torch.sum(prototype_max_connection == prototype_img_identity)} out of \
+        {ppnet.num_prototypes} prototypes belong identify most strongly with \
+            their own class")
 
+##### SANITY CHECK
+# confirm prototype class identity
+prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
+# log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
+# log('Their class identities are: ' + str(prototype_img_identity))
+# confirm prototype connects most strongly to its own class
+prototype_max_connection = torch.argmax(ppnet.last_layer.weight, dim=0)
+prototype_max_connection = prototype_max_connection.cpu()
+if torch.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_prototypes:
+    log('All prototypes connect most strongly to their respective classes.')
+else:
+    log('WARNING: Not all prototypes connect most strongly to their respective classes.')
+    print(f"{torch.sum(prototype_max_connection == prototype_img_identity)} out of \
+        {ppnet.num_prototypes} prototypes belong identify most strongly with \
+            their own class")
+    
 ##### HELPER FUNCTIONS FOR PLOTTING
 def save_prototype(fname, epoch, index):
-    p_seq = np.load(os.path.join(load_img_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_original.npy'))
+    p_seq = np.load(os.path.join(load_ptype_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_original.npy'))
     #plt.axis('off')
     np.save(fname, p_seq)
 
 def save_prototype_patch(fname, epoch, index):
-    p_seq = np.load(os.path.join(load_img_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_patch.npy'))
+    p_seq = np.load(os.path.join(load_ptype_dir, 'epoch-'+str(epoch), 'prototype_'+str(index)+'_patch.npy'))
     #plt.axis('off')
     np.save(fname, p_seq)
 
@@ -208,7 +216,7 @@ def save_act_map(fname, act_map):
 
 prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
 
-prototype_info = np.load(os.path.join(load_img_dir, 'epoch-'+str(start_epoch_number), 'prototype_'+str(prot_ind)+'_patch.npy'))
+prototype_info = np.load(os.path.join(load_ptype_dir, 'epoch-'+str(start_epoch_number), 'prototype_'+str(prot_ind)+'_patch.npy'))
 
 
 save_prototype(os.path.join(save_analysis_path,
@@ -222,12 +230,16 @@ save_prototype_patch(os.path.join(save_analysis_path,
 #to loop over
 activation_pattern_table=[]
 proto_act={}
-test_dataset_len=int(len(test_dataset))
-print('test_dataset_len: ', test_dataset_len)
+if train_or_test == 'test':
+    dataset = test_dataset
+elif train_or_test == 'train':
+    dataset = train_dataset
+dataset_len=int(len(dataset))
+print('dataset_len: ', dataset_len)
 arg_max_list=[]
-for i in range(test_dataset_len):
+for i in range(dataset_len):
 
-    seq, label = test_dataset.__getitem__(i)
+    seq, label = dataset.__getitem__(i)
     test_sequence = seq
     if type(test_sequence) is str:
         test_sequence_numpy = np.expand_dims(utils.sequence_to_array(test_sequence, 'probability'), axis=0)
@@ -246,27 +258,27 @@ for i in range(test_dataset_len):
     arg_max_list.append(arg_max_proto_act[2])
     proto_act[i]=max_proto_act
 
-print(activation_pattern_table)
-print(arg_max_list)
-makedir(os.path.join(save_analysis_path, 'most_activated_patches_for_prot_'+str(prot_ind)))
-print('protoact: ',proto_act)
-print('protoact_len: ',len(proto_act))
+# print(activation_pattern_table)
+# print("Every elemtent is a prototype, and its number is the image index to which it most highly activated:\n", arg_max_list)
+makedir(os.path.join(save_analysis_path, f'most_activated_{train_or_test}_patches_for_prot_'+str(prot_ind)))
+# print('Prototype activations: \n', proto_act)
+# print('protoact_len: ',len(proto_act))
 proto_act_sorted=sorted(proto_act.items(), key=lambda item: item[1])
-print('sorted: ', proto_act_sorted)
+print('proto act sorted: ', proto_act_sorted)
 
 
 
 for i in range(1, 11):
     # print(proto_act_sorted[-i][0])
-    seq, label = test_dataset.__getitem__(proto_act_sorted[-i][0])
+    seq, label = dataset.__getitem__(proto_act_sorted[-i][0])
     if type(seq) is str:
         test_sequence_numpy = np.expand_dims(utils.sequence_to_array(seq, 'probability'), axis=0)
     else:
         test_sequence_numpy = np.expand_dims(seq, axis=0)
 
-    save_test_seq(os.path.join(save_analysis_path, 'most_activated_patches_for_prot_'+str(prot_ind), 'top-{0}_original_test_seq_{1}.npy'.format(i, str(label))),
+    save_test_seq(os.path.join(save_analysis_path, f'most_activated_{train_or_test}_patches_for_prot_'+str(prot_ind), f'top-{i}_original_test_seq_{label}.npy'),
                                         test_sequence_numpy)
-    save_act_map(os.path.join(save_analysis_path, 'most_activated_patches_for_prot_'+str(prot_ind), 'top-{0}_prototype_activation_map_{1}.npy'.format(i, str(proto_act_sorted[-i][0]))),
+    save_act_map(os.path.join(save_analysis_path, f'most_activated_{train_or_test}_patches_for_prot_'+str(prot_ind), f'top-{i}_prototype_activation_map_{proto_act_sorted[-i][0]}.npy'),
                     activation_pattern_table[proto_act_sorted[-i][0]])
     upsampling_factor = 2
     proto_h = prototype_shape[-1]
@@ -277,13 +289,14 @@ for i in range(1, 11):
     patch_end = (center_loc + proto_h) * upsampling_factor
     # patch_start = upsampling_factor * (arg_max_list[proto_act_sorted[-i][0]] * prototype_layer_stride - proto_h // 2)
     # patch_end = upsampling_factor * (arg_max_list[proto_act_sorted[-i][0]] + proto_h // 2) + upsampling_factor
-    save_test_seq_patch(os.path.join(save_analysis_path, 'most_activated_patches_for_prot_'+str(prot_ind),
-                                'top-{}_activated_test_patch.npy'.format(i)),
+    save_test_seq_patch(os.path.join(save_analysis_path, f'most_activated_{train_or_test}_patches_for_prot_'+str(prot_ind),
+                                f'top-{i}_activated_test_patch.npy'),
                                 patch_start, patch_end, test_sequence_numpy)
-    log('prototype class: {}'.format(prototype_img_identity[prot_ind]))
-    log('test seq index: {0}'.format(proto_act_sorted[-i][0]))
-    log('test seq class identity: {0}'.format(label))
-    log('activation value (similarity score): {0}'.format(proto_act_sorted[-i][1]))
+    log(f'prototype class: {prototype_img_identity[prot_ind]}')
+    # log(f"proto_act_sorted[-i]: {proto_act_sorted[-i]}")
+    log(f'{train_or_test} seq index: {proto_act_sorted[-i][0]}')
+    log(f'{train_or_test} seq class identity: {label}')
+    log(f'activation value (similarity score): {proto_act_sorted[-i][1]}')
     log('--------------------------------------------------------------')
 
 
