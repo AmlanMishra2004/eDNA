@@ -12,7 +12,7 @@ second route is performing grid search on one or more models from models.py.
 After grid search is run, for each model, results are printed to the terminal
 and optionally saved to a file.
 """
-print("Importing libraries")
+print("Importing libraries", flush=True)
 from collections import defaultdict
 from datetime import datetime
 import os
@@ -635,7 +635,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     #     raise (ValueError, "Ending execution since you are probably evaluating a model,"
     #            "not performing a grid search. Skipping saving the model.")
     
-    # TEMPORARILY
+    # TEMPORARILY, don't save results in the csv, just the model
     now = datetime.now()
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     torch.save(model.state_dict(),f'best_model_{timestamp}.pt')
@@ -744,7 +744,7 @@ if __name__ == '__main__':
         'applying_on_raw_data': False,
         # Whether or not to augment the test set.
         'augment_test_data': True,
-        'load_existing_train_test': False, # use the same train/test split as Zurich, already saved in two different csv files
+        'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files
         'verbose': False
     }
     if config['applying_on_raw_data']:
@@ -1452,9 +1452,15 @@ if __name__ == '__main__':
         np.set_printoptions(threshold=sys.maxsize)
         baseline_start_time = time.time()
 
-        # train_path should be no_dup (no oversampling)!
-        train = pd.read_csv(config['train_path'], sep=',')
-        test = pd.read_csv(config['test_path'], sep=',')
+        truncate_or_pad = True
+
+        if not truncate_or_pad:
+            # train_path should be no_dup (no oversampling)!
+            train = pd.read_csv(config['train_path'], sep=',')
+            test = pd.read_csv(config['test_path'], sep=',')
+        elif truncate_or_pad:
+            train = pd.read_csv('./datasets/train_no_dup_truncated.csv', sep=',')
+            test = pd.read_csv('./datasets/test_truncated.csv', sep=',')
 
         # Optionally, truncate to 70 bases
         # Sam: just do this manually and make two new csvs
@@ -1597,81 +1603,88 @@ if __name__ == '__main__':
 
         include_iupac = True
         if include_iupac:
-            ending = "_iupac"
+            if truncate_or_pad:
+                ending = "_iupac_t70"
+            else:
+                ending = "_iupac"
         else:
-            ending = ""
+            if truncate_or_pad:
+                ending = "_t70"
+            else:
+                ending = ""
 
         try:
             if not include_iupac:
-                print("Searching for pre-created k-mer feature tables excluding iupac...")
+                print("Searching for pre-created k-mer feature tables excluding iupac...", flush=True)
                 # takes ~ 45 seconds
                 ft_3 = np.load('./datasets/ft_3.npy').astype(np.uint8)
                 ft_5 = np.load('./datasets/ft_5.npy').astype(np.uint8)
                 ft_8 = np.load('./datasets/ft_8.npy').astype(np.uint8)
-                ft_10 = np.load('./datasets/ft_10.npy').astype(np.uint8)
+                # ft_10 = np.load('./datasets/ft_10.npy').astype(np.uint8)
                 print(f"MAX VALUE in ft_3: {np.amax(ft_3)}")
                 print(f"MAX VALUE in ft_5: {np.amax(ft_5)}")
                 print(f"MAX VALUE in ft_8: {np.amax(ft_8)}")
-                print(f"MAX VALUE in ft_10: {np.amax(ft_10)}")
+                # print(f"MAX VALUE in ft_10: {np.amax(ft_10)}")
 
                 ft_3_test = np.load('./datasets/ft_3_test.npy').astype(np.uint8)
                 ft_5_test = np.load('./datasets/ft_5_test.npy').astype(np.uint8)
                 ft_8_test = np.load('./datasets/ft_8_test.npy').astype(np.uint8)
-                ft_10_test = np.load('./datasets/ft_10_test.npy').astype(np.uint8)
+                # ft_10_test = np.load('./datasets/ft_10_test.npy').astype(np.uint8)
             elif include_iupac:
-                print("Searching for pre-created k-mer feature tables including ambiguity codes...")
+                print("Searching for pre-created k-mer feature tables including ambiguity codes...", flush=True)
                 # takes ~ ? seconds
                 ft_3 = np.load('./datasets/ft_3_iupac.npy').astype(np.uint8)
                 ft_5 = np.load('./datasets/ft_5_iupac.npy').astype(np.uint8)
                 ft_8 = np.load('./datasets/ft_8_iupac.npy').astype(np.uint8)
-                ft_10 = np.load('./datasets/ft_10_iupac.npy').astype(np.uint8)
+                # ft_10 = np.load('./datasets/ft_10_iupac.npy').astype(np.uint8)
                 print(f"MAX VALUE in ft_3_iupac: {np.amax(ft_3)}")
                 print(f"MAX VALUE in ft_5_iupac: {np.amax(ft_5)}")
                 print(f"MAX VALUE in ft_8_iupac: {np.amax(ft_8)}")
-                print(f"MAX VALUE in ft_10_iupac: {np.amax(ft_10)}")
+                # print(f"MAX VALUE in ft_10_iupac: {np.amax(ft_10)}")
 
                 ft_3_test = np.load('./datasets/ft_3_test_iupac.npy').astype(np.uint8)
                 ft_5_test = np.load('./datasets/ft_5_test_iupac.npy').astype(np.uint8)
                 ft_8_test = np.load('./datasets/ft_8_test_iupac.npy').astype(np.uint8)
-                ft_10_test = np.load('./datasets/ft_10_test_iupac.npy').astype(np.uint8)
+                # ft_10_test = np.load('./datasets/ft_10_test_iupac.npy').astype(np.uint8)
 
         except FileNotFoundError:
 
-            print(f"Creating k-mer feature table for k-mer=3 with iupac={include_iupac} (expect <1/ minute)...")
+            print(f"Creating k-mer feature table for k-mer=3 with iupac={include_iupac} (expect <1/ minute)...", flush=True)
             ft_3 = utils.create_feature_table_with_np(X_train, 3, include_iupac)
-            print(f"Creating k-mer feature table for k-mer=5 iupac={include_iupac} (expect 1/ minute)...")
+            print(f"Creating k-mer feature table for k-mer=5 iupac={include_iupac} (expect 1/ minute)...", flush=True)
             ft_5 = utils.create_feature_table_with_np(X_train, 5, include_iupac)
-            print(f"Creating k-mer feature table for k-mer=8 iupac={include_iupac} (expect 1/ minute)...")
+            print(f"Creating k-mer feature table for k-mer=8 iupac={include_iupac} (expect 1/ minute)...", flush=True)
             ft_8 = utils.create_feature_table_with_np(X_train, 8, include_iupac)
-            print(f"Creating k-mer feature table for k-mer=10 iupac={include_iupac} (expect 25/?  mins)...")
-            ft_10 = utils.create_feature_table_with_np(X_train, 10, include_iupac)
+            print(f"Creating k-mer feature table for k-mer=10 iupac={include_iupac} (expect 25/?  mins)...", flush=True)
+            # ft_10 = utils.create_feature_table_with_np(X_train, 10, include_iupac)
             
+            print(f"Creating k-mer feature tables for test sets 3,5,8, and 10", flush=True)
             ft_3_test = utils.create_feature_table_with_np(X_test, 3, include_iupac)
             ft_5_test = utils.create_feature_table_with_np(X_test, 5, include_iupac)
             ft_8_test = utils.create_feature_table_with_np(X_test, 8, include_iupac)
-            ft_10_test = utils.create_feature_table_with_np(X_test, 10, include_iupac)
+            # ft_10_test = utils.create_feature_table_with_np(X_test, 10, include_iupac)
 
             if not include_iupac:
                 np.save('./datasets/ft_3.npy', ft_3)
                 np.save('./datasets/ft_5.npy', ft_5)
                 np.save('./datasets/ft_8.npy', ft_8)
-                np.save('./datasets/ft_10.npy', ft_10)
+                # np.save('./datasets/ft_10.npy', ft_10)
 
                 np.save('./datasets/ft_3_test.npy', ft_3_test)
                 np.save('./datasets/ft_5_test.npy', ft_5_test)
                 np.save('./datasets/ft_8_test.npy', ft_8_test)
-                np.save('./datasets/ft_10_test.npy', ft_10_test)
+                # np.save('./datasets/ft_10_test.npy', ft_10_test)
 
             elif include_iupac:
                 np.save('./datasets/ft_3_iupac.npy', ft_3)
                 np.save('./datasets/ft_5_iupac.npy', ft_5)
                 np.save('./datasets/ft_8_iupac.npy', ft_8)
-                np.save('./datasets/ft_10_iupac.npy', ft_10)
+                # np.save('./datasets/ft_10_iupac.npy', ft_10)
 
                 np.save('./datasets/ft_3_test_iupac.npy', ft_3_test)
                 np.save('./datasets/ft_5_test_iupac.npy', ft_5_test)
                 np.save('./datasets/ft_8_test_iupac.npy', ft_8_test)
-                np.save('./datasets/ft_10_test_iupac.npy', ft_10_test)
+                # np.save('./datasets/ft_10_test_iupac.npy', ft_10_test)
 
         if not include_iupac:
             print(X_train[:5])
@@ -1680,14 +1693,14 @@ if __name__ == '__main__':
             print(X_train[:16])
             print(ft_3[:16])
 
-        wait = input("PAUSE")
+        # wait = input("PAUSE, loaded or created feature tables!")
 
 
         print(f"Shapes:")
         print(f"Ft_3: {ft_3.shape}")
         print(f"Ft_5: {ft_5.shape}")
         print(f"Ft_8: {ft_8.shape}")
-        print(f"Ft_10: {ft_10.shape}")
+        # print(f"Ft_10: {ft_10.shape}")
         print(f"X_train: {X_train.shape}")
         print(f"y_train: {y_train.shape}")
         print(f"X_test: {X_test.shape}")
@@ -1748,7 +1761,7 @@ if __name__ == '__main__':
                 knn10_9 = load('./datasets/knn10_9_iupac.joblib')
 
         except FileNotFoundError:
-            print("Training KNN models. (expect ~? mins)")
+            print("Training KNN models. (expect ~? mins)", flush=True)
             # Note: since there are 25 models and writing it out would take
             # 75 lines, this only trains then saves the models. You have to
             # run this again in order to test them, so that they can be loaded
@@ -1795,7 +1808,7 @@ if __name__ == '__main__':
 
         except FileNotFoundError:
             if not include_iupac:
-                print("Training multinomial naive bayes models. (expect ~30 mins)")
+                print("Training multinomial naive bayes models. (expect ~30 mins)", flush=True)
 
                 nb_3 = MultinomialNB()
                 nb_3.fit(ft_3, y_train)
@@ -1809,11 +1822,11 @@ if __name__ == '__main__':
                 nb_8.fit(ft_8, y_train)
                 dump(nb_8, './datasets/nb8.joblib')
 
-                nb_10 = MultinomialNB()
-                nb_10.fit(ft_10, y_train)
-                dump(nb_10, './datasets/nb10.joblib')
+                # nb_10 = MultinomialNB()
+                # nb_10.fit(ft_10, y_train)
+                # dump(nb_10, './datasets/nb10.joblib')
             elif include_iupac:
-                print("Training multinomial naive bayes models with iupac. (expect ~30?? mins)")
+                print("Training multinomial naive bayes models with iupac. (expect ~30?? mins)", flush=True)
 
                 nb_3 = MultinomialNB()
                 nb_3.fit(ft_3, y_train)
@@ -1827,9 +1840,9 @@ if __name__ == '__main__':
                 nb_8.fit(ft_8, y_train)
                 dump(nb_8, './datasets/nb8_iupac.joblib')
 
-                nb_10 = MultinomialNB()
-                nb_10.fit(ft_10, y_train)
-                dump(nb_10, './datasets/nb10_iupac.joblib')
+                # nb_10 = MultinomialNB()
+                # nb_10.fit(ft_10, y_train)
+                # dump(nb_10, './datasets/nb10_iupac.joblib')
 
         # Decision tree names follow the format: dt_<k-mer length>
         try:
@@ -1848,7 +1861,7 @@ if __name__ == '__main__':
 
         except FileNotFoundError:
             if not include_iupac:
-                print("Training decision tree models. (expect ~3 minutes)")
+                print("Training decision tree models. (expect ~3 minutes)", flush=True)
                 
                 dt_3 = tree.DecisionTreeClassifier(random_state=1327)
                 dt_3.fit(ft_3, y_train)
@@ -1862,11 +1875,11 @@ if __name__ == '__main__':
                 dt_8.fit(ft_8, y_train)
                 dump(dt_8, './datasets/dt8.joblib')
 
-                dt_10 = tree.DecisionTreeClassifier(random_state=1327)
-                dt_10.fit(ft_10, y_train)
-                dump(dt_10, './datasets/dt10.joblib')
+                # dt_10 = tree.DecisionTreeClassifier(random_state=1327)
+                # dt_10.fit(ft_10, y_train)
+                # dump(dt_10, './datasets/dt10.joblib')
             elif include_iupac:
-                print("Training decision tree models with iupac. (expect ~3?? minutes)")
+                print("Training decision tree models with iupac. (expect ~3?? minutes)", flush=True)
                 
                 dt_3 = tree.DecisionTreeClassifier(random_state=1327)
                 dt_3.fit(ft_3, y_train)
@@ -1880,9 +1893,9 @@ if __name__ == '__main__':
                 dt_8.fit(ft_8, y_train)
                 dump(dt_8, './datasets/dt8_iupac.joblib')
 
-                dt_10 = tree.DecisionTreeClassifier(random_state=1327)
-                dt_10.fit(ft_10, y_train)
-                dump(dt_10, './datasets/dt10_iupac.joblib')
+                # dt_10 = tree.DecisionTreeClassifier(random_state=1327)
+                # dt_10.fit(ft_10, y_train)
+                # dump(dt_10, './datasets/dt10_iupac.joblib')
 
         # Multiclass SVM names follow the format: svm_<k-mer length>
         try:
@@ -1901,7 +1914,7 @@ if __name__ == '__main__':
 
         except FileNotFoundError:
             if not include_iupac:
-                print("Training support vector machine models. (expect ~25 mins)")
+                print("Training support vector machine models. (expect ~25 mins)", flush=True)
                 
                 svm_3 = svm.SVC(kernel='linear', decision_function_shape='ovo')
                 svm_3.fit(ft_3, y_train)
@@ -1915,11 +1928,11 @@ if __name__ == '__main__':
                 svm_8.fit(ft_8, y_train)
                 dump(svm_8, './datasets/svm8.joblib')
 
-                svm_10 = svm.SVC(kernel='linear', decision_function_shape='ovo')
-                svm_10.fit(ft_10, y_train)
-                dump(svm_10, './datasets/svm10.joblib')
+                # svm_10 = svm.SVC(kernel='linear', decision_function_shape='ovo')
+                # svm_10.fit(ft_10, y_train)
+                # dump(svm_10, './datasets/svm10.joblib')
             elif include_iupac:
-                print("Training support vector machine models with iupac. (expect ~25?? mins)")
+                print("Training support vector machine models with iupac. (expect ~25?? mins)", flush=True)
                 
                 svm_3 = svm.SVC(kernel='linear', decision_function_shape='ovo')
                 svm_3.fit(ft_3, y_train)
@@ -1933,9 +1946,9 @@ if __name__ == '__main__':
                 svm_8.fit(ft_8, y_train)
                 dump(svm_8, './datasets/svm8_iupac.joblib')
 
-                svm_10 = svm.SVC(kernel='linear', decision_function_shape='ovo')
-                svm_10.fit(ft_10, y_train)
-                dump(svm_10, './datasets/svm10_iupac.joblib')
+                # svm_10 = svm.SVC(kernel='linear', decision_function_shape='ovo')
+                # svm_10.fit(ft_10, y_train)
+                # dump(svm_10, './datasets/svm10_iupac.joblib')
 
         # Multiclass Logistic Regression models follow the format: lr_<k-mer length>
         try:
@@ -1954,7 +1967,7 @@ if __name__ == '__main__':
 
         except FileNotFoundError:
             if not include_iupac:
-                print("Training logistic regression models. (expect ~? mins)")
+                print("Training logistic regression models. (expect ~? mins)", flush=True)
                 
                 lr_3 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
                 lr_3.fit(ft_3, y_train)
@@ -1968,7 +1981,7 @@ if __name__ == '__main__':
                 lr_8.fit(ft_8, y_train)
                 dump(lr_8, './datasets/lr8.joblib')
             elif include_iupac:
-                print("Training logistic regression models with iupac. (expect ~? mins)")
+                print("Training logistic regression models with iupac. (expect ~? mins)", flush=True)
                 
                 lr_3 = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
                 lr_3.fit(ft_3, y_train)
@@ -2005,7 +2018,7 @@ if __name__ == '__main__':
             rf10_45 = load(f'./datasets/rf10_45{ending}.joblib')
 
         except FileNotFoundError:
-            print("Training random forest classifiers. (expect ~3 mins)")
+            print("Training random forest classifiers. (expect ~3 mins)", flush=True)
 
             # For feature set 3
             rf3_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
@@ -2047,17 +2060,17 @@ if __name__ == '__main__':
             dump(rf8_45, f'./datasets/rf8_45{ending}.joblib')
 
             # For feature set 10
-            rf10_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
-            rf10_15.fit(ft_10, y_train)
-            dump(rf10_15, f'./datasets/rf10_15{ending}.joblib')
+            # rf10_15 = RandomForestClassifier(n_estimators=15, random_state=1327)
+            # rf10_15.fit(ft_10, y_train)
+            # dump(rf10_15, f'./datasets/rf10_15{ending}.joblib')
 
-            rf10_30 = RandomForestClassifier(n_estimators=30, random_state=1327)
-            rf10_30.fit(ft_10, y_train)
-            dump(rf10_30, f'./datasets/rf10_30{ending}.joblib')
+            # rf10_30 = RandomForestClassifier(n_estimators=30, random_state=1327)
+            # rf10_30.fit(ft_10, y_train)
+            # dump(rf10_30, f'./datasets/rf10_30{ending}.joblib')
 
-            rf10_45 = RandomForestClassifier(n_estimators=45, random_state=1327)
-            rf10_45.fit(ft_10, y_train)
-            dump(rf10_45, f'./datasets/rf10_45{ending}.joblib')
+            # rf10_45 = RandomForestClassifier(n_estimators=45, random_state=1327)
+            # rf10_45.fit(ft_10, y_train)
+            # dump(rf10_45, f'./datasets/rf10_45{ending}.joblib')
 
         # AdaBoosted Decision Trees models follow the format: abdt_<k-mer length>
         try:
@@ -2103,7 +2116,7 @@ if __name__ == '__main__':
 
 
         except FileNotFoundError:
-            print("Training AdaBoosted Decision Trees models. (expect ~3.5 hours)")
+            print("Training AdaBoosted Decision Trees models. (expect ~3.5 hours)", flush=True)
             # Note: since there are 36 models and writing it out would take
             # many lines, this only trains then saves the models. You have to
             # run this again in order to test them, so that they can be loaded
@@ -2142,13 +2155,13 @@ if __name__ == '__main__':
                     model.fit(ft_8, y_train)
                     dump(model, f'./datasets/abdt8_{n_estimators}_{max_depth}{ending}.joblib')
 
-            # For feature set 10
-            print("Training feature set 10")
-            for n_estimators in [15, 30, 45]:
-                for max_depth in [3, 8, 18]:
-                    model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
-                    model.fit(ft_10, y_train)
-                    dump(model, f'./datasets/abdt10_{n_estimators}_{max_depth}{ending}.joblib')
+            # # For feature set 10
+            # print("Training feature set 10")
+            # for n_estimators in [15, 30, 45]:
+            #     for max_depth in [3, 8, 18]:
+            #         model = AdaBoostClassifier(DecisionTreeClassifier(max_depth=max_depth), n_estimators=n_estimators, random_state=1327)
+            #         model.fit(ft_10, y_train)
+            #         dump(model, f'./datasets/abdt10_{n_estimators}_{max_depth}{ending}.joblib')
             
             # abdt_3 = AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), n_estimators=15, random_state=1327)
             # abdt_3.fit(ft_3, y_train)
@@ -2175,7 +2188,7 @@ if __name__ == '__main__':
             # xgb_10 = load('./datasets/xgb10.joblib')
 
         except FileNotFoundError:
-            print("Training XGBoost models. (expect ~? mins)")
+            print("Training XGBoost models. (expect ~? mins)", flush=True)
             
             xgb_3 = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
             xgb_3.fit(ft_3, y_train)
@@ -2286,16 +2299,16 @@ if __name__ == '__main__':
             ,(knn8_5,f"knn8_5{ending}",ft_8_test,y_test,ft_8,y_train)
             ,(knn8_7,f"knn8_7{ending}",ft_8_test,y_test,ft_8,y_train)
             ,(knn8_9,f"knn8_9{ending}",ft_8_test,y_test,ft_8,y_train)
-            ,(knn10_1,f"knn10_1{ending}",ft_10_test,y_test,ft_10,y_train)
-            ,(knn10_3,f"knn10_3{ending}",ft_10_test,y_test,ft_10,y_train)
-            ,(knn10_5,f"knn10_5{ending}",ft_10_test,y_test,ft_10,y_train)
-            ,(knn10_7,f"knn10_7{ending}",ft_10_test,y_test,ft_10,y_train)
-            ,(knn10_9,f"knn10_9{ending}",ft_10_test,y_test,ft_10,y_train)
+            # ,(knn10_1,f"knn10_1{ending}",ft_10_test,y_test,ft_10,y_train)
+            # ,(knn10_3,f"knn10_3{ending}",ft_10_test,y_test,ft_10,y_train)
+            # ,(knn10_5,f"knn10_5{ending}",ft_10_test,y_test,ft_10,y_train)
+            # ,(knn10_7,f"knn10_7{ending}",ft_10_test,y_test,ft_10,y_train)
+            # ,(knn10_9,f"knn10_9{ending}",ft_10_test,y_test,ft_10,y_train)
 
             ,(nb_3, f"nb_3{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(nb_5, f"nb_5{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(nb_8, f"nb_8{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(nb_10, f"nb_10{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(nb_10, f"nb_10{ending}", ft_10_test, y_test, ft_10, y_train)
 
             ,(rf3_15, f"rf3_15{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(rf3_30, f"rf3_30{ending}", ft_3_test, y_test, ft_3, y_train)
@@ -2306,19 +2319,19 @@ if __name__ == '__main__':
             ,(rf8_15, f"rf8_15{ending}", ft_8_test, y_test, ft_8, y_train)
             ,(rf8_30, f"rf8_30{ending}", ft_8_test, y_test, ft_8, y_train)
             ,(rf8_45, f"rf8_45{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(rf10_15, f"rf10_15{ending}", ft_10_test, y_test, ft_10, y_train)
-            ,(rf10_30, f"rf10_30{ending}", ft_10_test, y_test, ft_10, y_train)
-            ,(rf10_45, f"rf10_45{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(rf10_15, f"rf10_15{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(rf10_30, f"rf10_30{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(rf10_45, f"rf10_45{ending}", ft_10_test, y_test, ft_10, y_train)
 
             ,(dt_3, f"dt_3{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(dt_5, f"dt_5{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(dt_8, f"dt_8{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(dt_10, f"dt_10{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(dt_10, f"dt_10{ending}", ft_10_test, y_test, ft_10, y_train)
 
             ,(svm_3, f"svm_3{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(svm_5, f"svm_5{ending}", ft_5_test, y_test, ft_5, y_train)
             ,(svm_8, f"svm_8{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(svm_10, f"svm_10{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(svm_10, f"svm_10{ending}", ft_10_test, y_test, ft_10, y_train)
 
             ,(lr_3, f"lr_3{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(lr_5, f"lr_5{ending}", ft_5_test, y_test, ft_5, y_train)
@@ -2339,9 +2352,9 @@ if __name__ == '__main__':
             ,(abdt8_15_3, f"abdt8_15_3{ending}", ft_8_test, y_test, ft_8, y_train)
             ,(abdt8_30_3, f"abdt8_30_3{ending}", ft_8_test, y_test, ft_8, y_train)
             ,(abdt8_45_3, f"abdt8_45_3{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt10_15_3, f"abdt10_15_3{ending}", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_30_3, f"abdt10_30_3{ending}", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_45_3, f"abdt10_45_3{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(abdt10_15_3, f"abdt10_15_3{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(abdt10_30_3, f"abdt10_30_3{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(abdt10_45_3, f"abdt10_45_3{ending}", ft_10_test, y_test, ft_10, y_train)
         
             ,(abdt3_15_8, f"abdt3_15_8{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(abdt3_30_8, f"abdt3_30_8{ending}", ft_3_test, y_test, ft_3, y_train)
@@ -2352,9 +2365,9 @@ if __name__ == '__main__':
             ,(abdt8_15_8, f"abdt8_15_8{ending}", ft_8_test, y_test, ft_8, y_train)
             ,(abdt8_30_8, f"abdt8_30_8{ending}", ft_8_test, y_test, ft_8, y_train)
             ,(abdt8_45_8, f"abdt8_45_8{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt10_15_8, f"abdt10_15_8{ending}", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_30_8, f"abdt10_30_8{ending}", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_45_8, f"abdt10_45_8{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(abdt10_15_8, f"abdt10_15_8{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(abdt10_30_8, f"abdt10_30_8{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(abdt10_45_8, f"abdt10_45_8{ending}", ft_10_test, y_test, ft_10, y_train)
 
             ,(abdt3_15_18, f"abdt3_15_18{ending}", ft_3_test, y_test, ft_3, y_train)
             ,(abdt3_30_18, f"abdt3_30_18{ending}", ft_3_test, y_test, ft_3, y_train)
@@ -2365,12 +2378,12 @@ if __name__ == '__main__':
             ,(abdt8_15_18, f"abdt8_15_18{ending}", ft_8_test, y_test, ft_8, y_train)
             ,(abdt8_30_18, f"abdt8_30_18{ending}", ft_8_test, y_test, ft_8, y_train)
             ,(abdt8_45_18, f"abdt8_45_18{ending}", ft_8_test, y_test, ft_8, y_train)
-            ,(abdt10_15_18, f"abdt10_15_18{ending}", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_30_18, f"abdt10_30_18{ending}", ft_10_test, y_test, ft_10, y_train)
-            ,(abdt10_45_18, f"abdt10_45_18{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(abdt10_15_18, f"abdt10_15_18{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(abdt10_30_18, f"abdt10_30_18{ending}", ft_10_test, y_test, ft_10, y_train)
+            # ,(abdt10_45_18, f"abdt10_45_18{ending}", ft_10_test, y_test, ft_10, y_train)
         ]
         names = [ele[1] for ele in models_to_evaluate]
-        print(f"Evaluating models: {names}")
+        print(f"Evaluating models: {names}", flush=True)
 
         results_df = pd.DataFrame()
 
