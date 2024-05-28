@@ -13,7 +13,6 @@ import warnings
 import numpy as np
 import pandas as pd
 import time
-from evaluate_model import config
 from joblib import dump, load
 import utils
 from tqdm import tqdm

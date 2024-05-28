@@ -1502,12 +1502,19 @@ if __name__ == '__main__':
 
         for kmer in [3]: # 8, 10
             baselines.train_naive_bayes(kmer, y_train, ending)
+            print(f"Trained naive bayes", flush=True)
             baselines.train_svm(kmer, y_train, ending)
+            print(f"Trained svm", flush=True)
             baselines.train_decision_tree(kmer, y_train, ending)
+            print(f"Trained dt", flush=True)
             baselines.train_logistic_regression(kmer, y_train, ending)
+            print(f"Trained lr", flush=True)
             baselines.train_xgboost(kmer, y_train, ending)
+            print(f"Trained xgb", flush=True)
             baselines.train_knn(kmer, y_train, ending, neighbors=[1,3,5,7,9])
+            print(f"Trained knn", flush=True)
             baselines.train_rf(kmer, y_train, ending, num_trees=[15,30,45])
+            print(f"Trained rf", flush=True)
             baselines.train_adaboost(kmer, y_train, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
 
         print(f"Trained all of the models!")
