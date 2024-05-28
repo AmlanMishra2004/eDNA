@@ -1786,10 +1786,7 @@ if __name__ == '__main__':
                     knn = KNeighborsClassifier(n_neighbors=n)
                     if not include_iupac:
                         knn.fit(locals()[f'ft_{kmer}'], y_train)
-                        dump(knn, f'./datasets/knn{kmer}_{n}.joblib')
-                    elif include_iupac:
-                        knn.fit(locals()[f'ft_{kmer}_iupac'], y_train)
-                        dump(knn, f'./datasets/knn{kmer}_{n}_iupac.joblib')
+                        dump(knn, f'./datasets/knn{kmer}_{n}{ending}.joblib')
 
         # Naive Bayes names follow the format: nb_<k-mer length>
         try:
