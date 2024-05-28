@@ -185,7 +185,7 @@ def train_naive_bayes(kmer, y_train, ending):
     if not os.path.exists(path):
         print("Training Naive Bayes model.", flush=True)
         nb = MultinomialNB()
-        X_train = load(f'./datasets/ft_{kmer}{ending}.joblib')
+        X_train = load(f'./datasets/ft_{kmer}{ending}.npy')
         nb.fit(X_train, y_train)
         dump(nb, path)
 
@@ -197,7 +197,7 @@ def train_svm(kmer, y_train, ending):
     if not os.path.exists(path):
         print("Training SVM model.", flush=True)
         svm_model = svm.SVC(kernel='linear', decision_function_shape='ovo')
-        X_train = load(f'./datasets/ft_{kmer}{ending}.joblib')
+        X_train = load(f'./datasets/ft_{kmer}{ending}.npy')
         svm_model.fit(X_train, y_train)
         dump(svm_model, path)
 
@@ -209,7 +209,7 @@ def train_decision_tree(kmer, y_train, ending):
     if not os.path.exists(path):
         print("Training Decision Tree model.", flush=True)
         dt_model = DecisionTreeClassifier(random_state=1327)
-        X_train = load(f'./datasets/ft_{kmer}{ending}.joblib')
+        X_train = load(f'./datasets/ft_{kmer}{ending}.npy')
         dt_model.fit(X_train, y_train)
         dump(dt_model, path)
 
@@ -221,7 +221,7 @@ def train_logistic_regression(kmer, y_train, ending):
     if not os.path.exists(path):
         print("Training Logistic Regression model.", flush=True)
         lr_model = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
-        X_train = load(f'./datasets/ft_{kmer}{ending}.joblib')
+        X_train = load(f'./datasets/ft_{kmer}{ending}.npy')
         lr_model.fit(X_train, y_train)
         dump(lr_model, path)
 
@@ -233,7 +233,7 @@ def train_xgboost(kmer, y_train, ending):
     if not os.path.exists(path):
         print("Training XGBoost model.", flush=True)
         xgb_model = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
-        X_train = load(f'./datasets/ft_{kmer}{ending}.joblib')
+        X_train = load(f'./datasets/ft_{kmer}{ending}.npy')
         xgb_model.fit(X_train, y_train)
         dump(xgb_model, path)
 
@@ -260,7 +260,7 @@ def train_knn(kmer, y_train, ending, neighbors):
         #     dump(knn, f'./datasets/knnraw_{n}.joblib')
         for n in neighbors:
             knn = KNeighborsClassifier(n_neighbors=n)
-            X_train = load(f'./datasets/ft_{kmer}{ending}.joblib')
+            X_train = load(f'./datasets/ft_{kmer}{ending}.npy')
             knn.fit(X_train, y_train)
             dump(knn, f'./datasets/knn{kmer}_{n}{ending}.joblib')
 
@@ -277,7 +277,7 @@ def train_rf(kmer, y_train, ending, num_trees):
         print("Training Random Forest models.", flush=True)
         for n in trees:
             rf_model = RandomForestClassifier(n_estimators=n, random_state=1327)
-            X_train = load(f'./datasets/ft_{kmer}{ending}.joblib')
+            X_train = load(f'./datasets/ft_{kmer}{ending}.npy')
             rf_model.fit(X_train, y_train)
             dump(rf_model, f'./datasets/rf{kmer}_{n}{ending}.joblib')
 
@@ -300,7 +300,7 @@ def train_adaboost(kmer, y_train, ending, n_estimators, max_depths):
                     n_estimators=n, 
                     random_state=1327
                 )
-                X_train = load(f'./datasets/ft_{kmer}{ending}.joblib')
+                X_train = load(f'./datasets/ft_{kmer}{ending}.npy')
                 adaboost_model.fit(X_train, y_train)
                 dump(adaboost_model, f'./datasets/adbt{kmer}_{n}_{depth}{ending}.joblib')
     
