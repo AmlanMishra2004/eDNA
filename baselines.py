@@ -259,19 +259,19 @@ def train_logistic_regression(kmer, y_train, y_test, ending):
     if not os.path.exists(path):
         print("Training Logistic Regression model.", flush=True)
 
-        # Training in batches
-        batch_size = 300
-        lr_model = LogisticRegression(max_iter=400, random_state=1327, solver='lbfgs', multi_class='auto')
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
-        classes = np.unique(y_train)
-        for X_batch, y_batch in batch_generator(X_train, y_train, batch_size):
-            lr_model.partial_fit(X_batch, y_batch, classes=classes)
-        dump(lr_model, path)
-
-        # lr_model = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
+        # # Training in batches
+        # batch_size = 300
+        # lr_model = LogisticRegression(max_iter=400, random_state=1327, solver='lbfgs', multi_class='auto')
         # X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
-        # lr_model.fit(X_train, y_train)
+        # classes = np.unique(y_train)
+        # for X_batch, y_batch in batch_generator(X_train, y_train, batch_size):
+        #     lr_model.partial_fit(X_batch, y_batch, classes=classes)
         # dump(lr_model, path)
+
+        lr_model = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
+        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        lr_model.fit(X_train, y_train)
+        dump(lr_model, path)
 
     lr_model = load(path)
     X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')

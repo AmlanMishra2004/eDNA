@@ -1446,7 +1446,7 @@ if __name__ == '__main__':
         import baselines
 
         truncate_or_pad = True
-        include_iupac = True
+        include_iupac = False
 
         if not truncate_or_pad:
             # train_path should be no_dup (no oversampling)!
@@ -1498,12 +1498,9 @@ if __name__ == '__main__':
 
         # Instead of the previous approach, saves the numpy arrays and doesn't
         # use them as local variables. Each ML method loads a specific dataset.
-        for k in [5]:
-            try:
-                print(f"Trying k: {k}")
-                baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[k])
-            except:
-                pass
+        for k in [3,5,8,10]:
+            print(f"Trying to create feature table for k={k}")
+            baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[k])
 
         warnings.filterwarnings('ignore', category=FutureWarning)
         res_path = f'baseline_results_{ending}.csv'
@@ -1533,7 +1530,7 @@ if __name__ == '__main__':
                 'test_macro_ovr_roc_auc_score'
             ])
 
-        for kmer in [5]: # 3, 5, 8, 10
+        for kmer in [3,5,8,10]: # 3, 5, 8, 10
             print(f"KMER={kmer}", flush=True)
             res = baselines.train_naive_bayes(kmer, y_train, y_test, ending)
             results_df = results_df.append(pd.Series(res), ignore_index=True)
