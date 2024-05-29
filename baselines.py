@@ -316,8 +316,8 @@ def train_knn(kmer, y_train, y_test, ending, neighbors):
             dump(knn, f'./datasets/knn{kmer}_{n}{ending}.joblib')
     
     results_df = pd.DataFrame()
-    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
     for n in neighbors:
+        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
         knn = load(f'./datasets/knn{kmer}_{n}{ending}.joblib')
         y_train_pred = knn.predict(X_train)
         del X_train
@@ -349,8 +349,8 @@ def train_rf(kmer, y_train, y_test, ending, num_trees):
             dump(rf_model, f'./datasets/rf{kmer}_{n}{ending}.joblib')
     
     results_df = pd.DataFrame()
-    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
     for n in num_trees:
+        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
         knn = load(f'./datasets/rf{kmer}_{n}{ending}.joblib')
         y_train_pred = knn.predict(X_train)
         del X_train
@@ -388,9 +388,9 @@ def train_adaboost(kmer, y_train, y_test, ending, n_estimators, max_depths):
                 dump(adaboost_model, f'./datasets/adbt{kmer}_{n}_{depth}{ending}.joblib')
     
     results_df = pd.DataFrame()
-    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
     for n in n_estimators:
         for depth in max_depths:
+            X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
             knn = load(f'./datasets/adbt{kmer}_{n}_{depth}{ending}.joblib')
             y_train_pred = knn.predict(X_train)
             del X_train
