@@ -1498,7 +1498,7 @@ if __name__ == '__main__':
 
         # Instead of the previous approach, saves the numpy arrays and doesn't
         # use them as local variables. Each ML method loads a specific dataset.
-        baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[3])
+        baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[5])
 
         for kmer in [5]: # 8, 10
             baselines.train_naive_bayes(kmer, y_train, ending)

@@ -188,6 +188,8 @@ def train_naive_bayes(kmer, y_train, ending):
         X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
         nb.fit(X_train, y_train)
         dump(nb, path)
+    
+    
 
 def train_svm(kmer, y_train, ending):
     # SVM models follow the format: svm<k-mer length>
