@@ -275,7 +275,7 @@ def train_rf(kmer, y_train, ending, num_trees):
 
     if not all_exist:
         print("Training Random Forest models.", flush=True)
-        for n in trees:
+        for n in num_trees:
             rf_model = RandomForestClassifier(n_estimators=n, random_state=1327)
             X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
             rf_model.fit(X_train, y_train)
