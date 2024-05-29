@@ -1500,7 +1500,7 @@ if __name__ == '__main__':
         # use them as local variables. Each ML method loads a specific dataset.
         baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[3])
 
-        for kmer in [3]: # 8, 10
+        for kmer in [5]: # 8, 10
             baselines.train_naive_bayes(kmer, y_train, ending)
             print(f"Trained naive bayes", flush=True)
             baselines.train_svm(kmer, y_train, ending)
