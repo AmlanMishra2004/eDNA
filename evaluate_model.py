@@ -1506,7 +1506,27 @@ if __name__ == '__main__':
             results_df = pd.read_csv(res_path)
         else:
             # If the file does not exist, create an empty DataFrame with the desired columns
-            results_df = pd.DataFrame(columns=['column1', 'column2', 'column3'])
+            results_df = pd.DataFrame(columns=[
+                'name',
+                'train_macro_f1-score',
+                'train_macro_recall', 
+                'train_micro_accuracy',
+                'train_macro_precision',
+                'train_weighted_precision', 
+                'train_weighted_recall',
+                'train_weighted_f1-score',
+                'train_balanced_accuracy',
+                'train_macro_ovr_roc_auc_score',
+                'test_macro_f1-score',
+                'test_macro_recall',
+                'test_micro_accuracy',
+                'test_macro_precision',
+                'test_weighted_precision', 
+                'test_weighted_recall',
+                'test_weighted_f1-score',
+                'test_balanced_accuracy',
+                'test_macro_ovr_roc_auc_score'
+            ])
 
         for kmer in [8]: # 3, 5, 8, 10
             res = baselines.train_naive_bayes(kmer, y_train, y_test, ending)
@@ -1541,8 +1561,9 @@ if __name__ == '__main__':
             results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained adbt", flush=True)
 
+        df.to_csv(res_path, index=False)
         warnings.filterwarnings('default', category=FutureWarning)
-        print(f"Trained and evaluated all of the models! Saved to file {path}")
+        print(f"Trained and evaluated all of the models! Saved to file {res_path}")
         
 
 
