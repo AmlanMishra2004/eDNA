@@ -1498,7 +1498,7 @@ if __name__ == '__main__':
 
         # Instead of the previous approach, saves the numpy arrays and doesn't
         # use them as local variables. Each ML method loads a specific dataset.
-        baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[7])
+        baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[6])
 
         warnings.filterwarnings('ignore', category=FutureWarning)
         res_path = f'baseline_results_{ending}'
@@ -1528,40 +1528,48 @@ if __name__ == '__main__':
                 'test_macro_ovr_roc_auc_score'
             ])
 
-        for kmer in [8]: # 3, 5, 8, 10
+        for kmer in [3,5,6]: # 3, 5, 8, 10
+            print(f"KMER={kmer}", flush=True)
             res = baselines.train_naive_bayes(kmer, y_train, y_test, ending)
             results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained naive bayes", flush=True)
+            results_df.to_csv(res_path, index=False)
 
             res = baselines.train_svm(kmer, y_train, y_test, ending)
             results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained svm", flush=True)
+            results_df.to_csv(res_path, index=False)
 
             res = baselines.train_decision_tree(kmer, y_train, y_test, ending)
             results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained dt", flush=True)
+            results_df.to_csv(res_path, index=False)
 
             res = baselines.train_logistic_regression(kmer, y_train, y_test, ending)
             results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained lr", flush=True)
+            results_df.to_csv(res_path, index=False)
 
             res = baselines.train_xgboost(kmer, y_train, y_test, ending)
             results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained xgb", flush=True)
+            results_df.to_csv(res_path, index=False)
 
             res = baselines.train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
             results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained knn", flush=True)
+            results_df.to_csv(res_path, index=False)
 
             res = baselines.train_rf(kmer, y_train, y_test, ending, num_trees=[15,30,45])
             results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained rf", flush=True)
+            results_df.to_csv(res_path, index=False)
 
             res = baselines.train_adaboost(kmer, y_train, y_test, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
             results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained adbt", flush=True)
-
-        df.to_csv(res_path, index=False)
+            results_df.to_csv(res_path, index=False)
+        
         warnings.filterwarnings('default', category=FutureWarning)
         print(f"Trained and evaluated all of the models! Saved to file {res_path}")
         
