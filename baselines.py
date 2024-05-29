@@ -177,7 +177,7 @@ def create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths):
 
 # Create, train, and save the baseline models
 
-def train_naive_bayes(kmer, y_train, ending):
+def train_naive_bayes(kmer, y_train, y_test, ending):
     # Naive Bayes models follow the format: nb<k-mer length>
     print("Searching for pretrained Naive Bayes models...")
     path = f'./datasets/nb{kmer}{ending}.joblib'
@@ -189,9 +189,16 @@ def train_naive_bayes(kmer, y_train, ending):
         nb.fit(X_train, y_train)
         dump(nb, path)
     
-    
+    y_train_pred = nb.predict(X_train)
+    del X_train
+    X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+    y_test_pred = nb.predict(X_test)
+    del X_test
 
-def train_svm(kmer, y_train, ending):
+    return evaluate(f'nb{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+
+
+def train_svm(kmer, y_train, y_test, ending):
     # SVM models follow the format: svm<k-mer length>
     print("Searching for pretrained SVM models...")
     path = f'./datasets/svm{kmer}{ending}.joblib'
@@ -203,7 +210,15 @@ def train_svm(kmer, y_train, ending):
         svm_model.fit(X_train, y_train)
         dump(svm_model, path)
 
-def train_decision_tree(kmer, y_train, ending):
+    y_train_pred = svm_model.predict(X_train)
+    del X_train
+    X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+    y_test_pred = svm_model.predict(X_test)
+    del X_test
+
+    return evaluate(f'svm{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+
+def train_decision_tree(kmer, y_train, y_test, ending):
     # Decision Tree models follow the format: dt<k-mer length>
     print("Searching for pretrained Decision Tree models...")
     path = f'./datasets/dt{kmer}{ending}.joblib'
@@ -215,7 +230,15 @@ def train_decision_tree(kmer, y_train, ending):
         dt_model.fit(X_train, y_train)
         dump(dt_model, path)
 
-def train_logistic_regression(kmer, y_train, ending):
+    y_train_pred = dt_model.predict(X_train)
+    del X_train
+    X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+    y_test_pred = dt_model.predict(X_test)
+    del X_test
+
+    return evaluate(f'dt{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+
+def train_logistic_regression(kmer, y_train, y_test, ending):
     # Multiclass Logistic Regression models follow the format: lr<k-mer length>
     print("Searching for pretrained Logistic Regression models...")
     path = f'./datasets/lr{kmer}{ending}.joblib'
@@ -227,7 +250,15 @@ def train_logistic_regression(kmer, y_train, ending):
         lr_model.fit(X_train, y_train)
         dump(lr_model, path)
 
-def train_xgboost(kmer, y_train, ending):
+    y_train_pred = lr_model.predict(X_train)
+    del X_train
+    X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+    y_test_pred = lr_model.predict(X_test)
+    del X_test
+
+    return evaluate(f'lr{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+
+def train_xgboost(kmer, y_train, y_test, ending):
     # XGBoost models follow the format: xgb<k-mer length>
     print("Searching for pretrained XGBoost models...")
     path = f'./datasets/xgb{kmer}{ending}.joblib'
@@ -239,7 +270,15 @@ def train_xgboost(kmer, y_train, ending):
         xgb_model.fit(X_train, y_train)
         dump(xgb_model, path)
 
-def train_knn(kmer, y_train, ending, neighbors):
+    y_train_pred = xgb_model.predict(X_train)
+    del X_train
+    X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+    y_test_pred = xgb_model.predict(X_test)
+    del X_test
+
+    return evaluate(f'xgb{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+
+def train_knn(kmer, y_train, y_test, ending, neighbors):
     # KNN models follow the format: knn<k-mer length>_<number nearest neighbors>
     print("Searching for pretrained KNN models...")
     all_exist = True
@@ -260,13 +299,24 @@ def train_knn(kmer, y_train, ending, neighbors):
         #     knn = KNeighborsClassifier(n_neighbors=n)
         #     knn.fit(X_train_vectorized, y_train)
         #     dump(knn, f'./datasets/knnraw_{n}.joblib')
+        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
         for n in neighbors:
             knn = KNeighborsClassifier(n_neighbors=n)
-            X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
             knn.fit(X_train, y_train)
             dump(knn, f'./datasets/knn{kmer}_{n}{ending}.joblib')
+    
+    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+    for n in neighbors:
+        knn = load(f'./datasets/knn{kmer}_{n}{ending}.joblib')
+        y_train_pred = knn.predict(X_train)
+        del X_train
+        X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+        y_test_pred = knn.predict(X_test)
+        del X_test
 
-def train_rf(kmer, y_train, ending, num_trees):
+    return evaluate(f'knn{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+
+def train_rf(kmer, y_train, y_test, ending, num_trees):
     # Random Forest models follow the format: rf<k-mer length>_<number trees>
     print("Searching for pretrained KNN models...")
     all_exist = True
@@ -277,13 +327,24 @@ def train_rf(kmer, y_train, ending, num_trees):
 
     if not all_exist:
         print("Training Random Forest models.", flush=True)
+        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
         for n in num_trees:
             rf_model = RandomForestClassifier(n_estimators=n, random_state=1327)
-            X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
             rf_model.fit(X_train, y_train)
             dump(rf_model, f'./datasets/rf{kmer}_{n}{ending}.joblib')
+    
+    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+    for n in num_trees:
+        knn = load(f'./datasets/rf{kmer}_{n}{ending}.joblib')
+        y_train_pred = knn.predict(X_train)
+        del X_train
+        X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+        y_test_pred = knn.predict(X_test)
+        del X_test
 
-def train_adaboost(kmer, y_train, ending, n_estimators, max_depths):
+    return evaluate(f'rf{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+
+def train_adaboost(kmer, y_train, y_test, ending, n_estimators, max_depths):
     # AdaBoost models follow the format: adaboost<k-mer length>_<n_estimators>
     print("Searching for pretrained AdaBoost models...")
     all_exist = True
@@ -295,6 +356,7 @@ def train_adaboost(kmer, y_train, ending, n_estimators, max_depths):
 
     if not all_exist:
         print("Training AdaBoost models.", flush=True)
+        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
         for n in n_estimators:
             for depth in max_depths:
                 adaboost_model = AdaBoostClassifier(
@@ -302,16 +364,15 @@ def train_adaboost(kmer, y_train, ending, n_estimators, max_depths):
                     n_estimators=n, 
                     random_state=1327
                 )
-                X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
                 adaboost_model.fit(X_train, y_train)
                 dump(adaboost_model, f'./datasets/adbt{kmer}_{n}_{depth}{ending}.joblib')
     
 
-def evaluate(model, name, X_test, y_test, X_train, y_train):
+def evaluate(name, y_test, y_test_pred, y_train, y_train_pred):
     from sklearn.metrics import accuracy_score, f1_score, balanced_accuracy_score, precision_score, recall_score, roc_auc_score
 
     # Predictions for test set
-    test_predictions = model.predict(X_test)
+    test_predictions = y_test_pred
     
     # Metrics for test set
     test_accuracy = accuracy_score(y_test, test_predictions)
@@ -322,13 +383,14 @@ def evaluate(model, name, X_test, y_test, X_train, y_train):
     test_weighted_precision = precision_score(y_test, test_predictions, average="weighted", zero_division=1)
     test_weighted_recall = recall_score(y_test, test_predictions, average="weighted", zero_division=1)
     test_weighted_f1 = f1_score(y_test, test_predictions, average="weighted", zero_division=1)
-    try:
-        test_roc_auc = roc_auc_score(y_test, model.predict_proba(X_test), multi_class="ovr", average="macro")
-    except:
-        test_roc_auc = -1
+    train_roc_auc = -1
+    # try:
+    #     test_roc_auc = roc_auc_score(y_test, model.predict_proba(X_test), multi_class="ovr", average="macro")
+    # except:
+    #     test_roc_auc = -1
     
     # Predictions for train set
-    train_predictions = model.predict(X_train)
+    train_predictions = y_train_pred
     
     # Metrics for train set
     train_accuracy = accuracy_score(y_train, train_predictions)
@@ -339,10 +401,11 @@ def evaluate(model, name, X_test, y_test, X_train, y_train):
     train_weighted_precision = precision_score(y_train, train_predictions, average="weighted", zero_division=1)
     train_weighted_recall = recall_score(y_train, train_predictions, average="weighted", zero_division=1)
     train_weighted_f1 = f1_score(y_train, train_predictions, average="weighted", zero_division=1)
-    try:
-        train_roc_auc = roc_auc_score(y_train, model.predict_proba(X_train), multi_class="ovr", average="macro")
-    except:
-        train_roc_auc = -1
+    train_roc_auc = -1
+    # try:
+    #     train_roc_auc = roc_auc_score(y_train, model.predict_proba(X_train), multi_class="ovr", average="macro")
+    # except:
+    #     train_roc_auc = -1
 
     # Results
     results = {

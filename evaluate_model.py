@@ -1498,24 +1498,24 @@ if __name__ == '__main__':
 
         # Instead of the previous approach, saves the numpy arrays and doesn't
         # use them as local variables. Each ML method loads a specific dataset.
-        baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[5])
+        baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[3,5])
 
         for kmer in [5]: # 8, 10
-            baselines.train_naive_bayes(kmer, y_train, ending)
+            baselines.train_naive_bayes(kmer, y_train, y_test, ending)
             print(f"Trained naive bayes", flush=True)
-            baselines.train_svm(kmer, y_train, ending)
+            baselines.train_svm(kmer, y_train, y_test, ending)
             print(f"Trained svm", flush=True)
-            baselines.train_decision_tree(kmer, y_train, ending)
+            baselines.train_decision_tree(kmer, y_train, y_test, ending)
             print(f"Trained dt", flush=True)
-            baselines.train_logistic_regression(kmer, y_train, ending)
+            baselines.train_logistic_regression(kmer, y_train, y_test, ending)
             print(f"Trained lr", flush=True)
-            baselines.train_xgboost(kmer, y_train, ending)
+            baselines.train_xgboost(kmer, y_train, y_test, ending)
             print(f"Trained xgb", flush=True)
-            baselines.train_knn(kmer, y_train, ending, neighbors=[1,3,5,7,9])
+            baselines.train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
             print(f"Trained knn", flush=True)
-            baselines.train_rf(kmer, y_train, ending, num_trees=[15,30,45])
+            baselines.train_rf(kmer, y_train, y_test, ending, num_trees=[15,30,45])
             print(f"Trained rf", flush=True)
-            baselines.train_adaboost(kmer, y_train, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
+            baselines.train_adaboost(kmer, y_train, y_test, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
 
         print(f"Trained all of the models!")
         print(f"Evaluating models")
