@@ -1556,17 +1556,17 @@ if __name__ == '__main__':
             results_df.to_csv(res_path, index=False)
 
             res = baselines.train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
-            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            results_df = pd.concat([results_df, res], ignore_index=True)
             print(f"Trained knn", flush=True)
             results_df.to_csv(res_path, index=False)
 
             res = baselines.train_rf(kmer, y_train, y_test, ending, num_trees=[15,30,45])
-            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            results_df = pd.concat([results_df, res], ignore_index=True)
             print(f"Trained rf", flush=True)
             results_df.to_csv(res_path, index=False)
 
             res = baselines.train_adaboost(kmer, y_train, y_test, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
-            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            results_df = pd.concat([results_df, res], ignore_index=True)
             print(f"Trained adbt", flush=True)
             results_df.to_csv(res_path, index=False)
         
