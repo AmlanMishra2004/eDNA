@@ -305,6 +305,7 @@ def train_knn(kmer, y_train, y_test, ending, neighbors):
             knn.fit(X_train, y_train)
             dump(knn, f'./datasets/knn{kmer}_{n}{ending}.joblib')
     
+    results_df = pd.DataFrame()
     X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
     for n in neighbors:
         knn = load(f'./datasets/knn{kmer}_{n}{ending}.joblib')
@@ -313,8 +314,12 @@ def train_knn(kmer, y_train, y_test, ending, neighbors):
         X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
         y_test_pred = knn.predict(X_test)
         del X_test
+        res = evaluate(f'knn{kmer}_{n}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+        warnings.filterwarnings('ignore', category=FutureWarning)
+        results_df = results_df.append(pd.Series(res), ignore_index=True)
+        warnings.filterwarnings('default', category=FutureWarning)
 
-    return evaluate(f'knn{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+    return results_df
 
 def train_rf(kmer, y_train, y_test, ending, num_trees):
     # Random Forest models follow the format: rf<k-mer length>_<number trees>
@@ -333,6 +338,7 @@ def train_rf(kmer, y_train, y_test, ending, num_trees):
             rf_model.fit(X_train, y_train)
             dump(rf_model, f'./datasets/rf{kmer}_{n}{ending}.joblib')
     
+    results_df = pd.DataFrame()
     X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
     for n in num_trees:
         knn = load(f'./datasets/rf{kmer}_{n}{ending}.joblib')
@@ -341,8 +347,12 @@ def train_rf(kmer, y_train, y_test, ending, num_trees):
         X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
         y_test_pred = knn.predict(X_test)
         del X_test
+        res = evaluate(f'rf{kmer}_{n}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+        warnings.filterwarnings('ignore', category=FutureWarning)
+        results_df = results_df.append(pd.Series(res), ignore_index=True)
+        warnings.filterwarnings('default', category=FutureWarning)
 
-    return evaluate(f'rf{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+    return results_df
 
 def train_adaboost(kmer, y_train, y_test, ending, n_estimators, max_depths):
     # AdaBoost models follow the format: adaboost<k-mer length>_<n_estimators>
@@ -367,6 +377,22 @@ def train_adaboost(kmer, y_train, y_test, ending, n_estimators, max_depths):
                 adaboost_model.fit(X_train, y_train)
                 dump(adaboost_model, f'./datasets/adbt{kmer}_{n}_{depth}{ending}.joblib')
     
+    results_df = pd.DataFrame()
+    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+    for n in n_estimators:
+        for depth in max_depths:
+            knn = load(f'./datasets/adbt{kmer}_{n}_{depth}{ending}.joblib')
+            y_train_pred = knn.predict(X_train)
+            del X_train
+            X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+            y_test_pred = knn.predict(X_test)
+            del X_test
+            res = evaluate(f'adbt{kmer}_{n}_{depth}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+            warnings.filterwarnings('ignore', category=FutureWarning)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            warnings.filterwarnings('default', category=FutureWarning)
+
+    return results_df
 
 def evaluate(name, y_test, y_test_pred, y_train, y_train_pred):
     from sklearn.metrics import accuracy_score, f1_score, balanced_accuracy_score, precision_score, recall_score, roc_auc_score
@@ -401,7 +427,7 @@ def evaluate(name, y_test, y_test_pred, y_train, y_train_pred):
     train_weighted_precision = precision_score(y_train, train_predictions, average="weighted", zero_division=1)
     train_weighted_recall = recall_score(y_train, train_predictions, average="weighted", zero_division=1)
     train_weighted_f1 = f1_score(y_train, train_predictions, average="weighted", zero_division=1)
-    train_roc_auc = -1
+    test_roc_auc = -1
     # try:
     #     train_roc_auc = roc_auc_score(y_train, model.predict_proba(X_train), multi_class="ovr", average="macro")
     # except:
@@ -429,7 +455,7 @@ def evaluate(name, y_test, y_test_pred, y_train, y_train_pred):
         'test_weighted_recall': test_weighted_recall,
         'test_weighted_f1-score': test_weighted_f1,
         'test_balanced_accuracy': test_bal_acc,
-        'test_macro_ovr_roc_auc_score': test_roc_auc,
+        'test_macro_ovr_roc_auc_score': test_roc_auc
     }
     
     return results

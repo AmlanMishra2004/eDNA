@@ -1498,33 +1498,52 @@ if __name__ == '__main__':
 
         # Instead of the previous approach, saves the numpy arrays and doesn't
         # use them as local variables. Each ML method loads a specific dataset.
-        baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[3,5,8,10])
+        baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[8])
 
-        for kmer in [8]: # 8, 10
-            baselines.train_naive_bayes(kmer, y_train, y_test, ending)
+        warnings.filterwarnings('ignore', category=FutureWarning)
+        res_path = f'baseline_results_{ending}'
+        if os.path.exists(res_path):
+            results_df = pd.read_csv(res_path)
+        else:
+            # If the file does not exist, create an empty DataFrame with the desired columns
+            results_df = pd.DataFrame(columns=['column1', 'column2', 'column3'])
+
+        for kmer in [8]: # 3, 5, 8, 10
+            res = baselines.train_naive_bayes(kmer, y_train, y_test, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained naive bayes", flush=True)
-            baselines.train_svm(kmer, y_train, y_test, ending)
+
+            res = baselines.train_svm(kmer, y_train, y_test, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained svm", flush=True)
-            baselines.train_decision_tree(kmer, y_train, y_test, ending)
+
+            res = baselines.train_decision_tree(kmer, y_train, y_test, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained dt", flush=True)
-            baselines.train_logistic_regression(kmer, y_train, y_test, ending)
+
+            res = baselines.train_logistic_regression(kmer, y_train, y_test, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained lr", flush=True)
-            baselines.train_xgboost(kmer, y_train, y_test, ending)
+
+            res = baselines.train_xgboost(kmer, y_train, y_test, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained xgb", flush=True)
-            baselines.train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
+
+            res = baselines.train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained knn", flush=True)
-            baselines.train_rf(kmer, y_train, y_test, ending, num_trees=[15,30,45])
+
+            res = baselines.train_rf(kmer, y_train, y_test, ending, num_trees=[15,30,45])
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
             print(f"Trained rf", flush=True)
-            baselines.train_adaboost(kmer, y_train, y_test, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
 
-        print(f"Trained all of the models!")
-        print(f"Evaluating models")
-        # results_df = pd.DataFrame()
+            res = baselines.train_adaboost(kmer, y_train, y_test, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            print(f"Trained adbt", flush=True)
 
-        # result = baselines.evaluate()
-        # warnings.filterwarnings('ignore', category=FutureWarning)
-        # results_df = results_df.append(pd.Series(result), ignore_index=True)
-        # warnings.filterwarnings('default', category=FutureWarning)
+        warnings.filterwarnings('default', category=FutureWarning)
+        print(f"Trained and evaluated all of the models! Saved to file {path}")
+        
 
 
 
