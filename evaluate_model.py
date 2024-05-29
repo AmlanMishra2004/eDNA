@@ -1498,7 +1498,7 @@ if __name__ == '__main__':
 
         # Instead of the previous approach, saves the numpy arrays and doesn't
         # use them as local variables. Each ML method loads a specific dataset.
-        for k in [2,3,4]:
+        for k in [5]:
             try:
                 print(f"Trying k: {k}")
                 baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[k])
@@ -1533,7 +1533,7 @@ if __name__ == '__main__':
                 'test_macro_ovr_roc_auc_score'
             ])
 
-        for kmer in [2,3,4]: # 3, 5, 8, 10
+        for kmer in [5]: # 3, 5, 8, 10
             print(f"KMER={kmer}", flush=True)
             res = baselines.train_naive_bayes(kmer, y_train, y_test, ending)
             results_df = results_df.append(pd.Series(res), ignore_index=True)
