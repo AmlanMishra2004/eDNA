@@ -189,6 +189,8 @@ def train_naive_bayes(kmer, y_train, y_test, ending):
         nb.fit(X_train, y_train)
         dump(nb, path)
     
+    nb = load(path)
+    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
     y_train_pred = nb.predict(X_train)
     del X_train
     X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
@@ -210,6 +212,8 @@ def train_svm(kmer, y_train, y_test, ending):
         svm_model.fit(X_train, y_train)
         dump(svm_model, path)
 
+    svm_model = load(path)
+    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
     y_train_pred = svm_model.predict(X_train)
     del X_train
     X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
@@ -230,6 +234,8 @@ def train_decision_tree(kmer, y_train, y_test, ending):
         dt_model.fit(X_train, y_train)
         dump(dt_model, path)
 
+    dt_model = load(path)
+    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
     y_train_pred = dt_model.predict(X_train)
     del X_train
     X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
@@ -250,6 +256,8 @@ def train_logistic_regression(kmer, y_train, y_test, ending):
         lr_model.fit(X_train, y_train)
         dump(lr_model, path)
 
+    lr_model = load(path)
+    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
     y_train_pred = lr_model.predict(X_train)
     del X_train
     X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
@@ -270,6 +278,8 @@ def train_xgboost(kmer, y_train, y_test, ending):
         xgb_model.fit(X_train, y_train)
         dump(xgb_model, path)
 
+    xgb_model = load(path)
+    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
     y_train_pred = xgb_model.predict(X_train)
     del X_train
     X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
