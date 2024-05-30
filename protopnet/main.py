@@ -89,7 +89,7 @@ config = {
             'b':'v', 'd':'h', 'h':'d', 'v':'b',
             's':'w', 'w':'s', 'n':'n', 'z':'z'},
     'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
-    'train_path': '../datasets/train.csv',
+    'train_path': '../datasets/train_dup.csv',
     'test_path': '../datasets/test.csv',
     'sep': ';',                       # separator character in the csv file
     'species_col': 'species_cat',     # name of column containing species
@@ -165,6 +165,150 @@ except:
     pass
 
 
+# Hardcoded
+def create_datasets():
+    oversample = True
+    noise = 2 # 0, 1, or 2
+    
+    if oversample:
+        ending = f'oversampled_noise-{noise}'
+    else:
+        ending = f'noise-{noise}'
+
+    all_data = pd.read_csv(config['raw_data_path'], sep=';')
+    print(f"Number of unique species in all_data: {all_data[config['species_col']].nunique()}")
+    print(f"all_data shape: {all_data.shape}")
+    data = utils.remove_species_with_too_few_sequences(
+            all_data,
+            config['species_col'],
+            config['seq_count_thresh'],
+            config['verbose']
+        )
+    print(f"Number of unique species in data: {data[config['species_col']].nunique()}")
+    print(f"Data shape: {data.shape}")
+    X_train, X_test, y_train, y_test = train_test_split(
+        data[config['seq_col']], # X
+        data[config['species_col']], # y
+        test_size=0.35,
+        random_state=1327,
+        stratify=data[config['species_col']]
+    )
+    train = pd.concat([X_train, y_train], axis=1)
+    test = pd.concat([X_test, y_test], axis=1)
+    if oversample:
+        train = utils.oversample_underrepresented_species(
+            train,
+            config['species_col'],
+            config['verbose']
+        )
+    if noise == 0:
+        train = utils.encode_all_data(
+            train.copy(),
+            config['seq_target_length'],
+            config['seq_col'],
+            config['species_col'],
+            config['encoding_mode'],
+            False, # include extra height dimension of 1
+            "df", # format
+            False, # add noise
+            [0,2],
+            [0,2],
+            0.05,
+            vectorize=False
+        )
+        test = utils.encode_all_data(
+            test.copy(),
+            config['seq_target_length'],
+            config['seq_col'],
+            config['species_col'],
+            config['encoding_mode'],
+            False, # include extra height dimension of 1
+            "df", # format
+            False, # add noise
+            [0,2],
+            [0,2],
+            0.05,
+            vectorize=False
+        )
+    elif noise == 1:
+        train = utils.encode_all_data(
+            train.copy(),
+            config['seq_target_length'],
+            config['seq_col'],
+            config['species_col'],
+            config['encoding_mode'],
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [0,2],
+            [0,2],
+            0.05,
+            vectorize=False
+        )
+        test = utils.encode_all_data(
+            test.copy(),
+            config['seq_target_length'],
+            config['seq_col'],
+            config['species_col'],
+            config['encoding_mode'],
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [1,1],
+            [1,1],
+            0.02,
+            vectorize=False
+        )
+    elif noise == 2:
+        train = utils.encode_all_data(
+            train.copy(),
+            config['seq_target_length'],
+            config['seq_col'],
+            config['species_col'],
+            config['encoding_mode'],
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [0,4],
+            [0,4],
+            0.1,
+            vectorize=False
+        )
+        test = utils.encode_all_data(
+            test.copy(),
+            config['seq_target_length'],
+            config['seq_col'],
+            config['species_col'],
+            config['encoding_mode'],
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [2,2],
+            [2,2],
+            0.04,
+            vectorize=False
+        )
+
+    X_train = train[config['seq_col']]
+    y_train = train[config['species_col']]
+    X_test = test[config['seq_col']]
+    y_test = test[config['species_col']]
+    
+    print(f"X_train SHAPE: {X_train.shape}")
+    print(f"y_train SHAPE: {y_train.shape}")
+    print(f"X_test SHAPE: {X_test.shape}")
+    print(f"y_test SHAPE: {y_test.shape}")
+
+    train.to_csv(f'../datasets/train_{ending}.csv', index=False)
+    test.to_csv(f'../datasets/test_{ending}.csv', index=False)
+
+    print("DataFrames saved successfully.")
+
+create_datasets()
+wait = input("PAUSE")
+
+
+
 # base_architecture_type = re.match('^[a-z]*', base_architecture).group(0)
 
 # model_dir = './ppn_saved_models/' + base_architecture + '/' + experiment_run + '/'
@@ -215,9 +359,8 @@ X_train, X_val, y_train, y_val = train_test_split(
 # print(type(X_train))
 # print(type(y_train))
 
-train = X_train.to_frame().join(y_train.to_frame()) # USED TO BE train = pd.concat([X_train, y_train], axis=1)
+train = X_train.to_frame().join(y_train.to_frame())
 
-# orig_train = pd.concat([[1,2,3],[3,2,3]], axis=1)
 print("Before oversampling:")
 utils.print_descriptive_stats(train, ['species_cat'])
 if config['oversample']:
@@ -289,16 +432,6 @@ pushloader = DataLoader(
     shuffle=False
 )
 
-
-# UNCOMMENT BELOW TO EVALUATE A SAVED MODEL (OR TO RUN PUSH FOR ANALYSIS)
-
-# model = torch.load('saved_ppn_models/1857326_0.9681.pth') # 93, 88 val, test acc
-# model = torch.load('saved_ppn_models/1857326_0.9787.pth') # 94, 88 val, test acc
-# model = torch.load('saved_ppn_models/1857326_0.9894.pth') # 95.2, 90.8 val, test acc
-# model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
-# model = torch.load('saved_ppn_models/1878231_3_-1.pth') # 
-# model.to('cuda')
-
 from sklearn.metrics import precision_score, recall_score, f1_score
 
 def calculate_metrics(model, dataloader):
@@ -317,13 +450,23 @@ def calculate_metrics(model, dataloader):
     f1 = f1_score(all_labels, all_predictions, average='macro')
     return accuracy, precision, recall, f1
 
-# # Calculate and print the train, validation, and test metrics
-# print("Calculating test metrics")
-# test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(model, testloader)
 
-# print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
+# UNCOMMENT BELOW TO EVALUATE A PRETRAINED SAVED MODEL (OR TO RUN PUSH FOR ANALYSIS)
 
-# # wait = input("PAUSE")
+# model = torch.load('saved_ppn_models/1857326_0.9681.pth') # 93, 88 val, test acc
+# model = torch.load('saved_ppn_models/1857326_0.9787.pth') # 94, 88 val, test acc
+# model = torch.load('saved_ppn_models/1857326_0.9894.pth') # 95.2, 90.8 val, test acc
+# model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
+model = torch.load('saved_ppn_models/1878231_3_-1.pth') # 
+model.to('cuda')
+
+# Calculate and print the train, validation, and test metrics
+print("Calculating test metrics")
+test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(model, testloader)
+
+print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
+
+wait = input("PAUSE")
 
 # push_prototypes(
 #     pushloader, # pytorch dataloader (must be unnormalized in [0,1])

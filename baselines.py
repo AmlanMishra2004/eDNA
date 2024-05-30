@@ -146,7 +146,7 @@ def create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths):
     print("Searching for pre-created k-mer feature tables...", flush=True)
     all_exist = True
     for kmer_length in kmer_lengths:
-        trainpath = f'./datasets/ft_{kmer_length}{ending}.joblib'
+        trainpath = f'./datasets/ft_{kmer_length}{ending}.npy'
         testpath = f'./datasets/ft_{kmer_length}_test{ending}.npy'
         if not os.path.exists(trainpath):
             all_exist = False

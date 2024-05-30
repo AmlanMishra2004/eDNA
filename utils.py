@@ -548,7 +548,7 @@ def apply_random_mutations(seq, mutation_rate, mutation_options):
 
 def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
                     include_height, format, mutate, insertions, deletions,
-                    mutation_rate):
+                    mutation_rate, vectorize=True):
     """Turns a given dataframe into torch or tf tensors after augmenting.
 
     This function is an alternative to online augmentation--it creates a single
@@ -578,6 +578,8 @@ def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
             sequence in the dataset
         mutation_rate (float): The chance [0,1] that each base in the sequence
             is switched to a different base.
+        vectorize (bool): Whether or not to turn each string into a 4D vector.
+            NOTE: May or may not be working or not in this function, untested.
 
     Returns:        
         tuple: (sequences, labels), both numpy.ndarray. For PyTorch, sequences
@@ -610,15 +612,16 @@ def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
             )
         )
 
-    # Pad or truncate to 60bp. 'z' padding will be turned to [0,0,0,0] below.
+    # Pad or truncate to 60bp. 'n' padding will be turned to [.25,.25,.25,.25] below.
     df[seq_col] = df[seq_col].apply(
-        lambda seq: seq.ljust(seq_len, 'z')[:seq_len]
+        lambda seq: seq.ljust(seq_len, 'n')[:seq_len]
     )
 
-    # Turn every base character into a vector.
-    df[seq_col] = df[seq_col].map(
-        lambda x: sequence_to_array(x, encoding_mode)
-    )
+    if vectorize:
+        # Turn every base character into a vector.
+        df[seq_col] = df[seq_col].map(
+            lambda x: sequence_to_array(x, encoding_mode)
+        )
 
     sequences = np.array(df[seq_col].tolist())
 
