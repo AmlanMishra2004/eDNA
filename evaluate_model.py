@@ -1447,25 +1447,28 @@ if __name__ == '__main__':
 
         truncate_or_pad = True
         include_iupac = False
+        noise = 2
 
         if not truncate_or_pad:
-            # train_path should be no_dup (no oversampling)!
+            # train_path should be no_dup (no oversampling)! -- why?
             train = pd.read_csv(config['train_path'], sep=',')
             test = pd.read_csv(config['test_path'], sep=',')
         elif truncate_or_pad:
-            train = pd.read_csv('./datasets/train_no_dup_truncated.csv', sep=',')
-            test = pd.read_csv('./datasets/test_truncated.csv', sep=',')
+            # train = pd.read_csv('./datasets/train_no_dup_truncated.csv', sep=',')
+            # test = pd.read_csv('./datasets/test_truncated.csv', sep=',')
+            train = pd.read_csv(f'./datasets/train_oversampled_noise-{noise}.csv', sep=',')
+            test = pd.read_csv(f'./datasets/test_oversampled_noise-{noise}.csv', sep=',')
 
         if include_iupac:
             if truncate_or_pad:
-                ending = "_iupac_t70"
+                ending = f"_iupac_t70_noise{noise}"
             else:
-                ending = "_iupac"
+                ending = f"_iupac_noise{noise}"
         else:
             if truncate_or_pad:
-                ending = "_t70"
+                ending = f"_t70_noise{noise}"
             else:
-                ending = ""
+                ending = f"_noise{noise}"
 
         X_train = train.loc[:,[config['seq_col']]].values
         # X_train_vectorized = train_vectorized.loc[:,[config['seq_col']]].values
@@ -1498,7 +1501,7 @@ if __name__ == '__main__':
 
         # Instead of the previous approach, saves the numpy arrays and doesn't
         # use them as local variables. Each ML method loads a specific dataset.
-        for k in [10]:
+        for k in [3,5,8,10]:
             print(f"Trying to create feature table for k={k}")
             baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[k])
 
@@ -1530,27 +1533,27 @@ if __name__ == '__main__':
                 'test_macro_ovr_roc_auc_score'
             ])
 
-        for kmer in [10]: # 3, 5, 8, 10
-            # print(f"KMER={kmer}", flush=True)
-            # res = baselines.train_naive_bayes(kmer, y_train, y_test, ending)
-            # results_df = results_df.append(pd.Series(res), ignore_index=True)
-            # print(f"Trained naive bayes", flush=True)
-            # results_df.to_csv(res_path, index=False)
+        for kmer in [3,5,8,10]: # 3, 5, 8, 10
+            print(f"KMER={kmer}", flush=True)
+            res = baselines.train_naive_bayes(kmer, y_train, y_test, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            print(f"Trained naive bayes", flush=True)
+            results_df.to_csv(res_path, index=False)
 
-            # res = baselines.train_svm(kmer, y_train, y_test, ending)
-            # results_df = results_df.append(pd.Series(res), ignore_index=True)
-            # print(f"Trained svm", flush=True)
-            # results_df.to_csv(res_path, index=False)
+            res = baselines.train_svm(kmer, y_train, y_test, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            print(f"Trained svm", flush=True)
+            results_df.to_csv(res_path, index=False)
 
-            # res = baselines.train_decision_tree(kmer, y_train, y_test, ending)
-            # results_df = results_df.append(pd.Series(res), ignore_index=True)
-            # print(f"Trained dt", flush=True)
-            # results_df.to_csv(res_path, index=False)
+            res = baselines.train_decision_tree(kmer, y_train, y_test, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            print(f"Trained dt", flush=True)
+            results_df.to_csv(res_path, index=False)
 
-            # res = baselines.train_logistic_regression(kmer, y_train, y_test, ending)
-            # results_df = results_df.append(pd.Series(res), ignore_index=True)
-            # print(f"Trained lr", flush=True)
-            # results_df.to_csv(res_path, index=False)
+            res = baselines.train_logistic_regression(kmer, y_train, y_test, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            print(f"Trained lr", flush=True)
+            results_df.to_csv(res_path, index=False)
 
             res = baselines.train_xgboost(kmer, y_train, y_test, ending)
             results_df = results_df.append(pd.Series(res), ignore_index=True)
