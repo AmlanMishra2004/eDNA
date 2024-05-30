@@ -1447,7 +1447,7 @@ if __name__ == '__main__':
 
         truncate_or_pad = True
         include_iupac = False
-        noise = 1
+        noise = 0
 
         if not truncate_or_pad:
             # train_path should be no_dup (no oversampling)! -- why?
