@@ -31,6 +31,7 @@ from sklearn.metrics import precision_score, recall_score, f1_score
 from sklearn.model_selection import StratifiedKFold
 from sklearn.preprocessing import LabelEncoder, label_binarize
 from tabulate import tabulate
+from torch.nn.parallel import DistributedDataParallel
 from tqdm import tqdm
 
 from dataset import Sequence_Data
@@ -712,7 +713,8 @@ if __name__ == '__main__':
         config['addTagAndPrimer'] = True
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
-        config['seq_target_length'] = 500  # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
+        config['seq_target_length'] = 150  #150 -200
+        # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
         config['addTagAndPrimer'] = False
         config['addRevComplements'] = False
     if config['augment_test_data']:
@@ -831,9 +833,9 @@ if __name__ == '__main__':
         learning_rates = [0.0008, 0.001, 0.002, 0.003, 0.004, 0.005, 0.006, 0.007, 0.008]  # expanded both ends
 
         # SEARCH 1: 12/31/23
-        batch_sizes = [16, 32, 64]
+        batch_sizes = [16, 32, 64, 128]
         # SEARCH 2: 1/3/24
-        batch_sizes = [10, 16, 32, 48, 64]
+        batch_sizes = [10, 16, 32, 48, 64, 128, 256]
 
         epochs = 10_000
         # Zurich called the confidence_threshold 'binzarization threshold', and
@@ -843,13 +845,13 @@ if __name__ == '__main__':
         early_stopper = utils.EarlyStopping(
             patience=5,
             min_pct_improvement=1,  # previously 20 epochs, 0.1%
-            verbose=False
+            verbose=True
         )
         #######
         # TODO: Explore k folds and kiters. k is searching folds
         #######
-        k_folds = 10
-        k_iters = 5  # Should be int [0 - k_folds]. Set to 0 to skip validation.
+        k_folds = 100
+        k_iters = 10  # Should be int [0 - k_folds]. Set to 0 to skip validation.
 
         # Grid search: Evaluates each model with a combination of
         # hyperparameters for a certain number of trials.
@@ -887,11 +889,11 @@ if __name__ == '__main__':
 
         # 2/3/24
         learning_rates = [0.002]
-        batch_sizes = [64]
-        num_cnn_layers = [1]
+        batch_sizes = [128]
+        num_cnn_layers = [1, 5, 10]
         num_channels = [512]
         conv_kernel_sizes = [7]
-        stride_lengths = [1, 2]
+        stride_lengths = [1, 2, 4]
         padding_lengths = [3]
         dropout_rates = [0.5]
         pool_kernel_sizes = [-1]  # ALWAYS kernel=2, stride=2
@@ -939,7 +941,7 @@ if __name__ == '__main__':
             # differentiate rows, then check if a matching row exists.
 
             combination = {
-                'model_name': 'VariableCNN',
+                'model_name': 'SmallCNN2',
                 'k_folds': k_folds,
                 'k_iters': k_iters,
                 'confidence_threshold': confidence_threshold,
@@ -997,7 +999,11 @@ if __name__ == '__main__':
                 print("Model parameters are incompatible. Exploring next "
                       "random hyperparameter combination.")
                 continue
-            model.to('cuda')
+            print('Number CUDA Devices:', torch.cuda.device_count())
+            print('Current cuda device: ', torch.cuda.current_device(),
+                  ' **May not correspond to nvidia-smi ID above, check visibility parameter')
+            model.to('cuda:2')
+            #model = DistributedDataParallel(model, device_ids=[0, 1], output_device=0)
 
             for trial in range(num_trials):
                 print(f"\nTraining {model.name}, Trial {trial + 1}")
@@ -1175,7 +1181,7 @@ if __name__ == '__main__':
         # models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
         #           smallcnn2_2, smallcnn2_3, smallcnn2_4, smallcnn2_6, smallcnn3,
         #           smallcnn3_1]
-        models = [small_best_updated]
+        models = [smallcnn2_4]
 
         for model in models:
             model.to('cuda')

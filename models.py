@@ -312,7 +312,7 @@ class Small_Best_Updated(nn.Module):
         self.conv_layers.append(nn.Dropout(0.5))
         self.conv_layers.append(nn.MaxPool1d(kernel_size=2, stride=2))
 
-        self.linear_layer = nn.Linear(128000, 225)
+        self.linear_layer = nn.Linear(2174464, 225)
 
         self.leakyrelu = nn.LeakyReLU()
         self.softmax = nn.Softmax(dim=1)
@@ -572,7 +572,7 @@ class SmallCNN2_4(nn.Module):
         self.leakyrelu = nn.LeakyReLU() # was previously relu I believe
         self.pool = nn.MaxPool1d(2)
         self.dropout = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(1856*2, num_classes) # 64*in_width
+        self.fc1 = nn.Linear(543488, num_classes) # 64*in_width
 
     def forward(self, x):
         x = self.leakyrelu(self.conv1(x))

@@ -105,7 +105,7 @@ class Sequence_Data(Dataset):
 
         # Pad or truncate to 60bp or 150bp. 'z' padding will be turned to
         # [0,0,0,0] in sequence_to_array().
-        seq = seq.ljust(self.seq_len, 'z')[:self.seq_len]
+        seq = seq.ljust(self.seq_len, 'n')[:self.seq_len]
         seq = utils.sequence_to_array(seq, self.encoding_mode)
 
         return torch.from_numpy(seq), label

@@ -349,7 +349,7 @@ def sequence_to_array(sequence, mode):
             'x': [0.25, 0.25, 0.25, 0.25],
             'n': [0.25, 0.25, 0.25, 0.25]
         }
-        mapping = defaultdict(lambda: [0, 0, 0, 0], mapping)
+        mapping = defaultdict(lambda: [0.25, 0.25, 0.25, 0.25], mapping)
 
         vector = []
         for base in sequence.lower():
