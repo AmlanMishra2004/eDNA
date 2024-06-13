@@ -1445,30 +1445,35 @@ if __name__ == '__main__':
 
         import baselines
 
-        truncate_or_pad = True
-        include_iupac = False
-        noise = 1
+        oversampled = False
+        seq_target_length = 200 # an integer, or False
+        noise = 0
+        seq_count_thresh = 8
+        for_maine_edna = True
 
-        if not truncate_or_pad:
-            # train_path should be no_dup (no oversampling)! -- why?
-            train = pd.read_csv(config['train_path'], sep=',')
-            test = pd.read_csv(config['test_path'], sep=',')
-        elif truncate_or_pad:
-            # train = pd.read_csv('./datasets/train_no_dup_truncated.csv', sep=',')
-            # test = pd.read_csv('./datasets/test_truncated.csv', sep=',')
-            train = pd.read_csv(f'./datasets/train_oversampled_noise-{noise}.csv', sep=',')
-            test = pd.read_csv(f'./datasets/test_oversampled_noise-{noise}.csv', sep=',')
-
-        if include_iupac:
-            if truncate_or_pad:
-                ending = f"_iupac_t70_noise{noise}"
-            else:
-                ending = f"_iupac_noise{noise}"
+        if for_maine_edna:
+            for_maine_edna = "_maine"
         else:
-            if truncate_or_pad:
-                ending = f"_t70_noise{noise}"
-            else:
-                ending = f"_noise{noise}"
+            for_maine_edna = ""
+        if oversampled:
+            oversampled = "oversampled_"
+        else:
+            oversampled = ""
+
+        ending = f'{oversampled}t{seq_target_length}_noise-{noise}_thresh{seq_count_thresh}{for_maine_edna}'
+
+        train = pd.read_csv(f'./datasets/train_{ending}.csv', sep=',')
+        test = pd.read_csv(f'./datasets/test_{ending}.csv', sep=',')
+
+        include_iupac_as_features = False
+        
+
+        if include_iupac_as_features:
+            include_iupac_as_features = 'iupac_'
+        else:
+            include_iupac_as_features = ''
+
+        ending = f"{include_iupac_as_features}{ending}"
 
         X_train = train.loc[:,[config['seq_col']]].values
         # X_train_vectorized = train_vectorized.loc[:,[config['seq_col']]].values
@@ -1503,7 +1508,7 @@ if __name__ == '__main__':
         # use them as local variables. Each ML method loads a specific dataset.
         for k in [3,5,8,10]:
             print(f"Trying to create feature table for k={k}")
-            baselines.create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths=[k])
+            baselines.create_feature_tables(X_train, X_test, ending, include_iupac_as_features, kmer_lengths=[k])
 
         warnings.filterwarnings('ignore', category=FutureWarning)
         res_path = f'baseline_results_{ending}.csv'
@@ -1550,10 +1555,11 @@ if __name__ == '__main__':
             print(f"Trained dt", flush=True)
             results_df.to_csv(res_path, index=False)
 
-            res = baselines.train_logistic_regression(kmer, y_train, y_test, ending)
-            results_df = results_df.append(pd.Series(res), ignore_index=True)
-            print(f"Trained lr", flush=True)
-            results_df.to_csv(res_path, index=False)
+            if kmer < 10:
+                res = baselines.train_logistic_regression(kmer, y_train, y_test, ending)
+                results_df = results_df.append(pd.Series(res), ignore_index=True)
+                print(f"Trained lr", flush=True)
+                results_df.to_csv(res_path, index=False)
 
             res = baselines.train_xgboost(kmer, y_train, y_test, ending)
             results_df = results_df.append(pd.Series(res), ignore_index=True)

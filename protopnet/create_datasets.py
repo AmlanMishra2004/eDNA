@@ -1,0 +1,160 @@
+import pandas as pd
+from sklearn.model_selection import train_test_split
+import sys
+sys.path.append('..')
+import utils
+
+# Hardcoded values
+def create_datasets():
+    oversample = False
+    noise = 2 # 0, 1, or 2
+    for_maine_edna = True
+    seq_target_length = 200
+    raw_data_path = '../datasets/all_data_maine.csv'
+    species_col = 'Species'
+    seq_col = 'Sequence'
+    seq_count_thresh = 8
+    encoding_mode = 'probability'
+    test_size = 0.3
+
+    if for_maine_edna:
+        for_maine_edna = "_maine"
+    else:
+        for_maine_edna = ""
+    
+    if oversample:
+        oversample = "oversampled_"
+    else:
+        oversample = ""
+    ending = f'{oversample}t{seq_target_length}_noise-{noise}_thresh{seq_count_thresh}{for_maine_edna}'
+
+    all_data = pd.read_csv(raw_data_path, sep=',') # for Zurich, sep=';'
+    print(f"Number of unique species in all_data: {all_data[species_col].nunique()}")
+    print(f"all_data shape: {all_data.shape}")
+    data = utils.remove_species_with_too_few_sequences(
+            all_data,
+            species_col,
+            seq_count_thresh,
+            True # Verbose
+        )
+    print(f"Number of unique species in data: {data[species_col].nunique()}")
+    print(f"Data shape: {data.shape}")
+    X_train, X_test, y_train, y_test = train_test_split(
+        data[seq_col], # X
+        data[species_col], # y
+        test_size=test_size,
+        random_state=1327,
+        stratify=data[species_col]
+    )
+    train = pd.concat([X_train, y_train], axis=1)
+    test = pd.concat([X_test, y_test], axis=1)
+    if oversample:
+        train = utils.oversample_underrepresented_species(
+            train,
+            species_col,
+            True # Verbose
+        )
+    if noise == 0:
+        train = utils.encode_all_data(
+            train.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            False, # add noise
+            [0,2],
+            [0,2],
+            0.05,
+            vectorize=False
+        )
+        test = utils.encode_all_data(
+            test.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            False, # add noise
+            [0,2],
+            [0,2],
+            0.05,
+            vectorize=False
+        )
+    elif noise == 1:
+        train = utils.encode_all_data(
+            train.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [0,2],
+            [0,2],
+            0.05,
+            vectorize=False
+        )
+        test = utils.encode_all_data(
+            test.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [1,1],
+            [1,1],
+            0.02,
+            vectorize=False
+        )
+    elif noise == 2:
+        train = utils.encode_all_data(
+            train.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [0,4],
+            [0,4],
+            0.1,
+            vectorize=False
+        )
+        test = utils.encode_all_data(
+            test.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [2,2],
+            [2,2],
+            0.04,
+            vectorize=False
+        )
+
+    X_train = train[seq_col]
+    y_train = train[species_col]
+    X_test = test[seq_col]
+    y_test = test[species_col]
+    
+    print(f"X_train SHAPE: {X_train.shape}")
+    print(f"y_train SHAPE: {y_train.shape}")
+    print(f"X_test SHAPE: {X_test.shape}")
+    print(f"y_test SHAPE: {y_test.shape}")
+
+    train.to_csv(f'../datasets/train_{ending}.csv', index=False)
+    test.to_csv(f'../datasets/test_{ending}.csv', index=False)
+
+    print("DataFrames saved successfully.")
+
+create_datasets()

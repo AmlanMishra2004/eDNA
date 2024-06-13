@@ -579,7 +579,7 @@ def encode_all_data(df, seq_len, seq_col, species_col, encoding_mode,
         mutation_rate (float): The chance [0,1] that each base in the sequence
             is switched to a different base.
         vectorize (bool): Whether or not to turn each string into a 4D vector.
-            NOTE: May or may not be working or not in this function, untested.
+            NOTE: Vectorize=True or may not be working or not in this function, untested.
 
     Returns:        
         tuple: (sequences, labels), both numpy.ndarray. For PyTorch, sequences
