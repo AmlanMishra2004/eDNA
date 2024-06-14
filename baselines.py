@@ -146,8 +146,8 @@ def create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths):
     print("Searching for pre-created k-mer feature tables...", flush=True)
     all_exist = True
     for kmer_length in kmer_lengths:
-        trainpath = f'./datasets/ft_{kmer_length}{ending}.npy'
-        testpath = f'./datasets/ft_{kmer_length}_test{ending}.npy'
+        trainpath = f'./datasets/ft_{kmer_length}_{ending}.npy'
+        testpath = f'./datasets/ft_{kmer_length}_test_{ending}.npy'
         if not os.path.exists(trainpath):
             all_exist = False
         if not os.path.exists(testpath):
@@ -159,8 +159,8 @@ def create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths):
         for kmer_length in kmer_lengths:
             ft_train = utils.create_feature_table_with_np(X_train, kmer_length, include_iupac)
             ft_test = utils.create_feature_table_with_np(X_test, kmer_length, include_iupac)
-            np.save(f'./datasets/ft_{kmer_length}{ending}.npy', ft_train)
-            np.save(f'./datasets/ft_{kmer_length}_test{ending}.npy', ft_test)
+            np.save(f'./datasets/ft_{kmer_length}_{ending}.npy', ft_train)
+            np.save(f'./datasets/ft_{kmer_length}_test_{ending}.npy', ft_test)
 
     # Visualize output
     # if not include_iupac:
@@ -187,74 +187,74 @@ def create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths):
 def train_naive_bayes(kmer, y_train, y_test, ending):
     # Naive Bayes models follow the format: nb<k-mer length>
     print("Searching for pretrained Naive Bayes models...")
-    path = f'./datasets/nb{kmer}{ending}.joblib'
+    path = f'./datasets/nb{kmer}_{ending}.joblib'
     
     if not os.path.exists(path):
         print("Training Naive Bayes model.", flush=True)
         nb = MultinomialNB()
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         nb.fit(X_train, y_train)
         dump(nb, path)
     
     nb = load(path)
-    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+    X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
     y_train_pred = nb.predict(X_train)
     del X_train
-    X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
     y_test_pred = nb.predict(X_test)
     del X_test
 
-    return evaluate(f'nb{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+    return evaluate(f'nb{kmer}_{ending}', y_test, y_test_pred, y_train, y_train_pred)
 
 
 def train_svm(kmer, y_train, y_test, ending):
     # SVM models follow the format: svm<k-mer length>
     print("Searching for pretrained SVM models...")
-    path = f'./datasets/svm{kmer}{ending}.joblib'
+    path = f'./datasets/svm{kmer}_{ending}.joblib'
     
     if not os.path.exists(path):
         print("Training SVM model.", flush=True)
         svm_model = svm.SVC(kernel='linear', decision_function_shape='ovo')
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         svm_model.fit(X_train, y_train)
         dump(svm_model, path)
 
     svm_model = load(path)
-    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+    X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
     y_train_pred = svm_model.predict(X_train)
     del X_train
-    X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
     y_test_pred = svm_model.predict(X_test)
     del X_test
 
-    return evaluate(f'svm{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+    return evaluate(f'svm{kmer}_{ending}', y_test, y_test_pred, y_train, y_train_pred)
 
 def train_decision_tree(kmer, y_train, y_test, ending):
     # Decision Tree models follow the format: dt<k-mer length>
     print("Searching for pretrained Decision Tree models...")
-    path = f'./datasets/dt{kmer}{ending}.joblib'
+    path = f'./datasets/dt{kmer}_{ending}.joblib'
     
     if not os.path.exists(path):
         print("Training Decision Tree model.", flush=True)
         dt_model = DecisionTreeClassifier(random_state=1327)
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         dt_model.fit(X_train, y_train)
         dump(dt_model, path)
 
     dt_model = load(path)
-    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+    X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
     y_train_pred = dt_model.predict(X_train)
     del X_train
-    X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
     y_test_pred = dt_model.predict(X_test)
     del X_test
 
-    return evaluate(f'dt{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+    return evaluate(f'dt{kmer}_{ending}', y_test, y_test_pred, y_train, y_train_pred)
 
 def train_logistic_regression(kmer, y_train, y_test, ending):
     # Multiclass Logistic Regression models follow the format: lr<k-mer length>
     print("Searching for pretrained Logistic Regression models...")
-    path = f'./datasets/lr{kmer}{ending}.joblib'
+    path = f'./datasets/lr{kmer}_{ending}.joblib'
     
     if not os.path.exists(path):
         print("Training Logistic Regression model.", flush=True)
@@ -262,48 +262,48 @@ def train_logistic_regression(kmer, y_train, y_test, ending):
         # # Training in batches
         # batch_size = 300
         # lr_model = LogisticRegression(max_iter=400, random_state=1327, solver='lbfgs', multi_class='auto')
-        # X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        # X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         # classes = np.unique(y_train)
         # for X_batch, y_batch in batch_generator(X_train, y_train, batch_size):
         #     lr_model.partial_fit(X_batch, y_batch, classes=classes)
         # dump(lr_model, path)
 
         lr_model = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         lr_model.fit(X_train, y_train)
         dump(lr_model, path)
 
     lr_model = load(path)
-    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+    X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
     y_train_pred = lr_model.predict(X_train)
     del X_train
-    X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
     y_test_pred = lr_model.predict(X_test)
     del X_test
 
-    return evaluate(f'lr{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+    return evaluate(f'lr{kmer}_{ending}', y_test, y_test_pred, y_train, y_train_pred)
 
 def train_xgboost(kmer, y_train, y_test, ending):
     # XGBoost models follow the format: xgb<k-mer length>
     print("Searching for pretrained XGBoost models...")
-    path = f'./datasets/xgb{kmer}{ending}.joblib'
+    path = f'./datasets/xgb{kmer}_{ending}.joblib'
     
     if not os.path.exists(path):
         print("Training XGBoost model.", flush=True)
         xgb_model = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         xgb_model.fit(X_train, y_train)
         dump(xgb_model, path)
 
     xgb_model = load(path)
-    X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+    X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
     y_train_pred = xgb_model.predict(X_train)
     del X_train
-    X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
     y_test_pred = xgb_model.predict(X_test)
     del X_test
 
-    return evaluate(f'xgb{kmer}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+    return evaluate(f'xgb{kmer}_{ending}', y_test, y_test_pred, y_train, y_train_pred)
 
 def train_knn(kmer, y_train, y_test, ending, neighbors):
     # KNN models follow the format: knn<k-mer length>_<number nearest neighbors>
@@ -326,7 +326,7 @@ def train_knn(kmer, y_train, y_test, ending, neighbors):
         #     knn = KNeighborsClassifier(n_neighbors=n)
         #     knn.fit(X_train_vectorized, y_train)
         #     dump(knn, f'./datasets/knnraw_{n}.joblib')
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         for n in neighbors:
             knn = KNeighborsClassifier(n_neighbors=n)
             knn.fit(X_train, y_train)
@@ -334,11 +334,11 @@ def train_knn(kmer, y_train, y_test, ending, neighbors):
     
     results_df = pd.DataFrame()
     for n in neighbors:
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         knn = load(f'./datasets/knn{kmer}_{n}{ending}.joblib')
         y_train_pred = knn.predict(X_train)
         del X_train
-        X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+        X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
         y_test_pred = knn.predict(X_test)
         del X_test
         res = evaluate(f'knn{kmer}_{n}{ending}', y_test, y_test_pred, y_train, y_train_pred)
@@ -359,7 +359,7 @@ def train_rf(kmer, y_train, y_test, ending, num_trees):
 
     if not all_exist:
         print("Training Random Forest models.", flush=True)
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         for n in num_trees:
             rf_model = RandomForestClassifier(n_estimators=n, random_state=1327)
             rf_model.fit(X_train, y_train)
@@ -367,11 +367,11 @@ def train_rf(kmer, y_train, y_test, ending, num_trees):
     
     results_df = pd.DataFrame()
     for n in num_trees:
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         knn = load(f'./datasets/rf{kmer}_{n}{ending}.joblib')
         y_train_pred = knn.predict(X_train)
         del X_train
-        X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+        X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
         y_test_pred = knn.predict(X_test)
         del X_test
         res = evaluate(f'rf{kmer}_{n}{ending}', y_test, y_test_pred, y_train, y_train_pred)
@@ -393,11 +393,11 @@ def train_adaboost(kmer, y_train, y_test, ending, n_estimators, max_depths):
 
     if not all_exist:
         print("Training AdaBoost models.", flush=True)
-        X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+        X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         for n in n_estimators:
             for depth in max_depths:
                 adaboost_model = AdaBoostClassifier(
-                    base_estimator=DecisionTreeClassifier(max_depth=depth),
+                    estimator=DecisionTreeClassifier(max_depth=depth),
                     n_estimators=n, 
                     random_state=1327
                 )
@@ -407,11 +407,11 @@ def train_adaboost(kmer, y_train, y_test, ending, n_estimators, max_depths):
     results_df = pd.DataFrame()
     for n in n_estimators:
         for depth in max_depths:
-            X_train = np.load(f'./datasets/ft_{kmer}{ending}.npy')
+            X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
             knn = load(f'./datasets/adbt{kmer}_{n}_{depth}{ending}.joblib')
             y_train_pred = knn.predict(X_train)
             del X_train
-            X_test = np.load(f'./datasets/ft_{kmer}_test{ending}.npy')
+            X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
             y_test_pred = knn.predict(X_test)
             del X_test
             res = evaluate(f'adbt{kmer}_{n}_{depth}{ending}', y_test, y_test_pred, y_train, y_train_pred)
@@ -491,124 +491,155 @@ def evaluate(name, y_test, y_test_pred, y_train, y_train_pred):
     # Predict on test data and evaluate the baseline models
     # 0.00641025641 is random 1/156
 
-    # Each element should be a tuple:
-    # (trained_model, name, X_test, y_test, X_train, y_train)
-    models_to_evaluate = [
-        # (knnraw_1,"knnraw_1",X_test_vectorized,y_test,X_train_vectorized,y_train)
-        # ,(knnraw_3,"knnraw_3",X_test_vectorized,y_test,X_train_vectorized,y_train)
-        # ,(knnraw_5,"knnraw_5",X_test_vectorized,y_test,X_train_vectorized,y_train)
-        # ,(knnraw_7,"knnraw_7",X_test_vectorized,y_test,X_train_vectorized,y_train)
-        # ,(knnraw_9,"knnraw_9",X_test_vectorized,y_test,X_train_vectorized,y_train)
-        (knn3_1,f"knn3_1{ending}",ft_3_test,y_test,ft_3,y_train)
-        ,(knn3_3,f"knn3_3{ending}",ft_3_test,y_test,ft_3,y_train)
-        ,(knn3_5,f"knn3_5{ending}",ft_3_test,y_test,ft_3,y_train)
-        ,(knn3_7,f"knn3_7{ending}",ft_3_test,y_test,ft_3,y_train)
-        ,(knn3_9,f"knn3_9{ending}",ft_3_test,y_test,ft_3,y_train)
-        ,(knn5_1,f"knn5_1{ending}",ft_5_test,y_test,ft_5,y_train)
-        ,(knn5_3,f"knn5_3{ending}",ft_5_test,y_test,ft_5,y_train)
-        ,(knn5_5,f"knn5_5{ending}",ft_5_test,y_test,ft_5,y_train)
-        ,(knn5_7,f"knn5_7{ending}",ft_5_test,y_test,ft_5,y_train)
-        ,(knn5_9,f"knn5_9{ending}",ft_5_test,y_test,ft_5,y_train)
-        # ,(knn8_1,f"knn8_1{ending}",ft_8_test,y_test,ft_8,y_train)
-        # ,(knn8_3,f"knn8_3{ending}",ft_8_test,y_test,ft_8,y_train)
-        # ,(knn8_5,f"knn8_5{ending}",ft_8_test,y_test,ft_8,y_train)
-        # ,(knn8_7,f"knn8_7{ending}",ft_8_test,y_test,ft_8,y_train)
-        # ,(knn8_9,f"knn8_9{ending}",ft_8_test,y_test,ft_8,y_train)
-        # ,(knn10_1,f"knn10_1{ending}",ft_10_test,y_test,ft_10,y_train)
-        # ,(knn10_3,f"knn10_3{ending}",ft_10_test,y_test,ft_10,y_train)
-        # ,(knn10_5,f"knn10_5{ending}",ft_10_test,y_test,ft_10,y_train)
-        # ,(knn10_7,f"knn10_7{ending}",ft_10_test,y_test,ft_10,y_train)
-        # ,(knn10_9,f"knn10_9{ending}",ft_10_test,y_test,ft_10,y_train)
 
-        ,(nb_3, f"nb_3{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(nb_5, f"nb_5{ending}", ft_5_test, y_test, ft_5, y_train)
-        # ,(nb_8, f"nb_8{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(nb_10, f"nb_10{ending}", ft_10_test, y_test, ft_10, y_train)
+# Note that for the baseline models, there is no need to 1) truncate or
+        # pad the sequences to any specific length, or 2) convert the data to
+        # 4D vectors. Sequences are kept as strings. This is with the sole
+        # exception of KNN, with which I use both a feature table and the raw
+        # data itself, which is truncated to 60 bp. Ambiguity codes do not need
+        # to be included as features, they just need to be randomly chosen as
+        # one of 'atgc'.
+        # With that said, it is a more fair comparison to neural networks if 
+        # they are truncated, padded, and ambiguity codes are considered.
 
-        ,(rf3_15, f"rf3_15{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(rf3_30, f"rf3_30{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(rf3_45, f"rf3_45{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(rf5_15, f"rf5_15{ending}", ft_5_test, y_test, ft_5, y_train)
-        ,(rf5_30, f"rf5_30{ending}", ft_5_test, y_test, ft_5, y_train)
-        ,(rf5_45, f"rf5_45{ending}", ft_5_test, y_test, ft_5, y_train)
-        # ,(rf8_15, f"rf8_15{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(rf8_30, f"rf8_30{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(rf8_45, f"rf8_45{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(rf10_15, f"rf10_15{ending}", ft_10_test, y_test, ft_10, y_train)
-        # ,(rf10_30, f"rf10_30{ending}", ft_10_test, y_test, ft_10, y_train)
-        # ,(rf10_45, f"rf10_45{ending}", ft_10_test, y_test, ft_10, y_train)
+oversampled = False
+seq_target_length = 200 # an integer, or False
+noise = 0
+seq_count_thresh = 8
+for_maine_edna = True
+seq_col = "Sequence"
+species_col = "Species"
 
-        ,(dt_3, f"dt_3{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(dt_5, f"dt_5{ending}", ft_5_test, y_test, ft_5, y_train)
-        # ,(dt_8, f"dt_8{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(dt_10, f"dt_10{ending}", ft_10_test, y_test, ft_10, y_train)
+if for_maine_edna:
+    for_maine_edna = "_maine"
+else:
+    for_maine_edna = ""
+if oversampled:
+    oversampled = "oversampled_"
+else:
+    oversampled = ""
 
-        ,(svm_3, f"svm_3{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(svm_5, f"svm_5{ending}", ft_5_test, y_test, ft_5, y_train)
-        # ,(svm_8, f"svm_8{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(svm_10, f"svm_10{ending}", ft_10_test, y_test, ft_10, y_train)
+ending = f'{oversampled}t{seq_target_length}_noise-{noise}_thresh-{seq_count_thresh}{for_maine_edna}'
 
-        ,(lr_3, f"lr_3{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(lr_5, f"lr_5{ending}", ft_5_test, y_test, ft_5, y_train)
-        # ,(lr_8, f"lr_8{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(lr_10, "lr_10", ft_10_test, y_test, ft_10, y_train)
+train = pd.read_csv(f'./datasets/train_{ending}.csv', sep=',')
+test = pd.read_csv(f'./datasets/test_{ending}.csv', sep=',')
 
-        ,(xgb_3, f"xgb_3{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(xgb_5, f"xgb_5{ending}", ft_5_test, y_test, ft_5, y_train)
-        # ,(xgb_8, f"xgb_8{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(xgb_10, "xgb_10", ft_10_test, y_test, ft_10, y_train)
+include_iupac_as_features = False
 
-        ,(abdt3_15_3, f"abdt3_15_3{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(abdt3_30_3, f"abdt3_30_3{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(abdt3_45_3, f"abdt3_45_3{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(abdt5_15_3, f"abdt5_15_3{ending}", ft_5_test, y_test, ft_5, y_train)
-        ,(abdt5_30_3, f"abdt5_30_3{ending}", ft_5_test, y_test, ft_5, y_train)
-        ,(abdt5_45_3, f"abdt5_45_3{ending}", ft_5_test, y_test, ft_5, y_train)
-        # ,(abdt8_15_3, f"abdt8_15_3{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(abdt8_30_3, f"abdt8_30_3{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(abdt8_45_3, f"abdt8_45_3{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(abdt10_15_3, f"abdt10_15_3{ending}", ft_10_test, y_test, ft_10, y_train)
-        # ,(abdt10_30_3, f"abdt10_30_3{ending}", ft_10_test, y_test, ft_10, y_train)
-        # ,(abdt10_45_3, f"abdt10_45_3{ending}", ft_10_test, y_test, ft_10, y_train)
 
-        ,(abdt3_15_8, f"abdt3_15_8{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(abdt3_30_8, f"abdt3_30_8{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(abdt3_45_8, f"abdt3_45_8{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(abdt5_15_8, f"abdt5_15_8{ending}", ft_5_test, y_test, ft_5, y_train)
-        ,(abdt5_30_8, f"abdt5_30_8{ending}", ft_5_test, y_test, ft_5, y_train)
-        ,(abdt5_45_8, f"abdt5_45_8{ending}", ft_5_test, y_test, ft_5, y_train)
-        # ,(abdt8_15_8, f"abdt8_15_8{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(abdt8_30_8, f"abdt8_30_8{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(abdt8_45_8, f"abdt8_45_8{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(abdt10_15_8, f"abdt10_15_8{ending}", ft_10_test, y_test, ft_10, y_train)
-        # ,(abdt10_30_8, f"abdt10_30_8{ending}", ft_10_test, y_test, ft_10, y_train)
-        # ,(abdt10_45_8, f"abdt10_45_8{ending}", ft_10_test, y_test, ft_10, y_train)
+if include_iupac_as_features:
+    include_iupac_as_features = 'iupac_'
+else:
+    include_iupac_as_features = ''
 
-        ,(abdt3_15_18, f"abdt3_15_18{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(abdt3_30_18, f"abdt3_30_18{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(abdt3_45_18, f"abdt3_45_18{ending}", ft_3_test, y_test, ft_3, y_train)
-        ,(abdt5_15_18, f"abdt5_15_18{ending}", ft_5_test, y_test, ft_5, y_train)
-        ,(abdt5_30_18, f"abdt5_30_18{ending}", ft_5_test, y_test, ft_5, y_train)
-        ,(abdt5_45_18, f"abdt5_45_18{ending}", ft_5_test, y_test, ft_5, y_train)
-        # ,(abdt8_15_18, f"abdt8_15_18{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(abdt8_30_18, f"abdt8_30_18{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(abdt8_45_18, f"abdt8_45_18{ending}", ft_8_test, y_test, ft_8, y_train)
-        # ,(abdt10_15_18, f"abdt10_15_18{ending}", ft_10_test, y_test, ft_10, y_train)
-        # ,(abdt10_30_18, f"abdt10_30_18{ending}", ft_10_test, y_test, ft_10, y_train)
-        # ,(abdt10_45_18, f"abdt10_45_18{ending}", ft_10_test, y_test, ft_10, y_train)
-    ]
-    names = [ele[1] for ele in models_to_evaluate]
-    print(f"Evaluating models: {names}", flush=True)
+ending = f"{include_iupac_as_features}{ending}"
 
-    results_df = pd.DataFrame()
+X_train = train.loc[:,[seq_col]].values
+# X_train_vectorized = train_vectorized.loc[:,[config['seq_col']]].values
+y_train = train.loc[:,[species_col]].values
+X_test = test.loc[:,[seq_col]].values
+# X_test_vectorized = test_vectorized.loc[:,[config['seq_col']]].values
+y_test = test.loc[:,[species_col]].values
 
-    for ele in tqdm(models_to_evaluate):
-        print(f"\nRunning {ele[1]}")
-        result = evaluate(*ele)
-        warnings.filterwarnings('ignore', category=FutureWarning)
-        results_df = results_df.append(pd.Series(result), ignore_index=True)
-        warnings.filterwarnings('default', category=FutureWarning)
+# Remove the inner lists for each element.
+X_train = X_train.ravel()
+# X_train_vectorized = X_train_vectorized.ravel()
+X_test = X_test.ravel()
+# X_test_vectorized = X_test_vectorized.ravel()
+y_train = y_train.ravel()
+y_test = y_test.ravel()
 
-    results_df.to_csv('baseline_results{ending}.csv', index=False)
-    # print(f"Baselines took {(baseline_start_time - time.time())/60} "
-    #         f"minutes to run.")
+le = LabelEncoder()
+y_train = le.fit_transform(y_train)
+y_test = le.transform(y_test)
+
+print(f"X_train shape: {X_train.shape}")
+# print(f"X_train_vectorized shape: {X_train_vectorized.shape}")
+print(f"X_test shape: {X_test.shape}")
+print(f"y_train shape: {y_train.shape}")
+print(f"y_test shape: {y_test.shape}")
+print(f"First two entries in X_train:\n{X_train[:2]}")
+print(f"First two entries in X_test:\n{X_test[:2]}")
+print(f"First two entries in y_train:\n{y_train[:2]}")
+print(f"First two entries in y_test:\n{y_test[:2]}")
+
+# Instead of the previous approach, saves the numpy arrays and doesn't
+# use them as local variables. Each ML method loads a specific dataset.
+for k in [3,5,8,10]:
+    print(f"Trying to create feature table for k={k}")
+    create_feature_tables(X_train, X_test, ending, include_iupac_as_features, kmer_lengths=[k])
+
+warnings.filterwarnings('ignore', category=FutureWarning)
+res_path = f'baseline_results_{ending}.csv'
+if os.path.exists(res_path):
+    results_df = pd.read_csv(res_path)
+else:
+    # If the file does not exist, create an empty DataFrame with the desired columns
+    results_df = pd.DataFrame(columns=[
+        'name',
+        'train_macro_f1-score',
+        'train_macro_recall', 
+        'train_micro_accuracy',
+        'train_macro_precision',
+        'train_weighted_precision', 
+        'train_weighted_recall',
+        'train_weighted_f1-score',
+        'train_balanced_accuracy',
+        'train_macro_ovr_roc_auc_score',
+        'test_macro_f1-score',
+        'test_macro_recall',
+        'test_micro_accuracy',
+        'test_macro_precision',
+        'test_weighted_precision', 
+        'test_weighted_recall',
+        'test_weighted_f1-score',
+        'test_balanced_accuracy',
+        'test_macro_ovr_roc_auc_score'
+    ])
+
+for kmer in [3,5,8,10]: # 3, 5, 8, 10
+    print(f"KMER={kmer}", flush=True)
+    res = train_naive_bayes(kmer, y_train, y_test, ending)
+    results_df = results_df.append(pd.Series(res), ignore_index=True)
+    print(f"Trained naive bayes", flush=True)
+    results_df.to_csv(res_path, index=False)
+
+    res = train_svm(kmer, y_train, y_test, ending)
+    results_df = results_df.append(pd.Series(res), ignore_index=True)
+    print(f"Trained svm", flush=True)
+    results_df.to_csv(res_path, index=False)
+
+    res = train_decision_tree(kmer, y_train, y_test, ending)
+    results_df = results_df.append(pd.Series(res), ignore_index=True)
+    print(f"Trained dt", flush=True)
+    results_df.to_csv(res_path, index=False)
+
+    if kmer < 10:
+        res = train_logistic_regression(kmer, y_train, y_test, ending)
+        results_df = results_df.append(pd.Series(res), ignore_index=True)
+        print(f"Trained lr", flush=True)
+        results_df.to_csv(res_path, index=False)
+
+    res = train_xgboost(kmer, y_train, y_test, ending)
+    results_df = results_df.append(pd.Series(res), ignore_index=True)
+    print(f"Trained xgb", flush=True)
+    results_df.to_csv(res_path, index=False)
+
+    res = train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
+    results_df = pd.concat([results_df, res], ignore_index=True)
+    print(f"Trained knn", flush=True)
+    results_df.to_csv(res_path, index=False)
+
+    res = train_rf(kmer, y_train, y_test, ending, num_trees=[15,30,45])
+    results_df = pd.concat([results_df, res], ignore_index=True)
+    print(f"Trained rf", flush=True)
+    results_df.to_csv(res_path, index=False)
+
+    res = train_adaboost(kmer, y_train, y_test, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
+    results_df = pd.concat([results_df, res], ignore_index=True)
+    print(f"Trained adbt", flush=True)
+    results_df.to_csv(res_path, index=False)
+
+
+warnings.filterwarnings('default', category=FutureWarning)
+print(f"Trained and evaluated all of the models! Saved to file {res_path}")

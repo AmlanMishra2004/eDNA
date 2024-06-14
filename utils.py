@@ -1202,9 +1202,10 @@ def create_feature_table_with_np(sequences, k, include_iupac=False):
     feature_table = np.zeros((len(sequences), len(kmers)), dtype=np.uint8)
 
     for i, seq in enumerate(sequences):
+        seq = seq.lower()
         # Count k-mers in the sequence
         for j in range(len(seq) - k + 1):
-            kmer = seq[j:j + k]
+            kmer = seq[j : j+k]
             if kmer in kmer_index:
                 feature_table[i, kmer_index[kmer]] += 1
 
