@@ -332,6 +332,135 @@ class Small_Best_Updated(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
+class Small_Best_Updated_2layer(nn.Module):
+    def __init__(self):
+        super(Small_Best_Updated_2layer, self).__init__()
+        self.name = "Small_Best_Updated_2layer"
+        self.conv_layers = nn.ModuleList()
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=4, out_channels=512, kernel_size=7,
+                            stride=1, padding=3),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=512, out_channels=512, kernel_size=7,
+                            stride=1, padding=3),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(nn.Dropout(0.5))
+        self.conv_layers.append(nn.MaxPool1d(kernel_size=2, stride=2))
+
+        self.linear_layer = nn.Linear(17920, 156)
+
+        self.leakyrelu = nn.LeakyReLU()
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        for layer in self.conv_layers:
+            x = layer(x)
+        # print(f"Shape after conv layers: {x.shape}")
+        # UNCOMMENT these lines for evaluate_model.py, and
+        # COMMENT these lines for main.py!
+        x = x.view(x.size(0), -1)
+        x = self.linear_layer(x)
+        return x
+    
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+class Small_Best_Updated_3layer(nn.Module):
+    def __init__(self):
+        super(Small_Best_Updated_3layer, self).__init__()
+        self.name = "Small_Best_Updated_3layer"
+        self.conv_layers = nn.ModuleList()
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=4, out_channels=512, kernel_size=7,
+                            stride=1, padding=3),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=512, out_channels=512, kernel_size=7,
+                            stride=1, padding=3),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=512, out_channels=512, kernel_size=7,
+                            stride=1, padding=3),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(nn.Dropout(0.5))
+        self.conv_layers.append(nn.MaxPool1d(kernel_size=2, stride=2))
+
+        self.linear_layer = nn.Linear(17920, 156)
+
+        self.leakyrelu = nn.LeakyReLU()
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        for layer in self.conv_layers:
+            x = layer(x)
+        # print(f"Shape after conv layers: {x.shape}")
+        # UNCOMMENT these lines for evaluate_model.py, and
+        # COMMENT these lines for main.py!
+        x = x.view(x.size(0), -1)
+        x = self.linear_layer(x)
+        return x
+    
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
+class Small_Best_Updated_4layer(nn.Module):
+    def __init__(self):
+        super(Small_Best_Updated_4layer, self).__init__()
+        self.name = "Small_Best_Updated_4layer"
+        self.conv_layers = nn.ModuleList()
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=4, out_channels=512, kernel_size=7,
+                            stride=1, padding=3),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=512, out_channels=512, kernel_size=7,
+                            stride=1, padding=3),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=512, out_channels=512, kernel_size=7,
+                            stride=1, padding=3),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(
+            nn.Conv1d(in_channels=512, out_channels=512, kernel_size=7,
+                            stride=1, padding=3),
+        )
+        self.conv_layers.append(nn.LeakyReLU())
+        self.conv_layers.append(nn.Dropout(0.5))
+        self.conv_layers.append(nn.MaxPool1d(kernel_size=2, stride=2))
+
+        self.linear_layer = nn.Linear(17920, 156)
+
+        self.leakyrelu = nn.LeakyReLU()
+        self.softmax = nn.Softmax(dim=1)
+
+    def forward(self, x):
+        for layer in self.conv_layers:
+            x = layer(x)
+        # print(f"Shape after conv layers: {x.shape}")
+        # UNCOMMENT these lines for evaluate_model.py, and
+        # COMMENT these lines for main.py!
+        x = x.view(x.size(0), -1)
+        x = self.linear_layer(x)
+        return x
+    
+    def reset_params(self):
+        for layer in self.children():
+            if hasattr(layer, 'reset_parameters'):
+                layer.reset_parameters()
+
 class CNN1(nn.Module):
     def __init__(self, num_classes):
         super(CNN1, self).__init__()

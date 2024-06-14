@@ -711,7 +711,7 @@ if __name__ == '__main__':
     # If set, this will skip the preprocessing and read in an existing train
     # and test csv (that are presumably already processed). For my train and 
     # test file, all semutations have been added, so no need for online augmentation.Whether set or not, it still must be truncated/padded and turned intovectors.
-    run_my_model = False
+    run_my_model = True
     run_arch_search = False     # search through architectures, in addition to lr, batch size
     run_autokeras = False
     
@@ -1198,7 +1198,7 @@ if __name__ == '__main__':
         
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
-        num_trials = 1
+        num_trials = 5
         learning_rates = [0.002] # 0.002 for 12-31 and small best, 0.005 for large best
         # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
