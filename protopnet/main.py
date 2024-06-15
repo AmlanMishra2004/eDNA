@@ -348,17 +348,24 @@ def calculate_metrics(model, dataloader):
 
 
 
-
+if args.comb_num == 1:
+    model_path = "../backbone_1-layer_95.4.pt"
+    backbone = models.Small_Best_Updated()
+elif args.comb_num == 2:
+    model_path = "../backbone_2-layer_94.3.pt"
+    backbone = models.Small_Best_Updated_2layer()
+elif args.comb_num == 3:
+    model_path = "../backbone_3-layer_94.3.pt"
+    backbone = models.Small_Best_Updated_3layer()
+elif args.comb_num == 4:
+    model_path = "../backbone_4-layer_93.7.pt"
+    backbone = models.Small_Best_Updated_4layer()
 # model_path = "../best_model_20240103_210217.pt" # updated large best
 # model_path = "../best_model_20240111_060457.pt" # small best with pool=3, stride=1
 # model_path = "../best_model_20240126_120130.pt" # small best with pool=2,stride=2
 # model_path = "../small_best_updated_backbone.pt" # small best with pool=2,stride=2
-model_path = "../backbone_1-layer_95.4.pt"
-model_path = "../backbone_2-layer_94.3.pt"
-model_path = "../backbone_3-layer_94.3.pt"
-# model_path = "../backbone_4-layer_93.7.pt"
 # large_best = models.Large_Best()
-backbone = models.Small_Best_Updated_3layer()
+
 backbone.load_state_dict(torch.load(model_path))
 # Remember to comment out the linear layer in the forward function
 
