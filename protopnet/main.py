@@ -215,7 +215,13 @@ X_train, X_val, y_train, y_val = train_test_split(
 # print(type(X_train))
 # print(type(y_train))
 
-train = X_train.to_frame().join(y_train.to_frame())
+# COMMENTED because I only want to use a train/test split not a train/val/test
+# split. However, I don't want to delete validation functionality. For this
+# reason, to just to a train/test, comment out the following line, and then
+# ignore validation accuracy numbers. ALSO make the push dataset use the
+# correct datasets, below.
+
+# train = X_train.to_frame().join(y_train.to_frame())
 
 print("Before oversampling:")
 utils.print_descriptive_stats(train, ['species_cat'])
@@ -274,8 +280,12 @@ testloader = DataLoader(
 # Push data should be raw data. This is raw data except that sequences for
 # species with <2 sequences are removed. Used in training.
 push_dataset = Sequence_Data(
-    X_train,
-    y_train,
+    # USE THESE TWO if you're just doing a train/test split
+    train[config['seq_col']],
+    train[config['species_col']],
+    # USE THESE TWO if you're doing a train/val/test split
+    # X_train,
+    # y_train,
     insertions=[0,0],
     deletions=[0,0],
     mutation_rate=0,
@@ -309,31 +319,31 @@ def calculate_metrics(model, dataloader):
 
 # UNCOMMENT BELOW TO EVALUATE A PRETRAINED SAVED MODEL (OR TO RUN PUSH FOR ANALYSIS)
 
-# model = torch.load('saved_ppn_models/1857326_0.9681.pth') # 93, 88 val, test acc
-# model = torch.load('saved_ppn_models/1857326_0.9787.pth') # 94, 88 val, test acc
-# model = torch.load('saved_ppn_models/1857326_0.9894.pth') # 95.2, 90.8 val, test acc
-# model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
-model = torch.load('saved_ppn_models/1878231_3_-1.pth') # 
-model.to('cuda')
+# # model = torch.load('saved_ppn_models/1857326_0.9681.pth') # 93, 88 val, test acc
+# # model = torch.load('saved_ppn_models/1857326_0.9787.pth') # 94, 88 val, test acc
+# # model = torch.load('saved_ppn_models/1857326_0.9894.pth') # 95.2, 90.8 val, test acc
+# # model = torch.load('saved_ppn_models/1857478_1.0000.pth') # (0.9627, 0.9468, 0.9574, 0.9627, 0.9574, avg = 0.9574) (0.9314, 0.9085, 0.92, 0.9314, 0.9371, avg=0.9257) val, test acc
+# model = torch.load('saved_ppn_models/1878231_3_-1.pth') # 
+# model.to('cuda')
 
-# Calculate and print the train, validation, and test metrics
-print("Calculating test metrics")
-test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(model, testloader)
+# # Calculate and print the train, validation, and test metrics
+# print("Calculating test metrics")
+# test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(model, testloader)
 
-print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
+# print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
 
-wait = input("PAUSE")
+# wait = input("PAUSE")
 
-# push_prototypes(
-#     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
-#     prototype_network_parallel=model, # pytorch network with prototype_vectors
-#     preprocess_input_function=None, # normalize if needed
-#     root_dir_for_saving_prototypes='./saved_prototypes', # if not None, prototypes will be saved here # sam: previously seq_dir
-#     epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
-#     log=log
-# )
+# # push_prototypes(
+# #     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
+# #     prototype_network_parallel=model, # pytorch network with prototype_vectors
+# #     preprocess_input_function=None, # normalize if needed
+# #     root_dir_for_saving_prototypes='./saved_prototypes', # if not None, prototypes will be saved here # sam: previously seq_dir
+# #     epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
+# #     log=log
+# # )
 
-# wait = input("Pause")
+# # wait = input("Pause")
 
 
 
@@ -342,11 +352,15 @@ wait = input("PAUSE")
 # model_path = "../best_model_20240103_210217.pt" # updated large best
 # model_path = "../best_model_20240111_060457.pt" # small best with pool=3, stride=1
 # model_path = "../best_model_20240126_120130.pt" # small best with pool=2,stride=2
-model_path = "../small_best_updated_backbone.pt" # small best with pool=2,stride=2
+# model_path = "../small_best_updated_backbone.pt" # small best with pool=2,stride=2
+model_path = "../backbone_1-layer_95.4.pt"
+# model_path = "../backbone_2-layer_94.3.pt"
+# model_path = "../backbone_3-layer_94.3.pt"
+# model_path = "../backbone_4-layer_93.7.pt"
 # large_best = models.Large_Best()
 backbone = models.Small_Best_Updated()
 backbone.load_state_dict(torch.load(model_path))
-backbone.linear_layer = nn.Identity() # remove the linear layer
+# Remember to comment out the linear layer in the forward function
 
 # begin hyperparameter search
 # this is the number of times you want to repeat either the
@@ -382,7 +396,7 @@ for trial in range(1):
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0, 0.333, 0.666, 1],                        #0.95 [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0.7],                        #0.95 [0.5, 0.6, 0.7, 0.8, 0.85, 0.9, 0.95, 1],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
 
         'num_warm_epochs':          [35+4*45],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
@@ -629,10 +643,10 @@ for trial in range(1):
                 # print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
 
                 val_actual, val_predicted, val_ptype_results  = tnt.test(
-                model=ppnet_multi,
-                dataloader=valloader,
-                class_specific=class_specific,
-                log=log
+                    model=ppnet_multi,
+                    dataloader=valloader,
+                    class_specific=class_specific,
+                    log=log
                 )
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
                 print(f"(Directly after push {pushes_completed}) Val acc at iteration 0: {val_acc}", flush=flush)
@@ -862,10 +876,10 @@ for trial in range(1):
                 # print(f"\tTrain prototype results, before retraining last layer: {train_ptype_results}")
 
                 val_actual, val_predicted, val_ptype_results  = tnt.test(
-                model=ppnet_multi,
-                dataloader=valloader,
-                class_specific=class_specific,
-                log=log
+                    model=ppnet_multi,
+                    dataloader=valloader,
+                    class_specific=class_specific,
+                    log=log
                 )
                 val_acc = metrics.accuracy_score(val_actual, val_predicted)
                 print(f"(Directly after push {pushes_completed}) Val acc at iteration 0: {val_acc}", flush=flush)
