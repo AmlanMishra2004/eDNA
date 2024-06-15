@@ -360,6 +360,11 @@ elif args.comb_num == 3:
 elif args.comb_num == 4:
     model_path = "../backbone_4-layer_93.7.pt"
     backbone = models.Small_Best_Updated_4layer()
+
+elif args.comb_num == -1:
+    model_path = "../backbone_3-layer_94.3.pt"
+    backbone = models.Small_Best_Updated_3layer()
+    
 # model_path = "../best_model_20240103_210217.pt" # updated large best
 # model_path = "../best_model_20240111_060457.pt" # small best with pool=3, stride=1
 # model_path = "../best_model_20240126_120130.pt" # small best with pool=2,stride=2
