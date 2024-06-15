@@ -1130,7 +1130,7 @@ if __name__ == '__main__':
         # small_best = models.Small_Best()
         # model_path = "best_model_20240111_060457.pt"
 
-        small_best_updated = models.Small_Best_Updated()
+        small_best_updated = models.Small_Best_Updated_4layer()
         
         # UNCOMMENT THIS IF YOU WANT TO LOAD THE WEIGHTS FOR A MODEL AND HARDCODE IT
         # YOU SHOULD ALSO UNCOMMENT THE PORTION IN EVALUATE_MODEL()
@@ -1198,7 +1198,7 @@ if __name__ == '__main__':
         
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
-        num_trials = 5
+        num_trials = 10
         learning_rates = [0.002] # 0.002 for 12-31 and small best, 0.005 for large best
         # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
