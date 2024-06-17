@@ -346,24 +346,33 @@ def calculate_metrics(model, dataloader):
 # # wait = input("Pause")
 
 
+# COMMENTED code that varies what pretrained backbone the ppnet uses
 
+# if args.comb_num == 1:
+#     model_path = "../backbone_1-layer_95.4.pt"
+#     backbone = models.Small_Best_Updated()
+# elif args.comb_num == 2:
+#     model_path = "../backbone_2-layer_94.3.pt"
+#     backbone = models.Small_Best_Updated_2layer()
+# elif args.comb_num == 3:
+#     model_path = "../backbone_3-layer_94.3.pt"
+#     backbone = models.Small_Best_Updated_3layer()
+# elif args.comb_num == 4:
+#     model_path = "../backbone_4-layer_93.7.pt"
+#     backbone = models.Small_Best_Updated_4layer()
 
-if args.comb_num == 1:
+# elif args.comb_num == -1:
+#     model_path = "../backbone_3-layer_94.3.pt"
+#     backbone = models.Small_Best_Updated_3layer()
+
+# 1,2,3,4,5 -> 1 layer.   6,7,8,9,10 -> 2 layer backbone.
+if args.comb_num < 6:
     model_path = "../backbone_1-layer_95.4.pt"
     backbone = models.Small_Best_Updated()
-elif args.comb_num == 2:
+elif args.comb_num >= 6:
     model_path = "../backbone_2-layer_94.3.pt"
     backbone = models.Small_Best_Updated_2layer()
-elif args.comb_num == 3:
-    model_path = "../backbone_3-layer_94.3.pt"
-    backbone = models.Small_Best_Updated_3layer()
-elif args.comb_num == 4:
-    model_path = "../backbone_4-layer_93.7.pt"
-    backbone = models.Small_Best_Updated_4layer()
 
-elif args.comb_num == -1:
-    model_path = "../backbone_3-layer_94.3.pt"
-    backbone = models.Small_Best_Updated_3layer()
 
 # model_path = "../best_model_20240103_210217.pt" # updated large best
 # model_path = "../best_model_20240111_060457.pt" # small best with pool=3, stride=1
