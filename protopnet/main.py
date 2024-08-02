@@ -27,6 +27,7 @@ import train_and_test as tnt
 # from preprocess import mean, std, preprocess_input_function
 import sys
 from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder
 
 # adding the parent folder to the system path so we can import from it
 sys.path.append('..')
@@ -90,7 +91,12 @@ config = {
             's':'w', 'w':'s', 'n':'n', 'z':'z'},
     'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
     'train_path': '../datasets/train_dup.csv',
-    'test_path': '../datasets/test.csv',
+    # 'train_path': "../datasets/train_oversampled_t70_noise-0_thresh-2.csv", #'../datasets/train_dup.csv',
+        # for training the protopnet, noise is added online *during* training,
+        # not before in the csv. so, always use noise-0. Also, use train_dup.csv
+        # instead of train_oversampled_t70_noise-0_thresh-2.csv because this
+        # allows flexibility in length (insertions, deletions) before truncating.
+    'test_path': '../datasets/test_t70_noise-2_thresh-2.csv', #'../datasets/test.csv', # OVERRIDDEN BY CMD LINE ARGUMENTS
     'sep': ';',                       # separator character in the csv file
     'species_col': 'species_cat',     # name of column containing species
     'seq_col': 'seq',                 # name of column containing sequences
@@ -98,28 +104,25 @@ config = {
     # Logged information (plus below):
     'verbose': True,
     'seq_count_thresh': 2,            # ex. keep species with >1 sequences
-    'trainRandomInsertions': [0,2],   # ex. between 0 and 2 per sequence
-    'trainRandomDeletions': [0,2],    # ex. between 0 and 2 per sequence
-    'trainMutationRate': 0.05,        # n*100% chance for a base to flip
     'oversample': True,               # whether or not to oversample train # POSSIBLY OVERRIDDEN IN ARCH SEARCH
     'encoding_mode': 'probability',   # 'probability' or 'random'
     'push_encoding_mode': 'probability',   # 'probability' or 'random'
     # Whether or not applying on raw unlabeled data or "clean" ref db data.
     'applying_on_raw_data': False,
     # Whether or not to augment the test set.
-    'augment_test_data': True,
-    'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files
+    'augment_test_data': False,
+    # 'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files/ COMMENTED BECAUSE TRUE BY DEFAULT
     'train_batch_size': 156, # 780 oversampled. prev. 64. 1,2,3,4,5,6,10,12,13,15,20,26,30,39,52,60,65,78,130,156,195,260,390,=780
     'test_batch_size': 35, # 175. 1, 2, 4, 47, 94, 188 NOT # 1,5,7,25,35,175
     'push_batch_size': 187, # 748 different from train since train is oversampled.
-    'num_classes': 156 
+    'num_classes': 156
 }
+
 if config['applying_on_raw_data']:
     config['seq_target_length'] = 150
     config['addTagAndPrimer'] = True 
     config['addRevComplements'] = True
 elif not config['applying_on_raw_data']:
-    # Logged data:
     config['seq_target_length'] = 70        # 70 (prev. 71) or 60 or 64
     config['addTagAndPrimer'] = False
     config['addRevComplements'] = False
@@ -142,6 +145,8 @@ parser.add_argument('--gpuid', nargs=1, type=str, default='0')
 parser.add_argument('--job_id', nargs=1, type=int, default=-1) # not used as of 4/5/23
 parser.add_argument('--arr_job_id', nargs=1, type=int, default=-1) # same for all elements in the array. used as the name if saving the model 
 parser.add_argument('--comb_num', nargs=1, type=int, default=-1)
+parser.add_argument('--train_noise', nargs=1, type=int, default=1)
+parser.add_argument('--test_noise', nargs=1, type=int, default=1)
 args = parser.parse_args()
 os.environ['CUDA_VISIBLE_DEVICES'] = args.gpuid[0]
 print(f"Available CUDA devices: {os.environ['CUDA_VISIBLE_DEVICES']}")
@@ -163,6 +168,23 @@ try:
     print(f"job_id: {args.job_id}")
 except:
     pass
+train_noise = args.train_noise
+test_noise = args.test_noise
+
+if train_noise == 0:
+    config['trainRandomInsertions'] = [0, 0]
+    config['trainRandomDeletions'] =  [0, 0]
+    config['trainMutationRate'] =  0
+elif train_noise == 1:
+    config['trainRandomInsertions'] =  [0, 2]
+    config['trainRandomDeletions'] =  [0, 2]
+    config['trainMutationRate'] =  0.05
+elif train_noise == 2:
+    config['trainRandomInsertions'] =  [0, 4]
+    config['trainRandomDeletions'] =  [0, 4]
+    config['trainMutationRate'] =  0.1
+
+config['test_path'] = f'../datasets/test_t70_noise-{test_noise}_thresh-2.csv'
 
 
 # base_architecture_type = re.match('^[a-z]*', base_architecture).group(0)
@@ -199,10 +221,22 @@ log = print
 # random.seed(36)
 warnings.filterwarnings('ignore', 'y_pred contains classes not in y_true')
 
-# split data into train, validation, and test
+# split data into train, validation, and test # as of July 2024, do not use a validation set
 train = pd.read_csv(config['train_path'], sep=',')
 test = pd.read_csv(config['test_path'], sep=',')
+
+le = LabelEncoder()
+train[config['species_col']] = le.fit_transform(train[config['species_col']])
+test[config['species_col']] = le.transform(test[config['species_col']])
+# dump(le, './datasets/label_encoder.joblib')
+
 val_portion = 0.2
+# If you were to use a validation set, use Fluck's stratified split method, rather than sklearn's method
+# train, test = utils.stratified_split(
+#     df,
+#     config['species_col'],
+#     config['test_split']
+# )
 X_train, X_val, y_train, y_val = train_test_split(
     train[config['seq_col']], # X
     train[config['species_col']], # y
@@ -215,11 +249,11 @@ X_train, X_val, y_train, y_val = train_test_split(
 # print(type(X_train))
 # print(type(y_train))
 
-# COMMENTED because I only want to use a train/test split not a train/val/test
-# split. However, I don't want to delete validation functionality. For this
-# reason, to just to a train/test, comment out the following line, and then
-# ignore validation accuracy numbers. ALSO make the push dataset use the
-# correct datasets, below.
+# COMMENTED the line below because I only want to use a train/test split not a
+# train/val/test split. However, I don't want to delete validation
+# functionality. For this reason, to just to a train/test, comment out the
+# following line, and then ignore validation accuracy numbers. ALSO make the
+# push dataset use the correct datasets, below.
 
 # train = X_train.to_frame().join(y_train.to_frame())
 
@@ -280,10 +314,10 @@ testloader = DataLoader(
 # Push data should be raw data. This is raw data except that sequences for
 # species with <2 sequences are removed. Used in training.
 push_dataset = Sequence_Data(
-    # USE THESE TWO if you're just doing a train/test split
+    # USE THESE TWO lines if you're just doing a train/test split
     train[config['seq_col']],
     train[config['species_col']],
-    # USE THESE TWO if you're doing a train/val/test split
+    # USE THESE TWO lines if you're doing a train/val/test split
     # X_train,
     # y_train,
     insertions=[0,0],
@@ -315,6 +349,8 @@ def calculate_metrics(model, dataloader):
     recall = recall_score(all_labels, all_predictions, average='macro')
     f1 = f1_score(all_labels, all_predictions, average='macro')
     return accuracy, precision, recall, f1
+
+test_accuracy = -1 # to initialize and make it available after training
 
 
 # UNCOMMENT BELOW TO EVALUATE A PRETRAINED SAVED MODEL (OR TO RUN PUSH FOR ANALYSIS)
@@ -365,13 +401,16 @@ def calculate_metrics(model, dataloader):
 #     model_path = "../backbone_3-layer_94.3.pt"
 #     backbone = models.Small_Best_Updated_3layer()
 
-# 1,2,3,4,5 -> 1 layer.   6,7,8,9,10 -> 2 layer backbone.
-if args.comb_num < 6:
-    model_path = "../backbone_1-layer_95.4.pt"
-    backbone = models.Small_Best_Updated()
-elif args.comb_num >= 6:
-    model_path = "../backbone_2-layer_94.3.pt"
-    backbone = models.Small_Best_Updated_2layer()
+# # 1,2,3,4,5 -> 1 layer.   6,7,8,9,10 -> 2 layer backbone.
+# if args.comb_num < 6:
+#     model_path = "../backbone_1-layer_95.4.pt"
+#     backbone = models.Small_Best_Updated()
+# elif args.comb_num >= 6:
+#     model_path = "../backbone_2-layer_94.3.pt"
+#     backbone = models.Small_Best_Updated_2layer()
+
+model_path = "../backbone_1-layer_95.4.pt"
+backbone = models.Small_Best_Updated()
 
 
 # model_path = "../best_model_20240103_210217.pt" # updated large best
@@ -386,7 +425,9 @@ backbone.load_state_dict(torch.load(model_path))
 # begin hyperparameter search
 # this is the number of times you want to repeat either the
 # grid search below, or the random search below.
-for trial in range(1):
+num_trials = 5
+test_accs = []
+for trial in range(num_trials):
 
     print(f"\n\nTrial {trial+1}\n")
     # early_stopper.reset()
@@ -990,6 +1031,7 @@ for trial in range(1):
 
         # end of training and testing for given model
         # save the model results
+        test_accs.append(test_accuracy)
         new_model_path = os.path.join('saved_ppn_models', (str(args.arr_job_id) + '_' + str(args.comb_num) + '_-1.pth'))
         torch.save(obj=ppnet_multi, f=new_model_path)
         
@@ -1005,4 +1047,6 @@ for trial in range(1):
         del last_layer_optimizer_specs
     # end of grid search
 # end of number of trials
+print(f"Over {num_trials} for all models evaluated in the grid search (could be >1), got average accuracy: {np.mean(test_accs)}, standard deviation: {np.std(test_accs)}") 
+
 print(f"Finished search.")

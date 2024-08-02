@@ -640,7 +640,7 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     timestamp = now.strftime("%Y%m%d_%H%M%S")
     torch.save(model.state_dict(),f'best_model_{timestamp}.pt')
 
-    return -1, -1
+    return test_acc, epoch+1
 
     # add the variable number of layers to the results
     for layer in range(1, len(input_channels)+1):
@@ -727,8 +727,10 @@ if __name__ == '__main__':
                 'b':'v', 'd':'h', 'h':'d', 'v':'b',
                 's':'w', 'w':'s', 'n':'n', 'z':'z'},
         'data_path': './datasets/v4_combined_reference_sequences.csv',
-        'train_path': './datasets/train_no_dup.csv',
-        'test_path': './datasets/test.csv',
+        # 'train_path': './datasets/train_no_dup.csv',
+        # 'test_path': './datasets/test.csv',
+        'train_path': './datasets/train_oversampled_t70_noise-0_thresh-2.csv',
+        'test_path': './datasets/test_t70_noise-0_thresh-2.csv',
         'sep': ';',                       # separator character in the csv file
         'species_col': 'species_cat',     # name of column containing species
         'seq_col': 'seq',                 # name of column containing sequences
@@ -751,7 +753,7 @@ if __name__ == '__main__':
         config['addTagAndPrimer'] = True 
         config['addRevComplements'] = True
     elif not config['applying_on_raw_data']:
-        config['seq_target_length'] = 70 # either 60, 64, or 71, POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
+        config['seq_target_length'] = 70 # 60-70. POSSIBLY OVERRIDDEN IN ARCH SEARCH. should be EVEN
         config['addTagAndPrimer'] = False
         config['addRevComplements'] = False
     if config['augment_test_data']:
@@ -1130,10 +1132,10 @@ if __name__ == '__main__':
         # small_best = models.Small_Best()
         # model_path = "best_model_20240111_060457.pt"
 
-        small_best_updated = models.Small_Best_Updated_4layer()
+        small_best_updated = models.Small_Best_Updated()
         
         # UNCOMMENT THIS IF YOU WANT TO LOAD THE WEIGHTS FOR A MODEL AND HARDCODE IT
-        # YOU SHOULD ALSO UNCOMMENT THE PORTION IN EVALUATE_MODEL()
+        # YOU SHOULD ALSO UNCOMMENT THE PORTION IN EVALUATE()
         # model_path = "saved_models/best_model_20240111_060457.pt"
         # small_best.load_state_dict(torch.load(model_path))
 
@@ -1198,7 +1200,7 @@ if __name__ == '__main__':
         
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
-        num_trials = 10
+        num_trials = 5
         learning_rates = [0.002] # 0.002 for 12-31 and small best, 0.005 for large best
         # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
@@ -1240,10 +1242,11 @@ if __name__ == '__main__':
         start_time = time.time()
 
         for model in models:
-            for lr in learning_rates:
-                for batch_size in batch_sizes:
-                    for weight_decay in weight_decays:
-                        for trial in range(num_trials):
+            model_test_accs = []
+            for trial in range(num_trials):
+                for lr in learning_rates:
+                    for batch_size in batch_sizes:
+                        for weight_decay in weight_decays:
                             for oversample in oversample_options:
                                 print(f"\nTraining {model.name}, Trial {trial+1}")
 
@@ -1255,7 +1258,7 @@ if __name__ == '__main__':
                                 # np.save(data_path, data.numpy())
                                 # np.save(labels_path, labels.numpy())
 
-                                evaluate(
+                                test_acc, _ = evaluate(
                                     model,
                                     train = train,
                                     test = test,
@@ -1282,6 +1285,8 @@ if __name__ == '__main__':
                                 )
                                 
                                 print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
+                                model_test_accs.append(test_acc)
+            print(f"Over {num_trials} for current model, got average accuracy: {np.mean(model_test_accs)}, standard deviation: {np.std(model_test_accs)}") 
     if run_autokeras:
 
         # Import statements are included here because 1) Printing "Using

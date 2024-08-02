@@ -12,6 +12,7 @@
 /saved_models
 /protopnet/saved_ppn_models
 /old_best_saved_models
+/protopnet/global_results
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

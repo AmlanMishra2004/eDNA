@@ -176,7 +176,7 @@ def oversample_underrepresented_species(df, species_col, verbose=False):
 
         oversample = df.iloc[new_indexes]
         if verbose:
-            print(f"Oversampled shape: {df.shape}")
+            print(f"Oversampled shape: {oversample.shape}")
         return oversample
     
     elif isinstance(df, pd.Series):
@@ -193,7 +193,7 @@ def oversample_underrepresented_species(df, species_col, verbose=False):
 
         oversample = df.iloc[new_indexes]
         if verbose:
-            print(f"Oversampled shape: {df.shape}")
+            print(f"Oversampled shape: {oversample.shape}")
         return oversample
 
 def stratified_split(data, species_col, ratio):
@@ -202,7 +202,7 @@ def stratified_split(data, species_col, ratio):
 
     This function ensures that at least one of each species is kept in both the
     train and test sets. This may result in a different ratio of train/test
-    than the supplied ratio.
+    than the supplied ratio. Taken from Fluck's code.
 
     Args:
         data (pandas.DataFrame): The DataFrame to split.

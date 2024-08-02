@@ -323,8 +323,8 @@ class Small_Best_Updated(nn.Module):
         # print(f"Shape after conv layers: {x.shape}")
         # UNCOMMENT these lines for evaluate_model.py, and
         # COMMENT these lines for main.py!
-        # x = x.view(x.size(0), -1)
-        # x = self.linear_layer(x)
+        x = x.view(x.size(0), -1)
+        x = self.linear_layer(x)
         return x
     
     def reset_params(self):

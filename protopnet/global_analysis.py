@@ -4,6 +4,7 @@ import torch
 import torch.utils.data
 import numpy as np
 import pandas as pd
+from datetime import datetime
 
 import os
 import sys
@@ -15,6 +16,53 @@ sys.path.append('..')
 from dataset import Sequence_Data
 import utils
 from torch.utils.data import DataLoader
+
+
+def array_to_str(arr):
+    # print(f"arr.shape: {arr.shape}")
+    res_str = ""
+    for i in range(arr.shape[1]):
+        if arr[0, i] == 1:
+            res_str = res_str + 'A'
+        elif arr[1, i] == 1:
+            res_str = res_str + 'T'
+        elif arr[2, i] == 1:
+            res_str = res_str + 'C'
+        elif arr[3, i] == 1:
+            res_str = res_str + 'G'
+        else:
+            # Ambiguity code
+            # It is turned into 0s and 1s this way to avoid small number errors
+            present = [0,0,0,0]
+            for j in range(4):
+                if arr[j, i] > 0:
+                    present[j] = 1
+            if present == [1,1,1,1] or present == [0,0,0,0]:
+                res_str = res_str + 'N'
+            elif present == [0,1,1,1]:
+                res_str = res_str + 'D'
+            elif present == [1,0,1,1]:
+                res_str = res_str + 'B'
+            elif present == [1,1,0,1]:
+                res_str = res_str + 'V'
+            elif present == [1,1,1,0]:
+                res_str = res_str + 'H'
+            elif present == [0,0,1,1]:
+                res_str = res_str + 'R'
+            elif present == [0,1,0,1]:
+                res_str = res_str + 'K'
+            elif present == [0,1,1,0]:
+                res_str = res_str + 'Y'
+            elif present == [1,0,0,1]:
+                res_str = res_str + 'M'
+            elif present == [1,0,1,0]:
+                res_str = res_str + 'W'
+            elif present == [1,1,0,0]:
+                res_str = res_str + 'S'
+            else:
+                print(present)
+                assert False, "Logic error"
+    return res_str
 
 
 
@@ -80,7 +128,7 @@ parser.add_argument('-modeldir', nargs=1, type=str)
 parser.add_argument('-model', nargs=1, type=str)
 parser.add_argument('-prototypeind', nargs=1, type=int)
 parser.add_argument('-experimentname', nargs=1, type=str)
-parser.add_argument('-trainortest', nargs=1, type=str)
+parser.add_argument('-trainortest', nargs=1, type=str, default='no_noise_test')
 
 args = parser.parse_args()
 
@@ -101,12 +149,16 @@ makedir(save_analysis_path)
 
 # create the logger
 log, logclose = create_logger(log_filename=os.path.join(save_analysis_path, 'global_analysis.log'))
+log(str(datetime.now()) + "\t" + str(args))
+print(f"Logging to {os.path.join(save_analysis_path, 'global_analysis.log')}")
 
 start_epoch_number = 214 # 259 or 9999
 
 log(f"CWD: {os.getcwd()}")
 log('load model from: ' + load_model_path)
 log('saving analysis to: ' + save_analysis_path + '\n\n\n')
+proto_patch = np.load(os.path.join(save_analysis_path, f'prototype_patch_{prot_ind}.npy'))
+log(f"Prototype:\t\t\t\t\t\t" + str(array_to_str(proto_patch)))
 
 ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
 # ppnet = torch.load(load_model_path)
@@ -144,11 +196,20 @@ test_dataset = Sequence_Data(
     encoding_mode=config['encoding_mode'],
     seq_len=config['seq_target_length']
 )
+no_noise_test_dataset = Sequence_Data(
+    test[config['seq_col']],
+    test[config['species_col']],
+    insertions=[0,0],
+    deletions=[0,0],
+    mutation_rate=0,
+    encoding_mode=config['encoding_mode'],
+    seq_len=config['seq_target_length']
+)
 
 ##### SANITY CHECK
 # confirm prototype class identity
 prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
-# log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
+log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
 # log('Their class identities are: ' + str(prototype_img_identity))
 # confirm prototype connects most strongly to its own class
 prototype_max_connection = torch.argmax(ppnet.last_layer.weight, dim=0)
@@ -159,23 +220,7 @@ if torch.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_pr
     log('All prototypes connect most strongly to their respective classes.')
 else:
     log('WARNING: Not all prototypes connect most strongly to their respective classes.')
-    print(f"{torch.sum(prototype_max_connection == prototype_img_identity)} out of \
-        {ppnet.num_prototypes} prototypes belong identify most strongly with \
-            their own class")
-
-##### SANITY CHECK
-# confirm prototype class identity
-prototype_img_identity = torch.argmax(ppnet.prototype_class_identity, dim=1)
-# log('Prototypes are chosen from ' + str(torch.max(prototype_img_identity)) + ' number of classes.')
-# log('Their class identities are: ' + str(prototype_img_identity))
-# confirm prototype connects most strongly to its own class
-prototype_max_connection = torch.argmax(ppnet.last_layer.weight, dim=0)
-prototype_max_connection = prototype_max_connection.cpu()
-if torch.sum(prototype_max_connection == prototype_img_identity) == ppnet.num_prototypes:
-    log('All prototypes connect most strongly to their respective classes.')
-else:
-    log('WARNING: Not all prototypes connect most strongly to their respective classes.')
-    print(f"{torch.sum(prototype_max_connection == prototype_img_identity)} out of \
+    log(f"{torch.sum(prototype_max_connection == prototype_img_identity)} out of \
         {ppnet.num_prototypes} prototypes belong identify most strongly with \
             their own class")
     
@@ -220,10 +265,10 @@ prototype_info = np.load(os.path.join(load_ptype_dir, 'epoch-'+str(start_epoch_n
 
 
 save_prototype(os.path.join(save_analysis_path,
-                                'original_prototype.npy'),
+                                f'original_prototype_{prot_ind}.npy'),
                    start_epoch_number, prot_ind)
 save_prototype_patch(os.path.join(save_analysis_path,
-                                'prototype_patch.npy'),
+                                f'prototype_patch_{prot_ind}.npy'),
                    start_epoch_number, prot_ind)
 # load the test image and forward it through the network
 
@@ -234,8 +279,10 @@ if train_or_test == 'test':
     dataset = test_dataset
 elif train_or_test == 'train':
     dataset = train_dataset
+elif train_or_test == 'no_noise_test':
+    dataset = no_noise_test_dataset
 dataset_len=int(len(dataset))
-print('dataset_len: ', dataset_len)
+log('dataset_len: ' + str(dataset_len))
 arg_max_list=[]
 for i in range(dataset_len):
 
@@ -264,7 +311,7 @@ makedir(os.path.join(save_analysis_path, f'most_activated_{train_or_test}_patche
 # print('Prototype activations: \n', proto_act)
 # print('protoact_len: ',len(proto_act))
 proto_act_sorted=sorted(proto_act.items(), key=lambda item: item[1])
-print('proto act sorted: ', proto_act_sorted)
+log('proto act sorted: ' + str(proto_act_sorted))
 
 
 
@@ -292,10 +339,20 @@ for i in range(1, 11):
     save_test_seq_patch(os.path.join(save_analysis_path, f'most_activated_{train_or_test}_patches_for_prot_'+str(prot_ind),
                                 f'top-{i}_activated_test_patch.npy'),
                                 patch_start, patch_end, test_sequence_numpy)
-    log(f'prototype class: {prototype_img_identity[prot_ind]}')
+    df = pd.read_csv('../datasets/train_no_dup.csv')
+
+    ptype_species_cat = prototype_img_identity[prot_ind]
+    log(f'prototype species_cat: {ptype_species_cat}')
+    prot_filtered_df = df[df['species_cat'] == int(ptype_species_cat)]
+    log(f"prototype class name: {prot_filtered_df.iloc[0]['species']}")
     # log(f"proto_act_sorted[-i]: {proto_act_sorted[-i]}")
     log(f'{train_or_test} seq index: {proto_act_sorted[-i][0]}')
-    log(f'{train_or_test} seq class identity: {label}')
+    log(f'{train_or_test} seq class (species_cat label): {label}')
+    
+    seq_filtered_df = df[df['species_cat'] == int(label)]
+    seq_species_name = seq_filtered_df.iloc[0]['species']
+    log(f'seq class name: {seq_species_name}')
+    # log(f"class name: {df[df['species_cat'] == label].iloc[0]['species']}")
     log(f'activation value (similarity score): {proto_act_sorted[-i][1]}')
     log('--------------------------------------------------------------')
 

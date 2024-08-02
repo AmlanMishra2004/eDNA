@@ -147,7 +147,9 @@ def create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths):
     all_exist = True
     for kmer_length in kmer_lengths:
         trainpath = f'./datasets/ft_{kmer_length}_{ending}.npy'
-        testpath = f'./datasets/ft_{kmer_length}_test_{ending}.npy'
+        testpath = f'./datasets/ft_{kmer_length}_test_{ending.replace("oversampled_", "")}.npy'
+        # print(f"Trainpath: {trainpath}")
+        # print(f"testpath: {testpath}")
         if not os.path.exists(trainpath):
             all_exist = False
         if not os.path.exists(testpath):
@@ -160,7 +162,7 @@ def create_feature_tables(X_train, X_test, ending, include_iupac, kmer_lengths):
             ft_train = utils.create_feature_table_with_np(X_train, kmer_length, include_iupac)
             ft_test = utils.create_feature_table_with_np(X_test, kmer_length, include_iupac)
             np.save(f'./datasets/ft_{kmer_length}_{ending}.npy', ft_train)
-            np.save(f'./datasets/ft_{kmer_length}_test_{ending}.npy', ft_test)
+            np.save(f'./datasets/ft_{kmer_length}_test_{ending.replace("oversampled_", "")}.npy', ft_test)
 
     # Visualize output
     # if not include_iupac:
@@ -200,7 +202,7 @@ def train_naive_bayes(kmer, y_train, y_test, ending):
     X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
     y_train_pred = nb.predict(X_train)
     del X_train
-    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
+    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending.replace("oversampled_", "")}.npy')
     y_test_pred = nb.predict(X_test)
     del X_test
 
@@ -223,7 +225,7 @@ def train_svm(kmer, y_train, y_test, ending):
     X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
     y_train_pred = svm_model.predict(X_train)
     del X_train
-    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
+    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending.replace("oversampled_", "")}.npy')
     y_test_pred = svm_model.predict(X_test)
     del X_test
 
@@ -245,7 +247,7 @@ def train_decision_tree(kmer, y_train, y_test, ending):
     X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
     y_train_pred = dt_model.predict(X_train)
     del X_train
-    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
+    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending.replace("oversampled_", "")}.npy')
     y_test_pred = dt_model.predict(X_test)
     del X_test
 
@@ -257,6 +259,7 @@ def train_logistic_regression(kmer, y_train, y_test, ending):
     path = f'./datasets/lr{kmer}_{ending}.joblib'
     
     if not os.path.exists(path):
+    # if True:
         print("Training Logistic Regression model.", flush=True)
 
         # # Training in batches
@@ -269,15 +272,20 @@ def train_logistic_regression(kmer, y_train, y_test, ending):
         # dump(lr_model, path)
 
         lr_model = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
+        print(f"My string: training on: {f'./datasets/ft_{kmer}_{ending}.npy'}")
         X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
         lr_model.fit(X_train, y_train)
         dump(lr_model, path)
 
     lr_model = load(path)
-    X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
+
+    # TODO: i added .replace("noise....:)") to test on a different noise level. delete to test on the same noise level.
+    X_train = np.load(f'./datasets/ft_{kmer}_{ending.replace("noise-1","noise-2")}.npy')
     y_train_pred = lr_model.predict(X_train)
     del X_train
-    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
+    print(f"testing on: ./datasets/ft_{kmer}_test_{ending.replace('oversampled_', '').replace('noise-1','noise-2')}.npy")
+
+    X_test = np.load(f"./datasets/ft_{kmer}_test_{ending.replace('oversampled_', '').replace('noise-1','noise-2')}.npy")
     y_test_pred = lr_model.predict(X_test)
     del X_test
 
@@ -299,7 +307,7 @@ def train_xgboost(kmer, y_train, y_test, ending):
     X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
     y_train_pred = xgb_model.predict(X_train)
     del X_train
-    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
+    X_test = np.load(f'./datasets/ft_{kmer}_test_{ending.replace("oversampled_", "")}.npy')
     y_test_pred = xgb_model.predict(X_test)
     del X_test
 
@@ -338,7 +346,7 @@ def train_knn(kmer, y_train, y_test, ending, neighbors):
         knn = load(f'./datasets/knn{kmer}_{n}{ending}.joblib')
         y_train_pred = knn.predict(X_train)
         del X_train
-        X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
+        X_test = np.load(f'./datasets/ft_{kmer}_test_{ending.replace("oversampled_", "")}.npy')
         y_test_pred = knn.predict(X_test)
         del X_test
         res = evaluate(f'knn{kmer}_{n}{ending}', y_test, y_test_pred, y_train, y_train_pred)
@@ -371,7 +379,7 @@ def train_rf(kmer, y_train, y_test, ending, num_trees):
         knn = load(f'./datasets/rf{kmer}_{n}{ending}.joblib')
         y_train_pred = knn.predict(X_train)
         del X_train
-        X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
+        X_test = np.load(f'./datasets/ft_{kmer}_test_{ending.replace("oversampled_", "")}.npy')
         y_test_pred = knn.predict(X_test)
         del X_test
         res = evaluate(f'rf{kmer}_{n}{ending}', y_test, y_test_pred, y_train, y_train_pred)
@@ -411,7 +419,7 @@ def train_adaboost(kmer, y_train, y_test, ending, n_estimators, max_depths):
             knn = load(f'./datasets/adbt{kmer}_{n}_{depth}{ending}.joblib')
             y_train_pred = knn.predict(X_train)
             del X_train
-            X_test = np.load(f'./datasets/ft_{kmer}_test_{ending}.npy')
+            X_test = np.load(f'./datasets/ft_{kmer}_test_{ending.replace("oversampled_", "")}.npy')
             y_test_pred = knn.predict(X_test)
             del X_test
             res = evaluate(f'adbt{kmer}_{n}_{depth}{ending}', y_test, y_test_pred, y_train, y_train_pred)
@@ -502,13 +510,13 @@ def evaluate(name, y_test, y_test_pred, y_train, y_train_pred):
         # With that said, it is a more fair comparison to neural networks if 
         # they are truncated, padded, and ambiguity codes are considered.
 
-oversampled = False
-seq_target_length = 200 # an integer, or False
-noise = 0
-seq_count_thresh = 8
-for_maine_edna = True
-seq_col = "Sequence"
-species_col = "Species"
+oversampled = True
+seq_target_length = 70 # an integer, or False. 70 for French Guiana, 200 for Maine
+noise = 1
+seq_count_thresh = 2 # 2 for French Guiana, 8 for Maine
+for_maine_edna = False
+seq_col = "seq" # "seq" for French Guiana, "Sequence" for Maine
+species_col = "species_cat" # "species_cat" for French Guiana, "Species" for Maine
 
 if for_maine_edna:
     for_maine_edna = "_maine"
@@ -522,7 +530,7 @@ else:
 ending = f'{oversampled}t{seq_target_length}_noise-{noise}_thresh-{seq_count_thresh}{for_maine_edna}'
 
 train = pd.read_csv(f'./datasets/train_{ending}.csv', sep=',')
-test = pd.read_csv(f'./datasets/test_{ending}.csv', sep=',')
+test = pd.read_csv(f'./datasets/test_{ending.replace("oversampled_", "")}.csv', sep=',')
 
 include_iupac_as_features = False
 
@@ -565,7 +573,7 @@ print(f"First two entries in y_test:\n{y_test[:2]}")
 
 # Instead of the previous approach, saves the numpy arrays and doesn't
 # use them as local variables. Each ML method loads a specific dataset.
-for k in [3,5,8,10]:
+for k in [5]: #[3,5,8,10]:
     print(f"Trying to create feature table for k={k}")
     create_feature_tables(X_train, X_test, ending, include_iupac_as_features, kmer_lengths=[k])
 
@@ -597,22 +605,23 @@ else:
         'test_macro_ovr_roc_auc_score'
     ])
 
-for kmer in [3,5,8,10]: # 3, 5, 8, 10
+for kmer in [5]: #[3,5,8,10]: # 3, 5, 8, 10
     print(f"KMER={kmer}", flush=True)
-    res = train_naive_bayes(kmer, y_train, y_test, ending)
-    results_df = results_df.append(pd.Series(res), ignore_index=True)
-    print(f"Trained naive bayes", flush=True)
-    results_df.to_csv(res_path, index=False)
 
-    res = train_svm(kmer, y_train, y_test, ending)
-    results_df = results_df.append(pd.Series(res), ignore_index=True)
-    print(f"Trained svm", flush=True)
-    results_df.to_csv(res_path, index=False)
+    # res = train_naive_bayes(kmer, y_train, y_test, ending)
+    # results_df = results_df.append(pd.Series(res), ignore_index=True)
+    # print(f"Trained naive bayes", flush=True)
+    # results_df.to_csv(res_path, index=False)
 
-    res = train_decision_tree(kmer, y_train, y_test, ending)
-    results_df = results_df.append(pd.Series(res), ignore_index=True)
-    print(f"Trained dt", flush=True)
-    results_df.to_csv(res_path, index=False)
+    # res = train_svm(kmer, y_train, y_test, ending)
+    # results_df = results_df.append(pd.Series(res), ignore_index=True)
+    # print(f"Trained svm", flush=True)
+    # results_df.to_csv(res_path, index=False)
+
+    # res = train_decision_tree(kmer, y_train, y_test, ending)
+    # results_df = results_df.append(pd.Series(res), ignore_index=True)
+    # print(f"Trained dt", flush=True)
+    # results_df.to_csv(res_path, index=False)
 
     if kmer < 10:
         res = train_logistic_regression(kmer, y_train, y_test, ending)
@@ -620,25 +629,26 @@ for kmer in [3,5,8,10]: # 3, 5, 8, 10
         print(f"Trained lr", flush=True)
         results_df.to_csv(res_path, index=False)
 
-    res = train_xgboost(kmer, y_train, y_test, ending)
-    results_df = results_df.append(pd.Series(res), ignore_index=True)
-    print(f"Trained xgb", flush=True)
-    results_df.to_csv(res_path, index=False)
+    # res = train_xgboost(kmer, y_train, y_test, ending)
+    # results_df = results_df.append(pd.Series(res), ignore_index=True)
+    # print(f"Trained xgb", flush=True)
+    # results_df.to_csv(res_path, index=False)
 
-    res = train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
-    results_df = pd.concat([results_df, res], ignore_index=True)
-    print(f"Trained knn", flush=True)
-    results_df.to_csv(res_path, index=False)
+    # res = train_knn(kmer, y_train, y_test, ending, neighbors=[7])
+    # # res = train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
+    # results_df = pd.concat([results_df, res], ignore_index=True)
+    # print(f"Trained knn", flush=True)
+    # results_df.to_csv(res_path, index=False)
 
-    res = train_rf(kmer, y_train, y_test, ending, num_trees=[15,30,45])
-    results_df = pd.concat([results_df, res], ignore_index=True)
-    print(f"Trained rf", flush=True)
-    results_df.to_csv(res_path, index=False)
+    # res = train_rf(kmer, y_train, y_test, ending, num_trees=[15,30,45])
+    # results_df = pd.concat([results_df, res], ignore_index=True)
+    # print(f"Trained rf", flush=True)
+    # results_df.to_csv(res_path, index=False)
 
-    res = train_adaboost(kmer, y_train, y_test, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
-    results_df = pd.concat([results_df, res], ignore_index=True)
-    print(f"Trained adbt", flush=True)
-    results_df.to_csv(res_path, index=False)
+    # res = train_adaboost(kmer, y_train, y_test, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
+    # results_df = pd.concat([results_df, res], ignore_index=True)
+    # print(f"Trained adbt", flush=True)
+    # results_df.to_csv(res_path, index=False)
 
 
 warnings.filterwarnings('default', category=FutureWarning)
