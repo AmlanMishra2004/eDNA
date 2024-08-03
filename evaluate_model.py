@@ -789,7 +789,7 @@ if __name__ == '__main__':
         config['trainRandomDeletions'] =  [0, 4]
         config['trainMutationRate'] =  0.1
 
-    config['test_path'] = f'../datasets/test_t70_noise-{test_noise}_thresh-2.csv'
+    config['test_path'] = f'./datasets/test_t70_noise-{test_noise}_thresh-2.csv'
 
     cols = ['species','family', 'genus', 'order']
     if not config['load_existing_train_test']:
