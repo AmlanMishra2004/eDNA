@@ -225,15 +225,16 @@ warnings.filterwarnings('ignore', 'y_pred contains classes not in y_true')
 train = pd.read_csv(config['train_path'], sep=',')
 test = pd.read_csv(config['test_path'], sep=',')
 
-class_difference = set(test[config['species_col']].unique()) - set(train[config['species_col']].unique())
+# Make sure that all classes in the test set are present in the train set
+class_difference = set(test['species_cat'].unique()) - set(train['species_cat'].unique())
 if not class_difference:
-    print("Set difference is empty: All classes in the test set are present in the training set.")
+    print("All classes in the test set are present in the training set.")
 else:
-    print(f"Set difference is not empty: {class_difference}")
+    print(f"WARNING: Classes are present in the test set that are not part of training set: {class_difference}")
 
-le = LabelEncoder()
-train[config['species_col']] = le.fit_transform(train[config['species_col']])
-test[config['species_col']] = le.transform(test[config['species_col']])
+# le = LabelEncoder()
+# train[config['species_col']] = le.fit_transform(train[config['species_col']])
+# test[config['species_col']] = le.transform(test[config['species_col']])
 # dump(le, './datasets/label_encoder.joblib')
 
 val_portion = 0.2
