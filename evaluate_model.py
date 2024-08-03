@@ -20,6 +20,7 @@ import random
 import sys
 import time
 import warnings
+import argparse
 
 from joblib import dump, load
 import numpy as np
@@ -744,7 +745,7 @@ if __name__ == '__main__':
         # Whether or not applying on raw unlabeled data or "clean" ref db data.
         'applying_on_raw_data': False,
         # Whether or not to augment the test set.
-        'augment_test_data': True,
+        'augment_test_data': False, # If false, then you want to use your own pre-created test sets with a certain noise level
         'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files
         'verbose': False
     }
@@ -765,8 +766,17 @@ if __name__ == '__main__':
         config['testRandomDeletions'] = [0,0]
         config['testMutationRate'] = 0
 
-    cols = ['species','family', 'genus', 'order']
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--train_noise', nargs=1, type=int, default=1)
+    parser.add_argument('--test_noise', nargs=1, type=int, default=1)
+    args = parser.parse_args()
+    try:
+        train_noise = args.train_noise[0]
+        test_noise = args.test_noise[0]
+    except:
+        pass
 
+    cols = ['species','family', 'genus', 'order']
     if not config['load_existing_train_test']:
         df = pd.read_csv(config['data_path'], sep=config['sep'])
         print(f"Original df shape: {df.shape}")

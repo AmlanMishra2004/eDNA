@@ -1,4 +1,5 @@
 import pandas as pd
+from sklearn.calibration import LabelEncoder
 from sklearn.model_selection import train_test_split
 import sys
 sys.path.append('..')
@@ -7,12 +8,12 @@ import utils
 # Hardcoded values
 def create_datasets():
     oversample = True
-    noise = 2 # 0, 1, or 2
+    noise = 0 # 0, 1, or 2
     for_maine_edna = False
     seq_target_length = 70 # 200
     seq_count_thresh = 2 #8
     raw_data_path = '../datasets/v4_combined_reference_sequences.csv' # '../datasets/all_data_maine.csv'
-    species_col = 'species' #'Species'
+    species_col = 'species_cat' #'Species'
     seq_col = 'seq' #'Sequence'
     encoding_mode = 'probability'
     test_size = 0.3
@@ -43,6 +44,10 @@ def create_datasets():
         )
     print(f"Number of unique species in data: {data[species_col].nunique()}")
     print(f"Data shape: {data.shape}")
+
+    le = LabelEncoder()
+    data[species_col] = le.fit_transform(data[species_col])
+
     if split_method == "fluck":
         train, test = utils.stratified_split(data, species_col, test_size)
     elif split_method == "sklearn":
