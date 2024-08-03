@@ -137,6 +137,12 @@ elif not config['augment_test_data']:
 assert config['seq_target_length'] % 2 == 0, \
     "Error: sequence length must be even"
 
+# As of 8/3/24, when running on different levels of noise, we set the train_path
+# to be a raw (oversampled) dataset with NO noise, then add noise in the online
+# augmentation. We set the test path to be a pre-created test set with noise
+# and have NO online augmentation. We do this to allow simple reproducability
+# on the test set without having to use random seeds to reproduce the data.
+
 
 # allow the user to call the program with command line gpu argument
 # ex. python3 main.py -gpuid=0,1,2,3
@@ -168,8 +174,11 @@ try:
     print(f"job_id: {args.job_id}")
 except:
     pass
-train_noise = args.train_noise[0]
-test_noise = args.test_noise[0]
+try:
+    train_noise = args.train_noise[0]
+    test_noise = args.test_noise[0]
+except:
+    pass
 
 if train_noise == 0:
     config['trainRandomInsertions'] = [0, 0]

@@ -776,6 +776,21 @@ if __name__ == '__main__':
     except:
         pass
 
+    if train_noise == 0:
+        config['trainRandomInsertions'] = [0, 0]
+        config['trainRandomDeletions'] =  [0, 0]
+        config['trainMutationRate'] =  0
+    elif train_noise == 1:
+        config['trainRandomInsertions'] =  [0, 2]
+        config['trainRandomDeletions'] =  [0, 2]
+        config['trainMutationRate'] =  0.05
+    elif train_noise == 2:
+        config['trainRandomInsertions'] =  [0, 4]
+        config['trainRandomDeletions'] =  [0, 4]
+        config['trainMutationRate'] =  0.1
+
+    config['test_path'] = f'../datasets/test_t70_noise-{test_noise}_thresh-2.csv'
+
     cols = ['species','family', 'genus', 'order']
     if not config['load_existing_train_test']:
         df = pd.read_csv(config['data_path'], sep=config['sep'])
