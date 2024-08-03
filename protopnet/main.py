@@ -168,8 +168,8 @@ try:
     print(f"job_id: {args.job_id}")
 except:
     pass
-train_noise = args.train_noise
-test_noise = args.test_noise
+train_noise = args.train_noise[0]
+test_noise = args.test_noise[0]
 
 if train_noise == 0:
     config['trainRandomInsertions'] = [0, 0]
