@@ -61,7 +61,7 @@ def create_datasets():
             species_col,
             True # Verbose
         )
-        print(f"ovah train shape: {train.shape}")
+        print(f"Oversampled train shape: {train.shape}")
 
     if noise == 0:
         train = utils.encode_all_data(
@@ -73,9 +73,9 @@ def create_datasets():
             False, # include extra height dimension of 1
             "df", # format
             False, # add noise
-            [0,2],
-            [0,2],
-            0.05,
+            [0,0],
+            [0,0],
+            0,
             vectorize=False
         )
         test = utils.encode_all_data(
@@ -87,9 +87,9 @@ def create_datasets():
             False, # include extra height dimension of 1
             "df", # format
             False, # add noise
-            [0,2],
-            [0,2],
-            0.05,
+            [0,0],
+            [0,0],
+            0,
             vectorize=False
         )
     elif noise == 1:

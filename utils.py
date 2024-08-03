@@ -41,8 +41,8 @@ from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.metrics import precision_score, recall_score, f1_score
 
-# random.seed(42)
-# np.random.seed(42)
+random.seed(42)
+np.random.seed(42)
 
 
 # PREPROCESSING ---------------------------------------------------------------
