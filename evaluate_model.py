@@ -791,6 +791,9 @@ if __name__ == '__main__':
 
     config['test_path'] = f'./datasets/test_t70_noise-{test_noise}_thresh-2.csv'
 
+    print(f"\nTraining on train_noise {train_noise} and test_noise {test_noise}\n")
+    print(type(train_noise))
+
     cols = ['species','family', 'genus', 'order']
     if not config['load_existing_train_test']:
         df = pd.read_csv(config['data_path'], sep=config['sep'])
