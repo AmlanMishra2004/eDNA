@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This file can be used to run main.py to search through different noise combinations or hyperparameter combinations for the ppnet.
+
 #SBATCH --job-name=ppn_model_search  		# Job name
 #SBATCH --cpus-per-task=5 		# Run on 5 cores per node
 #SBATCH --nodes=1			# Run on 1 node
@@ -48,7 +50,8 @@ test_noise=$(echo $combination | cut -d ' ' -f 2)
 echo "train_noise: $train_noise"
 echo "test_noise: $test_noise"
 
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num $SLURM_ARRAY_TASK_ID --train_noise $train_noise --test_noise $test_noise
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num -1 --train_noise $train_noise --test_noise $test_noise # use if testing different noise levels
+# singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num $SLURM_ARRAY_TASK_ID --train_noise $train_noise --test_noise $test_noise
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py

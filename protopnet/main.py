@@ -177,6 +177,9 @@ except:
 try:
     train_noise = args.train_noise[0]
     test_noise = args.test_noise[0]
+    if train_noise == 0 and test_noise==0:
+        print(f"Assuming success. Starting next noise combination ,exiting.")
+        exit()
 except:
     pass
 
@@ -547,15 +550,14 @@ for trial in range(num_trials):
     print(f"Checking hyperparameters: {ch}\n\n")
     del ch
     if args.comb_num != -1:
-        print(f"Performing combination number {args.comb_num}")
+        print(f"Performing combination number {args.comb_num} trial {trial}")
     # Generate all combinations of hyperparameters
     combinations = list(itertools.product(*hyperparameters.values()))
     combos = len(combinations)
 
     # Iterate through all combinations. 
     # If a particular array index is supplied, then only run that combination.
-    if combos > 1:
-        print(f"\n\nExploring {combos} hyperparameter combinations for grid search.\n")
+    print(f"\n\nExploring {combos} hyperparameter combination(s) for grid search.\n")
     for iter, combination in enumerate(combinations, start=1):
         # comb_num=-1 indicates that there was no combination_number supplied,
         # which means that it isn't being run in parallel using an array.
@@ -1063,6 +1065,6 @@ for trial in range(num_trials):
         del last_layer_optimizer_specs
     # end of grid search
 # end of number of trials
-print(f"Over {num_trials} for all models evaluated in the grid search (could be >1), got average accuracy: {np.mean(test_accs)}, standard deviation: {np.std(test_accs)}") 
+print(f"Over {num_trials} trials for all models evaluated in the grid search (could be >1 model), got average testing accuracy: {np.mean(test_accs)}, standard deviation: {np.std(test_accs)}") 
 
 print(f"Finished search.")
