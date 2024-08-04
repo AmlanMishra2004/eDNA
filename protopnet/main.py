@@ -177,9 +177,6 @@ except:
 try:
     train_noise = args.train_noise[0]
     test_noise = args.test_noise[0]
-    if train_noise == 0 and test_noise==0:
-        print(f"Assuming success. Starting next noise combination ,exiting.")
-        exit()
 except:
     pass
 

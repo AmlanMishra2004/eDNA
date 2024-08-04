@@ -32,15 +32,18 @@ echo "==========================================="
 # Define the combinations of train_noise and test_noise
 combinations=(
     "0 0"
-    "0 1"
-    "0 2"
-    "1 0"
-    "1 1"
-    "1 2"
-    "2 0"
-    "2 1"
-    "2 2"
 )
+# combinations=(
+#     "0 0"
+#     "0 1"
+#     "0 2"
+#     "1 0"
+#     "1 1"
+#     "1 2"
+#     "2 0"
+#     "2 1"
+#     "2 2"
+# )
 
 # Get the combination for the current task
 combination=${combinations[$SLURM_ARRAY_TASK_ID-1]}
