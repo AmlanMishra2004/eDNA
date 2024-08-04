@@ -196,6 +196,9 @@ elif train_noise == 2:
     config['trainRandomDeletions'] =  [0, 4]
     config['trainMutationRate'] =  0.1
 
+print(f"\nTraining on train_noise {train_noise} and test_noise {test_noise}\n")
+print(type(train_noise))
+
 config['test_path'] = f'../datasets/test_t70_noise-{test_noise}_thresh-2.csv'
 
 
