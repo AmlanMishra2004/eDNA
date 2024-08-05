@@ -443,7 +443,7 @@ backbone.load_state_dict(torch.load(model_path))
 # begin hyperparameter search
 # this is the number of times you want to repeat either the
 # grid search below, or the random search below.
-num_trials = 5
+num_trials = 1
 test_accs = []
 for trial in range(num_trials):
 
