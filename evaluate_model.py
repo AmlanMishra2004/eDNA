@@ -1314,7 +1314,7 @@ if __name__ == '__main__':
                                 
                                 print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
                                 model_test_accs.append(test_acc)
-            print(f"Over {num_trials} for current model, got average accuracy: {np.mean(model_test_accs)}, standard deviation: {np.std(model_test_accs)}") 
+            print(f"Over {num_trials} for current model, got average testing accuracy: {np.mean(model_test_accs)}, standard deviation: {np.std(model_test_accs)}") 
     if run_autokeras:
 
         # Import statements are included here because 1) Printing "Using
