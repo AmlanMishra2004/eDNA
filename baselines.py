@@ -147,7 +147,7 @@ def create_feature_tables(X_train, X_test, train_ending, test_ending, include_iu
     for kmer_length in kmer_lengths:
         trainpath = f'./datasets/ft_{kmer_length}_{train_ending}.npy'
         testpath = f'./datasets/ft_{kmer_length}_{test_ending}.npy'
-        print(f"\n\n\n\nTRAINPATH: \n{trainpath}\n\n\n")
+        # print(f"\n\n\n\nTRAINPATH: \n{trainpath}\n\n\n")
         # print(f"Trainpath: {trainpath}")
         # print(f"testpath: {testpath}")
         if not os.path.exists(trainpath):
@@ -319,7 +319,7 @@ def train_knn(kmer, y_train, y_test, train_ending, test_ending, ending, neighbor
     print("Searching for pretrained KNN models...")
     all_exist = True
     for neighbor in neighbors:
-        path = f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/knn{kmer}_{neighbor}{train_ending}.joblib'
+        path = f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/knn{kmer}_{neighbor}_{train_ending}.joblib'
         if not os.path.exists(path):
             all_exist = False
 
@@ -339,18 +339,18 @@ def train_knn(kmer, y_train, y_test, train_ending, test_ending, ending, neighbor
         for n in neighbors:
             knn = KNeighborsClassifier(n_neighbors=n)
             knn.fit(X_train, y_train)
-            dump(knn, f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/knn{kmer}_{n}{train_ending}.joblib')
+            dump(knn, f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/knn{kmer}_{n}_{train_ending}.joblib')
     
     results_df = pd.DataFrame()
     for n in neighbors:
         X_train = np.load(f'./datasets/ft_{kmer}_{train_ending}.npy')
-        knn = load(f'./datasets/knn{kmer}_{n}{train_ending}.joblib')
+        knn = load(f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/knn{kmer}_{n}_{train_ending}.joblib')
         y_train_pred = knn.predict(X_train)
         del X_train
         X_test = np.load(f'./datasets/ft_{kmer}_{test_ending}.npy')
         y_test_pred = knn.predict(X_test)
         del X_test
-        res = evaluate(f'knn{kmer}_{n}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+        res = evaluate(f'knn{kmer}_{n}_{ending}', y_test, y_test_pred, y_train, y_train_pred)
         warnings.filterwarnings('ignore', category=FutureWarning)
         results_df = results_df.append(pd.Series(res), ignore_index=True)
         warnings.filterwarnings('default', category=FutureWarning)
@@ -359,10 +359,10 @@ def train_knn(kmer, y_train, y_test, train_ending, test_ending, ending, neighbor
 
 def train_rf(kmer, y_train, y_test, train_ending, test_ending, ending, num_trees):
     # Random Forest models follow the format: rf<k-mer length>_<number trees>
-    print("Searching for pretrained KNN models...")
+    print("Searching for pretrained RF models...")
     all_exist = True
     for trees in num_trees:
-        path = f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/rf{kmer}_{trees}{train_ending}.joblib'
+        path = f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/rf{kmer}_{trees}_{train_ending}.joblib'
         if not os.path.exists(path):
             all_exist = False
 
@@ -372,18 +372,18 @@ def train_rf(kmer, y_train, y_test, train_ending, test_ending, ending, num_trees
         for n in num_trees:
             rf_model = RandomForestClassifier(n_estimators=n, random_state=1327)
             rf_model.fit(X_train, y_train)
-            dump(rf_model, f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/rf{kmer}_{n}{train_ending}.joblib')
+            dump(rf_model, f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/rf{kmer}_{n}_{train_ending}.joblib')
     
     results_df = pd.DataFrame()
     for n in num_trees:
         X_train = np.load(f'./datasets/ft_{kmer}_{train_ending}.npy')
-        knn = load(f'./datasets/rf{kmer}_{n}{train_ending}.joblib')
-        y_train_pred = knn.predict(X_train)
+        rf = load(f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/rf{kmer}_{n}_{train_ending}.joblib')
+        y_train_pred = rf.predict(X_train)
         del X_train
         X_test = np.load(f'./datasets/ft_{kmer}_{test_ending}.npy')
-        y_test_pred = knn.predict(X_test)
+        y_test_pred = rf.predict(X_test)
         del X_test
-        res = evaluate(f'rf{kmer}_{n}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+        res = evaluate(f'rf{kmer}_{n}_{ending}', y_test, y_test_pred, y_train, y_train_pred)
         warnings.filterwarnings('ignore', category=FutureWarning)
         results_df = results_df.append(pd.Series(res), ignore_index=True)
         warnings.filterwarnings('default', category=FutureWarning)
@@ -396,7 +396,7 @@ def train_adaboost(kmer, y_train, y_test, train_ending, test_ending, ending, n_e
     all_exist = True
     for n in n_estimators:
         for depth in max_depths:
-            path = f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/adbt{kmer}_{n}_{depth}{train_ending}.joblib'
+            path = f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/adbt{kmer}_{n}_{depth}_{train_ending}.joblib'
             if not os.path.exists(path):
                 all_exist = False
 
@@ -411,19 +411,19 @@ def train_adaboost(kmer, y_train, y_test, train_ending, test_ending, ending, n_e
                     random_state=1327
                 )
                 adaboost_model.fit(X_train, y_train)
-                dump(adaboost_model, f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/adbt{kmer}_{n}_{depth}{train_ending}.joblib')
+                dump(adaboost_model, f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/adbt{kmer}_{n}_{depth}_{train_ending}.joblib')
     
     results_df = pd.DataFrame()
     for n in n_estimators:
         for depth in max_depths:
             X_train = np.load(f'./datasets/ft_{kmer}_{train_ending}.npy')
-            knn = load(f'./datasets/adbt{kmer}_{n}_{depth}{train_ending}.joblib')
-            y_train_pred = knn.predict(X_train)
+            adbt = load(f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/adbt{kmer}_{n}_{depth}_{train_ending}.joblib')
+            y_train_pred = adbt.predict(X_train)
             del X_train
             X_test = np.load(f'./datasets/ft_{kmer}_{test_ending}.npy')
-            y_test_pred = knn.predict(X_test)
+            y_test_pred = adbt.predict(X_test)
             del X_test
-            res = evaluate(f'adbt{kmer}_{n}_{depth}{ending}', y_test, y_test_pred, y_train, y_train_pred)
+            res = evaluate(f'adbt{kmer}_{n}_{depth}_{ending}', y_test, y_test_pred, y_train, y_train_pred)
             warnings.filterwarnings('ignore', category=FutureWarning)
             results_df = results_df.append(pd.Series(res), ignore_index=True)
             warnings.filterwarnings('default', category=FutureWarning)
@@ -538,131 +538,131 @@ for train_val in values:
         train_noise = train_val
         test_noise = test_val
 
-    ending = f'{oversampled}t{seq_target_length}_trainnoise-{train_noise}_testnoise-{test_noise}_thresh-{seq_count_thresh}{for_maine_edna}'
-    train_ending = f'train_{oversampled}t{seq_target_length}_noise-{train_noise}_thresh-{seq_count_thresh}{for_maine_edna}'
-    test_ending = f'test_t{seq_target_length}_noise-{test_noise}_thresh-{seq_count_thresh}{for_maine_edna}'
+        ending = f'{oversampled}t{seq_target_length}_trainnoise-{train_noise}_testnoise-{test_noise}_thresh-{seq_count_thresh}{for_maine_edna}'
+        train_ending = f'train_{oversampled}t{seq_target_length}_noise-{train_noise}_thresh-{seq_count_thresh}{for_maine_edna}'
+        test_ending = f'test_t{seq_target_length}_noise-{test_noise}_thresh-{seq_count_thresh}{for_maine_edna}'
 
-    train = pd.read_csv(f'./datasets/{train_ending}.csv', sep=',')
-    test = pd.read_csv(f'./datasets/{test_ending.replace("oversampled_", "")}.csv', sep=',')
+        train = pd.read_csv(f'./datasets/{train_ending}.csv', sep=',')
+        test = pd.read_csv(f'./datasets/{test_ending.replace("oversampled_", "")}.csv', sep=',')
 
-    include_iupac_as_features = False
+        include_iupac_as_features = False
 
 
-    if include_iupac_as_features:
-        include_iupac_as_features = 'iupac_'
-    else:
-        include_iupac_as_features = ''
+        if include_iupac_as_features:
+            include_iupac_as_features = 'iupac_'
+        else:
+            include_iupac_as_features = ''
 
-    ending = f"{include_iupac_as_features}{ending}"
+        ending = f"{include_iupac_as_features}{ending}"
 
-    X_train = train.loc[:,[seq_col]].values
-    # X_train_vectorized = train_vectorized.loc[:,[config['seq_col']]].values
-    y_train = train.loc[:,[species_col]].values
-    X_test = test.loc[:,[seq_col]].values
-    # X_test_vectorized = test_vectorized.loc[:,[config['seq_col']]].values
-    y_test = test.loc[:,[species_col]].values
+        X_train = train.loc[:,[seq_col]].values
+        # X_train_vectorized = train_vectorized.loc[:,[config['seq_col']]].values
+        y_train = train.loc[:,[species_col]].values
+        X_test = test.loc[:,[seq_col]].values
+        # X_test_vectorized = test_vectorized.loc[:,[config['seq_col']]].values
+        y_test = test.loc[:,[species_col]].values
 
-    # Remove the inner lists for each element.
-    X_train = X_train.ravel()
-    # X_train_vectorized = X_train_vectorized.ravel()
-    X_test = X_test.ravel()
-    # X_test_vectorized = X_test_vectorized.ravel()
-    y_train = y_train.ravel()
-    y_test = y_test.ravel()
+        # Remove the inner lists for each element.
+        X_train = X_train.ravel()
+        # X_train_vectorized = X_train_vectorized.ravel()
+        X_test = X_test.ravel()
+        # X_test_vectorized = X_test_vectorized.ravel()
+        y_train = y_train.ravel()
+        y_test = y_test.ravel()
 
-    le = LabelEncoder()
-    y_train = le.fit_transform(y_train)
-    y_test = le.transform(y_test)
+        le = LabelEncoder()
+        y_train = le.fit_transform(y_train)
+        y_test = le.transform(y_test)
 
-    print(f"X_train shape: {X_train.shape}")
-    # print(f"X_train_vectorized shape: {X_train_vectorized.shape}")
-    print(f"X_test shape: {X_test.shape}")
-    print(f"y_train shape: {y_train.shape}")
-    print(f"y_test shape: {y_test.shape}")
-    print(f"First two entries in X_train:\n{X_train[:2]}")
-    print(f"First two entries in X_test:\n{X_test[:2]}")
-    print(f"First two entries in y_train:\n{y_train[:2]}")
-    print(f"First two entries in y_test:\n{y_test[:2]}")
+        print(f"X_train shape: {X_train.shape}")
+        # print(f"X_train_vectorized shape: {X_train_vectorized.shape}")
+        print(f"X_test shape: {X_test.shape}")
+        print(f"y_train shape: {y_train.shape}")
+        print(f"y_test shape: {y_test.shape}")
+        print(f"First two entries in X_train:\n{X_train[:2]}")
+        print(f"First two entries in X_test:\n{X_test[:2]}")
+        print(f"First two entries in y_train:\n{y_train[:2]}")
+        print(f"First two entries in y_test:\n{y_test[:2]}")
 
-    # Instead of the previous approach, saves the numpy arrays and doesn't
-    # use them as local variables. Each ML method loads a specific dataset.
-    for k in [3,5,8,10]: #[3,5,8,10]:
-        print(f"Trying to create feature table for k={k}")
-        create_feature_tables(X_train, X_test, train_ending, test_ending, include_iupac_as_features, kmer_lengths=[k])
+        # Instead of the previous approach, saves the numpy arrays and doesn't
+        # use them as local variables. Each ML method loads a specific dataset.
+        for k in [3,5,8,10]: #[3,5,8,10]:
+            print(f"Trying to create feature table for k={k}")
+            create_feature_tables(X_train, X_test, train_ending, test_ending, include_iupac_as_features, kmer_lengths=[k])
 
-    warnings.filterwarnings('ignore', category=FutureWarning)
-    res_path = f'baseline_results_{ending}.csv'
-    if os.path.exists(res_path):
-        results_df = pd.read_csv(res_path)
-    else:
-        # If the file does not exist, create an empty DataFrame with the desired columns
-        results_df = pd.DataFrame(columns=[
-            'name',
-            'train_macro_f1-score',
-            'train_macro_recall', 
-            'train_micro_accuracy',
-            'train_macro_precision',
-            'train_weighted_precision', 
-            'train_weighted_recall',
-            'train_weighted_f1-score',
-            'train_balanced_accuracy',
-            'train_macro_ovr_roc_auc_score',
-            'test_macro_f1-score',
-            'test_macro_recall',
-            'test_micro_accuracy',
-            'test_macro_precision',
-            'test_weighted_precision', 
-            'test_weighted_recall',
-            'test_weighted_f1-score',
-            'test_balanced_accuracy',
-            'test_macro_ovr_roc_auc_score'
-        ])
+        warnings.filterwarnings('ignore', category=FutureWarning)
+        res_path = f'baseline_results_{ending}.csv'
+        if os.path.exists(res_path):
+            results_df = pd.read_csv(res_path)
+        else:
+            # If the file does not exist, create an empty DataFrame with the desired columns
+            results_df = pd.DataFrame(columns=[
+                'name',
+                'train_macro_f1-score',
+                'train_macro_recall', 
+                'train_micro_accuracy',
+                'train_macro_precision',
+                'train_weighted_precision', 
+                'train_weighted_recall',
+                'train_weighted_f1-score',
+                'train_balanced_accuracy',
+                'train_macro_ovr_roc_auc_score',
+                'test_macro_f1-score',
+                'test_macro_recall',
+                'test_micro_accuracy',
+                'test_macro_precision',
+                'test_weighted_precision', 
+                'test_weighted_recall',
+                'test_weighted_f1-score',
+                'test_balanced_accuracy',
+                'test_macro_ovr_roc_auc_score'
+            ])
 
-    for kmer in [3,5,8,10]: #[3,5,8,10]: # 3, 5, 8, 10
-        print(f"KMER={kmer}", flush=True)
+        for kmer in [3,5,8,10]: #[3,5,8,10]: # 3, 5, 8, 10
+            print(f"KMER={kmer}", flush=True)
 
-        res = train_naive_bayes(kmer, y_train, y_test, train_ending, test_ending, ending)
-        results_df = results_df.append(pd.Series(res), ignore_index=True)
-        print(f"Trained naive bayes", flush=True)
-        results_df.to_csv(res_path, index=False)
-
-        res = train_svm(kmer, y_train, y_test, train_ending, test_ending, ending)
-        results_df = results_df.append(pd.Series(res), ignore_index=True)
-        print(f"Trained svm", flush=True)
-        results_df.to_csv(res_path, index=False)
-
-        res = train_decision_tree(kmer, y_train, y_test, train_ending, test_ending, ending)
-        results_df = results_df.append(pd.Series(res), ignore_index=True)
-        print(f"Trained dt", flush=True)
-        results_df.to_csv(res_path, index=False)
-
-        if kmer < 10:
-            res = train_logistic_regression(kmer, y_train, y_test, train_ending, test_ending, ending)
+            res = train_naive_bayes(kmer, y_train, y_test, train_ending, test_ending, ending)
             results_df = results_df.append(pd.Series(res), ignore_index=True)
-            print(f"Trained lr", flush=True)
+            print(f"Trained naive bayes", flush=True)
             results_df.to_csv(res_path, index=False)
 
-        res = train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending)
-        results_df = results_df.append(pd.Series(res), ignore_index=True)
-        print(f"Trained xgb", flush=True)
-        results_df.to_csv(res_path, index=False)
+            res = train_svm(kmer, y_train, y_test, train_ending, test_ending, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            print(f"Trained svm", flush=True)
+            results_df.to_csv(res_path, index=False)
 
-        res = train_knn(kmer, y_train, y_test, train_ending, test_ending, ending, neighbors=[7])
-        # res = train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
-        results_df = pd.concat([results_df, res], ignore_index=True)
-        print(f"Trained knn", flush=True)
-        results_df.to_csv(res_path, index=False)
+            res = train_decision_tree(kmer, y_train, y_test, train_ending, test_ending, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            print(f"Trained dt", flush=True)
+            results_df.to_csv(res_path, index=False)
 
-        res = train_rf(kmer, y_train, y_test, train_ending, test_ending, ending, num_trees=[15,30,45])
-        results_df = pd.concat([results_df, res], ignore_index=True)
-        print(f"Trained rf", flush=True)
-        results_df.to_csv(res_path, index=False)
+            if kmer < 10:
+                res = train_logistic_regression(kmer, y_train, y_test, train_ending, test_ending, ending)
+                results_df = results_df.append(pd.Series(res), ignore_index=True)
+                print(f"Trained lr", flush=True)
+                results_df.to_csv(res_path, index=False)
 
-        res = train_adaboost(kmer, y_train, y_test, train_ending, test_ending, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
-        results_df = pd.concat([results_df, res], ignore_index=True)
-        print(f"Trained adbt", flush=True)
-        results_df.to_csv(res_path, index=False)
+            res = train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            print(f"Trained xgb", flush=True)
+            results_df.to_csv(res_path, index=False)
+
+            res = train_knn(kmer, y_train, y_test, train_ending, test_ending, ending, neighbors=[7])
+            # res = train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
+            results_df = pd.concat([results_df, res], ignore_index=True)
+            print(f"Trained knn", flush=True)
+            results_df.to_csv(res_path, index=False)
+
+            res = train_rf(kmer, y_train, y_test, train_ending, test_ending, ending, num_trees=[15,30,45])
+            results_df = pd.concat([results_df, res], ignore_index=True)
+            print(f"Trained rf", flush=True)
+            results_df.to_csv(res_path, index=False)
+
+            res = train_adaboost(kmer, y_train, y_test, train_ending, test_ending, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
+            results_df = pd.concat([results_df, res], ignore_index=True)
+            print(f"Trained adbt", flush=True)
+            results_df.to_csv(res_path, index=False)
 
 
-    warnings.filterwarnings('default', category=FutureWarning)
-    print(f"Trained and evaluated all of the models for current level of noise! Saved to file {res_path}")
+        warnings.filterwarnings('default', category=FutureWarning)
+        print(f"Trained and evaluated all of the models for current level of noise! Saved to file {res_path}")
