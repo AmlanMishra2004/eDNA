@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #SBATCH --job-name=running_baselines  		# Job name
-#SBATCH --cpus-per-task=4 		# Run on 5 cores per node
+#SBATCH --cpus-per-task=8 		# Run on 5 cores per node
 #SBATCH --nodes=1			# Run on 1 node
 #SBATCH --partition=grtx		# Select partition
 #SBATCH --mem=500gb			# Job memory request
