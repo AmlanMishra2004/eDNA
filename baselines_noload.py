@@ -113,7 +113,8 @@ def train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending, port
                                     seed=random.randint(1, sys.maxsize),
                                     colsample_bytree=p,
                                     colsample_bylevel=p,
-                                    colsample_bynode=p)
+                                    colsample_bynode=p,
+                                    tree_method='gpu_hist', gpu_id=0) # optionally exclude!
         xgb_model.fit(X_train, y_train)
         y_train_pred = xgb_model.predict(X_train)
         y_test_pred = xgb_model.predict(X_test)
