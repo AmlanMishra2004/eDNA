@@ -109,7 +109,7 @@ def train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending, port
     for p in portions:
         print(f"Training XGBoost model, portion={p}.", flush=True)
         xgb_model = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss',
-                                    random_state=random.randint(1, sys.maxsize),
+                                    random_state=None, #=random.randint(1, sys.maxsize)
                                     seed=random.randint(1, sys.maxsize),
                                     colsample_bytree=p,
                                     colsample_bylevel=p,
@@ -301,18 +301,13 @@ def log(string):
 
 verbose = False
 
-train_noise = None
-test_noise = None
-
-train_test_noise_combos = [(0,0),(0,1),(0,2),(1,0),(1,2),(2,0),(2,1),(2,2)] # (1,1), EXCLUDED!! #[0, 1, 2] # noises
+train_test_noise_combos = [(0,0),(0,1),(0,2),(1,0),(1,1),(1,2),(2,0),(2,1),(2,2)]
 
 for combo in train_test_noise_combos:
     train_noise = combo[0]
     test_noise = combo[1]
-    for trial in range(5):
+    for trial in range(3):
         print(f"\n\n\ntrain noise: {train_noise}, test noise: {test_noise}, trial: {trial}\n")
-        train_noise = train_noise
-        test_noise = test_noise
 
         ending = f'{oversampled}t{seq_target_length}_trainnoise-{train_noise}_testnoise-{test_noise}_thresh-{seq_count_thresh}{for_maine_edna}'
         train_ending = f'train_{oversampled}t{seq_target_length}_noise-{train_noise}_thresh-{seq_count_thresh}{for_maine_edna}'
@@ -407,36 +402,35 @@ for combo in train_test_noise_combos:
             # print(f"Trained svm", flush=True)
             # results_df.to_csv(res_path, index=False)
 
-            # res = train_decision_tree(kmer, y_train, y_test, train_ending, test_ending, ending)
-            # results_df = results_df.append(pd.Series(res), ignore_index=True)
-            # print(f"Trained dt", flush=True)
-            # results_df.to_csv(res_path, index=False)
+            res = train_decision_tree(kmer, y_train, y_test, train_ending, test_ending, ending)
+            results_df = results_df.append(pd.Series(res), ignore_index=True)
+            print(f"Trained dt", flush=True)
+            results_df.to_csv(res_path, index=False)
 
-            if kmer < 10:
-                res = train_logistic_regression(kmer, y_train, y_test, train_ending, test_ending, ending, solver=['lbfgs']) # ,'saga' takes too long
-                results_df = pd.concat([results_df, res], ignore_index=True)
-                print(f"Trained lr", flush=True)
-                results_df.to_csv(res_path, index=False)
-
-            # res = train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending, portions=[0.2,0.4,0.6,0.8])
+            # res = train_logistic_regression(kmer, y_train, y_test, train_ending, test_ending, ending, solver=['lbfgs']) # ,'saga' takes too long
             # results_df = pd.concat([results_df, res], ignore_index=True)
-            # print(f"Trained xgb", flush=True)
+            # print(f"Trained lr", flush=True)
             # results_df.to_csv(res_path, index=False)
+
+            res = train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending, portions=[0.2,0.4,0.6,0.8])
+            results_df = pd.concat([results_df, res], ignore_index=True)
+            print(f"Trained xgb", flush=True)
+            results_df.to_csv(res_path, index=False)
 
             # res = train_knn(kmer, y_train, y_test, train_ending, test_ending, ending, neighbors=[1,3,5,7]) # [1,3,5,7,9]
             # results_df = pd.concat([results_df, res], ignore_index=True)
             # print(f"Trained knn", flush=True)
             # results_df.to_csv(res_path, index=False)
 
-            # res = train_rf(kmer, y_train, y_test, train_ending, test_ending, ending, num_trees=[15,30,45])
-            # results_df = pd.concat([results_df, res], ignore_index=True)
-            # print(f"Trained rf", flush=True)
-            # results_df.to_csv(res_path, index=False)
+            res = train_rf(kmer, y_train, y_test, train_ending, test_ending, ending, num_trees=[50, 100, 200])
+            results_df = pd.concat([results_df, res], ignore_index=True)
+            print(f"Trained rf", flush=True)
+            results_df.to_csv(res_path, index=False)
 
-            # res = train_adaboost(kmer, y_train, y_test, train_ending, test_ending, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
-            # results_df = pd.concat([results_df, res], ignore_index=True)
-            # print(f"Trained adbt", flush=True)
-            # results_df.to_csv(res_path, index=False)
+            res = train_adaboost(kmer, y_train, y_test, train_ending, test_ending, ending, n_estimators=[50,100,200], max_depths=[1,4,7])
+            results_df = pd.concat([results_df, res], ignore_index=True)
+            print(f"Trained adbt", flush=True)
+            results_df.to_csv(res_path, index=False)
     
     # for trial in range(5):
     #     for kmer in [10]: #[3,5,8,10]: # 3, 5, 8, 10

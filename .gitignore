@@ -1,4 +1,4 @@
-# Sam Included
+# Manually Included
 *.out
 *.log
 !/slurm_outputs/**/*.log
@@ -13,6 +13,7 @@
 /protopnet/saved_ppn_models
 /old_best_saved_models
 /protopnet/global_results
+/venv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
