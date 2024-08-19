@@ -90,14 +90,14 @@ config = {
             'b':'v', 'd':'h', 'h':'d', 'v':'b',
             's':'w', 'w':'s', 'n':'n', 'z':'z'},
     'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
-    'train_path': '../datasets/train_dup.csv',
+    'train_path': '../datasets/train_oversampled_same_as_zurich.csv',
+    'test_path': '../datasets/test_same_as_zurich.csv',
     # 'train_path': "../datasets/train_oversampled_t70_noise-0_thresh-2.csv", #'../datasets/train_dup.csv',
         # for training the protopnet, noise is added online *during* training,
         # not before in the csv. so, always use noise-0. Also, use train_dup.csv
         # instead of train_oversampled_t70_noise-0_thresh-2.csv because this
         # allows flexibility in length (insertions, deletions) before truncating.
-    'test_path': '../datasets/test_t70_noise-2_thresh-2.csv', #'../datasets/test.csv', # OVERRIDDEN BY CMD LINE ARGUMENTS
-    'sep': ';',                       # separator character in the csv file
+    # 'test_path': '../datasets/test_t70_noise-2_thresh-2.csv', #'../datasets/test.csv', # OVERRIDDEN BY CMD LINE ARGUMENTS
     'species_col': 'species_cat',     # name of column containing species
     'seq_col': 'seq',                 # name of column containing sequences
 
@@ -110,7 +110,7 @@ config = {
     # Whether or not applying on raw unlabeled data or "clean" ref db data.
     'applying_on_raw_data': False,
     # Whether or not to augment the test set.
-    'augment_test_data': False,
+    'augment_test_data': True,
     # 'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files/ COMMENTED BECAUSE TRUE BY DEFAULT
     'train_batch_size': 156, # 780 oversampled. prev. 64. 1,2,3,4,5,6,10,12,13,15,20,26,30,39,52,60,65,78,130,156,195,260,390,=780
     'test_batch_size': 35, # 175. 1, 2, 4, 47, 94, 188 NOT # 1,5,7,25,35,175
@@ -195,7 +195,8 @@ elif train_noise == 2:
 
 print(f"\nTraining on train_noise {train_noise} and test_noise {test_noise}\n")
 
-config['test_path'] = f'../datasets/test_t70_noise-{test_noise}_thresh-2.csv'
+# COMMENT OUT IF YOU SPECIFIED A SPECIFIC TEST SET ABOVE (for a specific train/test split)
+# config['test_path'] = f'../datasets/test_t70_noise-{test_noise}_thresh-2.csv'
 
 
 # base_architecture_type = re.match('^[a-z]*', base_architecture).group(0)
@@ -218,7 +219,7 @@ config['test_path'] = f'../datasets/test_t70_noise-{test_noise}_thresh-2.csv'
 
 # normalize = transforms.Normalize(mean=mean, std=std) # not used in this file or any other?
 
-# Jon says: we should look into distributed sampler more carefully at torch.utils.data.distributed.DistributedSampler(train_dataset)
+# <name redacted for submission purposes> says: we should look into distributed sampler more carefully at torch.utils.data.distributed.DistributedSampler(train_dataset)
 
 # Unused since the number of pushes and the push start and gap defines how many
 # epochs it runs.
@@ -392,7 +393,7 @@ test_accuracy = -1 # to initialize and make it available after training
 # #     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
 # #     prototype_network_parallel=model, # pytorch network with prototype_vectors
 # #     preprocess_input_function=None, # normalize if needed
-# #     root_dir_for_saving_prototypes='./saved_prototypes', # if not None, prototypes will be saved here # sam: previously seq_dir
+# #     root_dir_for_saving_prototypes='./saved_prototypes', # if not None, prototypes will be saved here # Note: previously seq_dir
 # #     epoch_number=9999, # if not provided, prototypes saved previously will be overwritten
 # #     log=log
 # # )
@@ -443,7 +444,7 @@ backbone.load_state_dict(torch.load(model_path))
 # begin hyperparameter search
 # this is the number of times you want to repeat either the
 # grid search below, or the random search below.
-num_trials = 3
+num_trials = 5
 test_accs = []
 for trial in range(num_trials):
 
@@ -472,11 +473,11 @@ for trial in range(num_trials):
     num_ptypes_per_class = [3] #random.randint(1, 3)
     ptype_length = [5] # [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35] # BEST 8/4/24: [5] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
-        # comments after the line indicate jon's original settings
+        # comments after the line indicate <name redacted for submission purposes>'s original settings
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0, 0.1, 0.2, 0.3, 0.4 ,0.5, 0.6, 0.7, 0.8, 0.9, 1],                          #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0.7],                          # [0, 0.1, 0.2, 0.3, 0.4 ,0.5, 0.6, 0.7, 0.8, 0.9, 1],  #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
 
         'num_warm_epochs':          [35+4*45],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
@@ -493,7 +494,7 @@ for trial in range(num_trials):
         'p0_warm_ptype_gamma':      [0.75],                          #[0.7, 0.75, 0.8, 0.83, 0.86, 0.9, 0.92, 0.94, 0.96, 0.98, 1],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
         'p0_warm_ptype_step_size':  [25],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         # push 1
-        'p1_last_layer_lr':         [0.001],                        #GOOD [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # jon: 0.02, sam's OG: 0.002
+        'p1_last_layer_lr':         [0.001],                        #GOOD [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # <name redacted for submission purposes>: 0.02, OG: 0.002
         'p1_last_layer_iterations': [80],                           #GOOD 80-85 (based off jobs. changed based off visuals) for 0.001, 215 for 0.00075
         'p1_warm_ptype_lr':         [0.05],                         # the warm prototype lr for after the first push
         'p1_warm_ptype_gamma':      [0.9],
@@ -633,11 +634,10 @@ for trial in range(num_trials):
             - []
         - try a couple epochs of joint training 
             - joint training does not train the last layer
-            - backbone should have a smaller lr, prototypes should have a larger
+            - backbone should have a smaller lr, prototypes should have a larger lr
+        - cluster should be larger than separation. if it is lower, then it
+          will destroy accuracy on the push
         """
-
-        # cluster should be larger than separation. if it is lower, then it
-        # will destroy accuracy on the push
           
         end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
         print(f"End epoch: {end_epoch}")
@@ -701,7 +701,7 @@ for trial in range(num_trials):
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                     preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes= None, # os.path.join('saved_prototypes', f"{str(args.arr_job_id)}_{str(args.comb_num)}_-1_latent_{params['latent_weight']}"), # if not None, prototypes will be saved here # sam: previously seq_dir
+                    root_dir_for_saving_prototypes= None, # os.path.join('saved_prototypes', f"{str(args.arr_job_id)}_{str(args.comb_num)}_-1_latent_{params['latent_weight']}"), # if not None, prototypes will be saved here # Note: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log
                 )
@@ -932,7 +932,7 @@ for trial in range(num_trials):
                     pushloader, # pytorch dataloader (must be unnormalized in [0,1])
                     prototype_network_parallel=ppnet_multi, # pytorch network with prototype_vectors
                     preprocess_input_function=None, # normalize if needed
-                    root_dir_for_saving_prototypes=None,#'./saved_prototypes', # if not None, prototypes will be saved here # sam: previously seq_dir
+                    root_dir_for_saving_prototypes=None,#'./saved_prototypes', # if not None, prototypes will be saved here # Note: previously seq_dir
                     epoch_number=epoch, # if not provided, prototypes saved previously will be overwritten
                     log=log,
                     sanity_check=True

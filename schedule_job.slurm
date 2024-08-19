@@ -21,19 +21,14 @@ module load singularity
 echo "SLURM_JOB_ID: $SLURM_JOB_ID"
 
 source ../eDNA_env/bin/activate
-# cd protopnet
+cd protopnet
 
 echo "==========================================="
 pwd; hostname; date;
 echo "==========================================="
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
-# singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 baselines_noload.py
-
-# singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py
+# singularity run --nv ~/containers/pytorch-waggoner2.simg python3 baselines_noload.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
-# singularity run --nv ~/containers/pytorch-waggoner.simg python3 testScript.py
-# singularity run --nv $PYTORCH_CONT python3 zurich_replica/src/models/testScript.py
-# singularity run --nv $PYTORCH_CONT home/sam/eDNA_env/bin/python3 zurich_replica/src/models/testScript.py
-# singularity run --nv $PYTORCH_CONT python3 zurich_replica/src/models/exploration.py
+
