@@ -110,7 +110,6 @@ config = {
     # Whether or not applying on raw unlabeled data or "clean" ref db data.
     'applying_on_raw_data': False,
     # Whether or not to augment the test set.
-    'augment_test_data': True,
     # 'load_existing_train_test': True, # use the same train/test split as Zurich, already saved in two different csv files/ COMMENTED BECAUSE TRUE BY DEFAULT
     'train_batch_size': 156, # 780 oversampled. prev. 64. 1,2,3,4,5,6,10,12,13,15,20,26,30,39,52,60,65,78,130,156,195,260,390,=780
     'test_batch_size': 35, # 175. 1, 2, 4, 47, 94, 188 NOT # 1,5,7,25,35,175
@@ -126,14 +125,6 @@ elif not config['applying_on_raw_data']:
     config['seq_target_length'] = 70        # 70 (prev. 71) or 60 or 64
     config['addTagAndPrimer'] = False
     config['addRevComplements'] = False
-if config['augment_test_data']:
-    config['testRandomInsertions'] = [1,1]
-    config['testRandomDeletions'] = [1,1]
-    config['testMutationRate'] = 0.02
-elif not config['augment_test_data']:
-    config['testRandomInsertions'] = [0,0]
-    config['testRandomDeletions'] = [0,0]
-    config['testMutationRate'] = 0
 assert config['seq_target_length'] % 2 == 0, \
     "Error: sequence length must be even"
 
@@ -193,10 +184,27 @@ elif train_noise == 2:
     config['trainRandomDeletions'] =  [0, 4]
     config['trainMutationRate'] =  0.1
 
+# Either 
+# 1. add online augmentation to the test set by using the three 'if' stmts below, OR
+# 2. use a CSV with noise already added by uncommenting the single line below
+# config['test_path'] = f'../datasets/test_t70_noise-{test_noise}_thresh-2.csv'
+
+if test_noise == 0:
+    config['testRandomInsertions'] = [0, 0]
+    config['testRandomDeletions'] =  [0, 0]
+    config['testMutationRate'] =  0
+elif test_noise == 1:
+    config['testRandomInsertions'] =  [1, 1]
+    config['testRandomDeletions'] =  [1, 1]
+    config['testMutationRate'] =  0.02
+elif test_noise == 2:
+    config['testRandomInsertions'] =  [2, 2]
+    config['testRandomDeletions'] =  [2, 2]
+    config['testMutationRate'] =  0.04
+
 print(f"\nTraining on train_noise {train_noise} and test_noise {test_noise}\n")
 
-# COMMENT OUT IF YOU SPECIFIED A SPECIFIC TEST SET ABOVE (for a specific train/test split)
-# config['test_path'] = f'../datasets/test_t70_noise-{test_noise}_thresh-2.csv'
+
 
 
 # base_architecture_type = re.match('^[a-z]*', base_architecture).group(0)
@@ -902,7 +910,6 @@ for trial in range(num_trials):
                 #     'encoding_mode': config['encoding_mode'],    
                 #     'push_encoding_mode': config['push_encoding_mode'],  
                 #     'applying_on_raw_data': config['applying_on_raw_data'],
-                #     'augment_test_data': config['augment_test_data'],
                 #     'load_existing_train_test': config['load_existing_train_test'], 
                 #     'train_batch_size': config['train_batch_size'], 
                 #     'test_batch_size': config['test_batch_size'],
