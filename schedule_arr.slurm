@@ -2,15 +2,15 @@
 
 # This file can be used to run main.py to search through different noise combinations or hyperparameter combinations for the ppnet.
 
-#SBATCH --job-name=ppn_model_search  		# Job name
+#SBATCH --job-name=ptype_lengths  		# Job name
 #SBATCH --cpus-per-task=5 		# Run on 5 cores per node
 #SBATCH --nodes=1			# Run on 1 node
 #SBATCH --partition=grtx		# Select partition
 #SBATCH --mem=100gb			# Job memory request
-#SBATCH --time=72:00:00		# Time limit, hrs:min:sec
+#SBATCH --time=96:00:00		# Time limit, hrs:min:sec
 #SBATCH --gres=gpu:1			# Request 1 gpu            
 #SBATCH --output=slurm_outputs/out.%A_%a.log    # job id is %j, array index is %a
-#SBATCH --array=1-11%6       # inclusive on both ranges. creates 500 jobs, do %15 at a time. creates a separate .out file for each
+#SBATCH --array=1-18%6       # inclusive on both ranges. creates 500 jobs, do %15 at a time. creates a separate .out file for each
 
 # Load versions of modules
 module load singularity
@@ -31,8 +31,7 @@ echo "==========================================="
 
 # Define the combinations of train_noise and test_noise
 # combinations=(
-#     "0 0"
-# )
+    # "0 0"
     # "0 1"
     # "0 2"
     # "1 0"
@@ -41,6 +40,7 @@ echo "==========================================="
     # "2 0"
     # "2 1"
     # "2 2"
+# )
 
 # Get the combination for the current task
 # combination=${combinations[$SLURM_ARRAY_TASK_ID-1]}

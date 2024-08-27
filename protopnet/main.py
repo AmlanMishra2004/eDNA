@@ -241,9 +241,10 @@ log = print
 # random.seed(36)
 warnings.filterwarnings('ignore', 'y_pred contains classes not in y_true')
 
-# split data into train, validation, and test # as of July 2024, do not use a validation set
+# split data into train, validation, and test # as of July 2024, do not use a validation set # as of 8/26, use a val set
 train = pd.read_csv(config['train_path'], sep=',')
 test = pd.read_csv(config['test_path'], sep=',')
+train_full = train.copy()
 
 # Make sure that all classes in the test set are present in the train set
 class_difference = set(test['species_cat'].unique()) - set(train['species_cat'].unique())
@@ -259,18 +260,24 @@ else:
 
 val_portion = 0.2
 # If you were to use a validation set, use Fluck's stratified split method, rather than sklearn's method
+train, val = utils.stratified_split(
+    train,
+    config['species_col'],
+    val_portion
+)
+# Before 8/26/24, it was:
 # train, test = utils.stratified_split(
 #     df,
 #     config['species_col'],
 #     config['test_split']
 # )
-X_train, X_val, y_train, y_val = train_test_split(
-    train[config['seq_col']], # X
-    train[config['species_col']], # y
-    test_size=val_portion,
-    random_state=42,
-    stratify=train[config['species_col']]
-)
+# X_train, X_val, y_train, y_val = train_test_split(
+#     train[config['seq_col']], # X
+#     train[config['species_col']], # y
+#     test_size=val_portion,
+#     random_state=42,
+#     stratify=train[config['species_col']]
+# )
 # print(X_train.shape)
 # print(y_train.shape)
 # print(type(X_train))
@@ -306,8 +313,10 @@ train_dataset = Sequence_Data(
     seq_len=config['seq_target_length']
 )
 val_dataset = Sequence_Data(
-    X_val,
-    y_val,
+    val[config['seq_col']],
+    val[config['species_col']],
+    # X_val,
+    # y_val,
     insertions=[config['testRandomInsertions']],
     deletions=config['testRandomDeletions'],
     mutation_rate=config['testMutationRate'],
@@ -342,9 +351,11 @@ testloader = DataLoader(
 # species with <2 sequences are removed. Used in training.
 push_dataset = Sequence_Data(
     # USE THESE TWO lines if you're just doing a train/test split
-    train[config['seq_col']],
-    train[config['species_col']],
+    # train[config['seq_col']],
+    # train[config['species_col']],
     # USE THESE TWO lines if you're doing a train/val/test split
+    train_full[config['seq_col']],
+    train_full[config['species_col']],
     # X_train,
     # y_train,
     insertions=[0,0],
@@ -452,7 +463,7 @@ backbone.load_state_dict(torch.load(model_path))
 # begin hyperparameter search
 # this is the number of times you want to repeat either the
 # grid search below, or the random search below.
-num_trials = 5
+num_trials = 3
 test_accs = []
 for trial in range(num_trials):
 
@@ -479,7 +490,7 @@ for trial in range(num_trials):
     # These two are also hyperparameters. Feel free to add more values to try.
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
     num_ptypes_per_class = [3] #random.randint(1, 3)
-    ptype_length = [5] # [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35] # BEST 8/4/24: [5] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    ptype_length = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35] # BEST 8/4/24: [5] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate <name redacted for submission purposes>'s original settings
         # if the settings were not applicable, I write "not set".
@@ -768,15 +779,15 @@ for trial in range(num_trials):
                     val_acc = metrics.accuracy_score(val_actual, val_predicted)
                     print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
 
-                    conditionally_save_model(
-                        ppnet,
-                        'saved_ppn_models',
-                        arr_job_id=str(args.arr_job_id),
-                        comb_num=str(args.comb_num),
-                        accu=val_acc,
-                        target_accu=0.95,
-                        log=print
-                    )
+                    # conditionally_save_model(
+                    #     ppnet,
+                    #     'saved_ppn_models',
+                    #     arr_job_id=str(args.arr_job_id),
+                    #     comb_num=str(args.comb_num),
+                    #     accu=val_acc,
+                    #     target_accu=0.95,
+                    #     log=print
+                    # )
 
                 # Get the final model train, validation, and test scores
                 print(f"Getting final train, validation, and test accuracy after training.")
@@ -1009,15 +1020,15 @@ for trial in range(num_trials):
                     val_acc = metrics.accuracy_score(val_actual, val_predicted)
                     print(f"\tVal acc at iteration {i}: {val_acc}", flush=flush)
 
-                    conditionally_save_model(
-                        ppnet,
-                        'saved_ppn_models',
-                        arr_job_id=str(args.arr_job_id),
-                        comb_num=str(args.comb_num),
-                        accu=val_acc,
-                        target_accu=0.95,
-                        log=print
-                    )
+                    # conditionally_save_model(
+                    #     ppnet,
+                    #     'saved_ppn_models',
+                    #     arr_job_id=str(args.arr_job_id),
+                    #     comb_num=str(args.comb_num),
+                    #     accu=val_acc,
+                    #     target_accu=0.95,
+                    #     log=print
+                    # )
             elif epoch < params['num_warm_epochs']:
                 # print(f"Train epoch")
                 # train the prototypes without modifying the backbone
