@@ -8,7 +8,7 @@
 #SBATCH --partition=grtx		# Select partition
 #SBATCH --mem=100gb			# Job memory request
 #SBATCH --time=72:00:00		# Time limit, hrs:min:sec
-#SBATCH --gres=gpu:1			# Request 1 gpu            
+#SBATCH --gres=gpu:2			# Request 1 gpu            
 #SBATCH --output=slurm_outputs/out.%A_%a.log    # job id is %j, array index is %a
 #SBATCH --array=1-9%9       # inclusive on both ranges. creates 500 jobs, do %15 at a time. creates a separate .out file for each
 
@@ -46,7 +46,7 @@ combination=${combinations[$SLURM_ARRAY_TASK_ID-1]}
 train_noise=$(echo $combination | cut -d ' ' -f 1)
 test_noise=$(echo $combination | cut -d ' ' -f 2)
 
-echo "train_noise: $train_noise"
-echo "test_noise: $test_noise"
+# echo "train_noise: $train_noise"
+# echo "test_noise: $test_noise"
 
 singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py --train_noise $train_noise --test_noise $test_noise
