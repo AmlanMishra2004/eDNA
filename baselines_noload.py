@@ -120,7 +120,8 @@ def train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending, port
                                     colsample_bytree=p,
                                     colsample_bylevel=p,
                                     colsample_bynode=p,
-                                    tree_method='hist', device='cuda') # to use GPU to make it faster!
+                                    #tree_method='hist', device='cuda') # to use GPU to make it faster!
+                                    tree_method='gpu_hist', device=0) # to use GPU to make it faster!
         xgb_model.fit(X_train, y_train)
         y_train_pred = xgb_model.predict(X_train)
         y_test_pred = xgb_model.predict(X_test)
