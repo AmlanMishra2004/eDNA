@@ -1,4 +1,4 @@
-# (c) 2023 Sam Waggoner
+# (c) 2023 <name redacted for submission purposes>
 # License: AGPLv3
 
 """Defines PyTorch models (CNN and linear) intended to be used for classifying
@@ -20,6 +20,9 @@ same_padding = lambda stride, in_width, out_width, filter_size: (
     )
 )
 
+# An equivalent replica of the model from Fluck et. al.
+# lr: 0.0005
+# batch size: 512
 class Zurich(nn.Module):
     def __init__(self, stride=1, in_width=60, num_classes=156):
         super(Zurich, self).__init__()
@@ -28,6 +31,7 @@ class Zurich(nn.Module):
                                padding=same_padding(stride, in_width,
                                                     in_width, 7))
         self.leakyrelu = nn.LeakyReLU()
+        # self.relu = nn.ReLU()
         self.fc1 = nn.Linear(60*4, 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, num_classes)
@@ -50,8 +54,8 @@ class Zurich(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
-class Jon_CNN(nn.Module):
-    """Written by Jon Donnely. Architecture taken from "Fast processing of
+class OLD_CNN(nn.Module): # was named <name redacted for submission purposes>_CNN
+    """Written by <name redacted for submission purposes>. Architecture taken from "Fast processing of
     environmental DNA metabarcoding sequence data using convolutional neural
     networks.
     """
@@ -221,6 +225,8 @@ class Best_12_31(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
+# This was the model that produced the best accuracy, but we did not choose
+# since it had two convolutional layers instead of one.
 # seq_len=60, batch=64, lr=0.005, epochs=15, oversample=True
 class Large_Best(nn.Module):
     def __init__(self):
@@ -261,6 +267,8 @@ class Large_Best(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
+# This is the model that we originally chose to be our backbone, before we
+# decided we wanted to make it have a latent space of 1/n of the input length.
 # seq_len=71, batch=64, lr=0.002, epochs=18, oversample=True
 class Small_Best(nn.Module):
     def __init__(self):
@@ -273,21 +281,19 @@ class Small_Best(nn.Module):
         )
         self.conv_layers.append(nn.LeakyReLU())
         self.conv_layers.append(nn.Dropout(0.5))
-        self.conv_layers.append(nn.MaxPool1d(kernel_size=2, stride=2)) # has to halve the length
-        # self.conv_layers.append(nn.MaxPool1d(3))
+        self.conv_layers.append(nn.MaxPool1d(kernel_size=3, stride=1))
 
-        self.linear_layer = nn.Linear(16384, 156) # 10752 for kernel of 3
+        self.linear_layer = nn.Linear(10752, 156)
 
         self.leakyrelu = nn.LeakyReLU()
         self.softmax = nn.Softmax(dim=1)
-        # also divide by normalization in the latent space (don't change the input vector)
 
     def forward(self, x):
         for layer in self.conv_layers:
             x = layer(x)
         # print(f"INTERMEDIATE SHAPE: {x.shape}")
         # UNCOMMENT this line for evaluate_model.py, and
-        # COMMENT this line for main.py!
+        # COMMENT these lines for main.py!
         x = x.view(x.size(0), -1)
         # print(f"FLATTENED SHAPE: {x.shape}")
         x = self.linear_layer(x)
@@ -299,6 +305,7 @@ class Small_Best(nn.Module):
             if hasattr(layer, 'reset_parameters'):
                 layer.reset_parameters()
 
+# This is the model used by the ProtoPNet as a backbone
 class Small_Best_Updated(nn.Module):
     def __init__(self):
         super(Small_Best_Updated, self).__init__()
@@ -323,8 +330,8 @@ class Small_Best_Updated(nn.Module):
         # print(f"Shape after conv layers: {x.shape}")
         # UNCOMMENT these lines for evaluate_model.py, and
         # COMMENT these lines for main.py!
-        # x = x.view(x.size(0), -1)
-        # x = self.linear_layer(x)
+        x = x.view(x.size(0), -1)
+        x = self.linear_layer(x)
         return x
     
     def reset_params(self):
