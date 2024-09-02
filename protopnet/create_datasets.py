@@ -5,7 +5,148 @@ import sys
 sys.path.append('..')
 import utils
 
-# Hardcoded values
+def made_dataset_with_noise(noise):
+    ########################################
+    train_path = '../datasets/train_oversampled_same_as_zurich.csv'
+    test_path = '../datasets/test_same_as_zurich.csv'
+    seq_target_length = 70 # 200
+    species_col = 'species_cat' #'Species'
+    seq_col = 'seq' #'Sequence'
+    encoding_mode = 'probability'
+
+    # Qualities about the existing dataset:
+    oversampled = True
+    for_maine_edna = False
+    seq_count_thresh = 2
+    same_as_zurich = True
+    #########################################
+
+    train = pd.read_csv(train_path, sep=',')
+    test = pd.read_csv(test_path, sep=',')
+    if for_maine_edna:
+        for_maine_edna = "_maine"
+    else:
+        for_maine_edna = ""
+    
+    if oversampled:
+        oversampled = "oversampled_"
+    else:
+        oversampled = ""
+    if same_as_zurich:
+        same_as_zurich = "same_as_zurich_"
+    else:
+        same_as_zurich = ""
+    ending = f'{same_as_zurich}{oversampled}t{seq_target_length}_noise-{noise}_thresh-{seq_count_thresh}{for_maine_edna}'
+
+    if noise == 0:
+        train = utils.encode_all_data(
+            train.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            False, # add noise
+            [0,0],
+            [0,0],
+            0,
+            vectorize=False
+        )
+        test = utils.encode_all_data(
+            test.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            False, # add noise
+            [0,0],
+            [0,0],
+            0,
+            vectorize=False
+        )
+    elif noise == 1:
+        train = utils.encode_all_data(
+            train.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [0,2],
+            [0,2],
+            0.05,
+            vectorize=False
+        )
+        test = utils.encode_all_data(
+            test.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [1,1],
+            [1,1],
+            0.02,
+            vectorize=False
+        )
+    elif noise == 2:
+        train = utils.encode_all_data(
+            train.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [0,4],
+            [0,4],
+            0.1,
+            vectorize=False
+        )
+        test = utils.encode_all_data(
+            test.copy(),
+            seq_target_length,
+            seq_col,
+            species_col,
+            encoding_mode,
+            False, # include extra height dimension of 1
+            "df", # format
+            True, # add noise
+            [2,2],
+            [2,2],
+            0.04,
+            vectorize=False
+        )
+
+    X_train = train[seq_col]
+    y_train = train[species_col]
+    X_test = test[seq_col]
+    y_test = test[species_col]
+    
+    print(f"X_train SHAPE: {X_train.shape}")
+    print(f"y_train SHAPE: {y_train.shape}")
+    print(f"X_test SHAPE: {X_test.shape}")
+    print(f"y_test SHAPE: {y_test.shape}")
+
+    train.to_csv(f'../datasets/train_{ending}.csv', index=False)
+    # since the test set is not oversampled even if the training set is,
+    # remove that from the name for clarity
+    test.to_csv(f'../datasets/test_{ending.replace("oversampled_","")}.csv', index=False)
+
+    print("DataFrames with added noise saved successfully to datasets folder.")
+
+# Creates different train/test splits with different noise values.
+# If you want to compare models trained and tested on different noise values, DO NOT use
+# this method, as different train/test splits will overlap. Use made_dataset_with_noise() instead.
+# Note: includes hardcoded values
 def create_datasets():
     oversample = True
     noise = 0 # 0, 1, or 2
@@ -173,4 +314,6 @@ def create_datasets():
 
     print("DataFrames saved successfully.")
 
-create_datasets()
+# create_datasets()
+for noise in [0,1,2]:
+    made_dataset_with_noise(noise)
