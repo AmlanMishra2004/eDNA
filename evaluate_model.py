@@ -1,4 +1,4 @@
-# (c) 2023 Sam Waggoner
+# (c) 2023 <name redacted for submission purposes>
 # License: AGPLv3
 
 """Performs grid search on a model and prints results, or uses AutoKeras.
@@ -444,7 +444,9 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         # Since one can't use the test set for early stopping, simply train
         # for the average number of epochs taken during the k folds. Or, if you
         # want to risk overfitting, uncomment below.
-            
+        
+        if epoch % 100 == 0:
+            print(f"train acc: {train_acc}")
         # if early_stopper:
         #         early_stopper(train_acc)
         #         if early_stopper.stop:
@@ -553,12 +555,12 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
         avg_val_balanced_acc = sum(fold_val_metrics['balanced_acc']) / k_iters
         avg_val_epochs_taken = sum(fold_val_metrics['epochs_taken']) / k_iters
 
-        val_metrics = {
-        'Metric': ['Micro Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1 Score', 'Weighted F1 Score','Balanced Accuracy', 'Epochs Taken'],
-        'Value': [avg_val_acc, avg_val_m_precision, avg_val_m_recall, avg_val_m_f1, avg_val_w_f1, avg_val_balanced_acc, avg_val_epochs_taken]
-        }
-        print(f"Avg. of Validation Metrics over {k_folds} folds, {k_iters} iters.")
-        print(tabulate(val_metrics, headers='keys', tablefmt='pretty'))
+    val_metrics = {
+    'Metric': ['Micro Accuracy', 'Macro Precision', 'Macro Recall', 'Macro F1 Score', 'Weighted F1 Score','Balanced Accuracy', 'Epochs Taken'],
+    'Value': [avg_val_acc, avg_val_m_precision, avg_val_m_recall, avg_val_m_f1, avg_val_w_f1, avg_val_balanced_acc, avg_val_epochs_taken]
+    }
+    print(f"Avg. of Validation Metrics over {k_folds} folds, {k_iters} iters.")
+    print(tabulate(val_metrics, headers='keys', tablefmt='pretty'))
 
     # Test Metrics
     test_metrics = {
@@ -712,7 +714,7 @@ if __name__ == '__main__':
     # If set, this will skip the preprocessing and read in an existing train
     # and test csv (that are presumably already processed). For my train and 
     # test file, all semutations have been added, so no need for online augmentation.Whether set or not, it still must be truncated/padded and turned intovectors.
-    run_my_model = True
+    run_specific_model = True
     run_arch_search = False     # search through architectures, in addition to lr, batch size
     run_autokeras = False
     
@@ -728,18 +730,15 @@ if __name__ == '__main__':
                 'b':'v', 'd':'h', 'h':'d', 'v':'b',
                 's':'w', 'w':'s', 'n':'n', 'z':'z'},
         'data_path': './datasets/v4_combined_reference_sequences.csv',
-        # 'train_path': './datasets/train_no_dup.csv',
-        # 'test_path': './datasets/test.csv',
-        'train_path': './datasets/train_oversampled_t70_noise-0_thresh-2.csv',
-        'test_path': './datasets/test_t70_noise-0_thresh-2.csv',
-        'sep': ';',                       # separator character in the csv file
+        'train_path': '../datasets/train_same_as_zurich_oversampled_t70_noise-0_thresh-2.csv',
+        'test_path': '../datasets/test_same_as_zurich.csv', # may optionally be overridden later
+        # 'train_path': './datasets/train_oversampled_t70_noise-0_thresh-2.csv',
+        # 'test_path': './datasets/test_t70_noise-0_thresh-2.csv',
+        'sep': ',',                       # separator character in the csv file
         'species_col': 'species_cat',     # name of column containing species
         'seq_col': 'seq',                 # name of column containing sequences
         'seq_count_thresh': 2,            # ex. keep species with >1 sequences
         'test_split': 0.3,                # ex. .3 means 30% test, 70% train
-        'trainRandomInsertions': [0,2],   # ex. between 0 and 2 per sequence
-        'trainRandomDeletions': [0,2],    # ex. between 0 and 2 per sequence
-        'trainMutationRate': 0.05,        # n*100% chance for a base to flip
         'oversample': True,              # whether or not to oversample train # OVERRIDDEN IN ARCH SEARCH
         'encoding_mode': 'probability',   # 'probability' or 'random'
         # Whether or not applying on raw unlabeled data or "clean" ref db data.
@@ -767,8 +766,8 @@ if __name__ == '__main__':
         config['testMutationRate'] = 0
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_noise', nargs=1, type=int, default=1)
-    parser.add_argument('--test_noise', nargs=1, type=int, default=1)
+    parser.add_argument('--train_noise', nargs=1, type=int, default=[1])
+    parser.add_argument('--test_noise', nargs=1, type=int, default=[1])
     args = parser.parse_args()
     try:
         train_noise = args.train_noise[0]
@@ -781,18 +780,18 @@ if __name__ == '__main__':
         config['trainRandomDeletions'] =  [0, 0]
         config['trainMutationRate'] =  0
     elif train_noise == 1:
-        config['trainRandomInsertions'] =  [0, 2]
-        config['trainRandomDeletions'] =  [0, 2]
-        config['trainMutationRate'] =  0.05
+        config['trainRandomInsertions'] =  [0, 2] # ex. between 0 and 2 per sequence
+        config['trainRandomDeletions'] =  [0, 2] # ex. between 0 and 2 per sequence
+        config['trainMutationRate'] =  0.05 # n*100% chance for a base to flip
     elif train_noise == 2:
         config['trainRandomInsertions'] =  [0, 4]
         config['trainRandomDeletions'] =  [0, 4]
         config['trainMutationRate'] =  0.1
 
-    config['test_path'] = f'./datasets/test_t70_noise-{test_noise}_thresh-2.csv'
+    # COMMENT OUT IF YOU SPECIFIED A SPECIFIC TEST SET ABOVE (for a specific train/test split)
+    config['test_path'] = f'./datasets/test_same_as_zurich_t70_noise-{test_noise}_thresh-2.csv'
 
     print(f"\nTraining on train_noise {train_noise} and test_noise {test_noise}\n")
-    print(type(train_noise))
 
     cols = ['species','family', 'genus', 'order']
     if not config['load_existing_train_test']:
@@ -840,8 +839,8 @@ if __name__ == '__main__':
 
         # If you would like to verify that the train and test sets are the same
         # as in Zurich's paper, uncomment the lines below and compare files.
-        # train.to_csv("/Users/Sam/OneDrive/Desktop/waggoner_train.csv")
-        # test.to_csv("/Users/Sam/OneDrive/Desktop/waggoner_test.csv")
+        # train.to_csv("/Users/<name redacted for submission purposes>/OneDrive/Desktop/<last name redacted for submission purposes>_train.csv")
+        # test.to_csv("/Users/<name redacted for submission purposes>/OneDrive/Desktop/<last name redacted for submission purposes>_test.csv")
         # pause = input("PAUSE")
 
     elif config['load_existing_train_test']:
@@ -851,6 +850,16 @@ if __name__ == '__main__':
         test = pd.read_csv(config['test_path'], sep=',')
         utils.print_descriptive_stats(test, cols)
         # wait = input("PAUSE")
+
+    print(f"\nTraining on train_noise {train_noise} and test_noise {test_noise}")
+    print(f"Training on {config['train_path']}")
+    print(f"Testing on {config['test_path']}")
+    print(f"testRandomInsertions: {config['testRandomInsertions']}")
+    print(f"testRandomDeletions: {config['testRandomDeletions']}")
+    print(f"testMutationRate: {config['testMutationRate']}")
+    print(f"trainRandomInsertions: {config['trainRandomInsertions']}")
+    print(f"trainRandomDeletions: {config['trainRandomDeletions']}")
+    print(f"trainMutationRate: {config['trainMutationRate']}")
 
     if run_arch_search:
         
@@ -1084,7 +1093,7 @@ if __name__ == '__main__':
                 
                 print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
 
-    if run_my_model:
+    if run_specific_model:
 
         # cnn1 = models.CNN1(num_classes=num_classes)
         # smallcnn2 = models.SmallCNN2(
@@ -1161,6 +1170,7 @@ if __name__ == '__main__':
         # model_path = "best_model_20240111_060457.pt"
 
         small_best_updated = models.Small_Best_Updated()
+        # zurich = models.Zurich()
         
         # UNCOMMENT THIS IF YOU WANT TO LOAD THE WEIGHTS FOR A MODEL AND HARDCODE IT
         # YOU SHOULD ALSO UNCOMMENT THE PORTION IN EVALUATE()
@@ -1228,8 +1238,8 @@ if __name__ == '__main__':
         
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
-        num_trials = 5
-        learning_rates = [0.002] # 0.002 for 12-31 and small best, 0.005 for large best
+        num_trials = 3
+        learning_rates = [0.002] # 0.002 for 12-31 and small best, 0.005 for large best, 0.0005 for Zurich
         # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
         # learning_rates = [0.0005, 0.007, 0.001, 0.002]
@@ -1238,9 +1248,13 @@ if __name__ == '__main__':
         # learning_rates = [0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.005, 
         #                   0.01, 0.05]
 
-        batch_sizes = [64] # 16 for 12-31, 64 for large and small best
+        batch_sizes = [64] # 16 for 12-31, 64 for large and small best, 512 for Zurich
         # batch_sizes = [16, 32, 64]
 
+        # Zurich used (I monitor accuracy, they monitor loss):
+        # monitor="loss",
+        # min_delta=0.005,
+        # patience=10,
         early_stopper = utils.EarlyStopping(
             patience=20,
             min_pct_improvement=.1, # previously 20 epochs, 0.1%
@@ -1252,14 +1266,17 @@ if __name__ == '__main__':
         oversample_options = [True]
         # oversample_options = [True, False]
 
+        # Zurich did not use weight decay
         weight_decays = [0] # 4: 0.002, 0: 97.8, 94.2
         # I explored weight decays only for the top small_best model. found 0 to be best for 0.002 lr
+
+        max_epochs = 50_000 #10_000, #14, # 18
 
         # This list holds all of the models that will be trained and evaluated.
         # models = [cnn1, zurich, smallcnn1_1, smallcnn1_2, smallcnn2, smallcnn2_1,
         #           smallcnn2_2, smallcnn2_3, smallcnn2_4, smallcnn2_6, smallcnn3,
         #           smallcnn3_1]
-        models = [small_best_updated]
+        models = [small_best_updated] # small_best_updated, zurich
 
         for model in models:
             model.to('cuda')
@@ -1281,8 +1298,8 @@ if __name__ == '__main__':
                                 # To try to get the first batch to prove it is the same as Zurich
                                 # first_batch = next(iter(trainloader))
                                 # data,labels = first_batch
-                                # data_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_data.npy"
-                                # labels_path = "/Users/Sam/OneDrive/Desktop/my_first_batch_labels.npy"
+                                # data_path = "/Users/<name redacted for submission purposes>/OneDrive/Desktop/my_first_batch_data.npy"
+                                # labels_path = "/Users/<name redacted for submission purposes>/OneDrive/Desktop/my_first_batch_labels.npy"
                                 # np.save(data_path, data.numpy())
                                 # np.save(labels_path, labels.numpy())
 
@@ -1292,7 +1309,7 @@ if __name__ == '__main__':
                                     test = test,
                                     k_folds = k_folds,
                                     k_iters = k_iters,
-                                    epochs = 18, #10_000, #14, # 18
+                                    epochs = max_epochs,
                                     oversample = oversample,
                                     optimizer = torch.optim.Adam(
                                         model.parameters(),
@@ -1309,7 +1326,7 @@ if __name__ == '__main__':
                                     track_fold_epochs = False,
                                     track_test_epochs = False,
                                     num_classes = num_classes,
-                                    results_file_name='smallbestresults.csv'
+                                    results_file_name='zurich_results.csv'
                                 )
                                 
                                 print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
@@ -1321,8 +1338,8 @@ if __name__ == '__main__':
         # TensorFlow backend" to terminal may be misleading if AutoKeras is not
         # being used, and 2) it takes up to 10 seconds to import on my machine.
 
-        import autokeras as ak
-        from tensorflow.keras.models import load_model
+        # import autokeras as ak
+        # from tensorflow.keras.models import load_model
 
 # COMMENTED SINCE train, test already loaded right away
         # train = pd.read_csv(config['train_path'], sep=',')
