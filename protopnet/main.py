@@ -27,6 +27,7 @@ import train_and_test as tnt
 # from preprocess import mean, std, preprocess_input_function
 import sys
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import precision_score, recall_score, f1_score
 from sklearn.preprocessing import LabelEncoder
 
 # adding the parent folder to the system path so we can import from it
@@ -90,8 +91,8 @@ config = {
             'b':'v', 'd':'h', 'h':'d', 'v':'b',
             's':'w', 'w':'s', 'n':'n', 'z':'z'},
     'raw_data_path': '../datasets/v4_combined_reference_sequences.csv',
-    'train_path': '../datasets/train_oversampled_same_as_zurich.csv',
-    'test_path': '../datasets/test_same_as_zurich.csv',
+    'train_path': '../datasets/train_same_as_zurich_oversampled_t70_noise-0_thresh-2.csv',
+    'test_path': '../datasets/test_same_as_zurich.csv', # may optionally be overridden later
     # 'train_path': "../datasets/train_oversampled_t70_noise-0_thresh-2.csv", #'../datasets/train_dup.csv',
         # for training the protopnet, noise is added online *during* training,
         # not before in the csv. so, always use noise-0. Also, use train_dup.csv
@@ -187,20 +188,20 @@ elif train_noise == 2:
 # Either 
 # 1. add online augmentation to the test set by using the three 'if' stmts below, OR
 # 2. use a CSV with noise already added by uncommenting the single line below
-# config['test_path'] = f'../datasets/test_t70_noise-{test_noise}_thresh-2.csv'
+config['test_path'] = f'../datasets/test_same_as_zurich_t70_noise-{test_noise}_thresh-2.csv'
 
-if test_noise == 0:
-    config['testRandomInsertions'] = [0, 0]
-    config['testRandomDeletions'] =  [0, 0]
-    config['testMutationRate'] =  0
-elif test_noise == 1:
-    config['testRandomInsertions'] =  [1, 1]
-    config['testRandomDeletions'] =  [1, 1]
-    config['testMutationRate'] =  0.02
-elif test_noise == 2:
-    config['testRandomInsertions'] =  [2, 2]
-    config['testRandomDeletions'] =  [2, 2]
-    config['testMutationRate'] =  0.04
+# if test_noise == 0:
+#     config['testRandomInsertions'] = [0, 0]
+#     config['testRandomDeletions'] =  [0, 0]
+#     config['testMutationRate'] =  0
+# elif test_noise == 1:
+#     config['testRandomInsertions'] =  [1, 1]
+#     config['testRandomDeletions'] =  [1, 1]
+#     config['testMutationRate'] =  0.02
+# elif test_noise == 2:
+#     config['testRandomInsertions'] =  [2, 2]
+#     config['testRandomDeletions'] =  [2, 2]
+#     config['testMutationRate'] =  0.04
 
 print(f"\nTraining on train_noise {train_noise} and test_noise {test_noise}\n")
 
@@ -370,7 +371,6 @@ pushloader = DataLoader(
     shuffle=False
 )
 
-from sklearn.metrics import precision_score, recall_score, f1_score
 
 def calculate_metrics(model, dataloader):
     all_labels = []
@@ -490,7 +490,7 @@ for trial in range(num_trials):
     # These two are also hyperparameters. Feel free to add more values to try.
     # end_epoch = params['push_start'] + params['push_gap'] * params['num_pushes']-1
     num_ptypes_per_class = [3] #random.randint(1, 3)
-    ptype_length = [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35] # BEST 8/4/24: [5] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
+    ptype_length = [5] # [1, 3, 5, 7, 9, 11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31, 33, 35] # BEST 8/4/24: [5] #[15] #[21, 25, 29] #[15, 17, 19, 21, 23, 25, 27, 29] #random.choice([i for i in range(3, 30, 2)]) # not set, must be ODD
     hyperparameters = {
         # comments after the line indicate <name redacted for submission purposes>'s original settings
         # if the settings were not applicable, I write "not set".
@@ -580,6 +580,8 @@ for trial in range(num_trials):
     for iter, combination in enumerate(combinations, start=1):
         # comb_num=-1 indicates that there was no combination_number supplied,
         # which means that it isn't being run in parallel using an array.
+        # When evaluating different noise levels but not different hyperparameters,
+        # set comb_num to 1 (or I believe -1 would work, too).
         if args.comb_num != -1: 
             if args.comb_num != iter:
                 continue
