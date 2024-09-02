@@ -23,7 +23,7 @@ echo "SLURM_ARRAY_TASK_MAX: $SLURM_ARRAY_TASK_MAX"
 echo "SLURM_ARRAY_TASK_MIN: $SLURM_ARRAY_TASK_MIN"
 
 source ../eDNA_env/bin/activate
-cd protopnet
+# cd protopnet
 
 echo "==========================================="
 pwd; hostname; date;
