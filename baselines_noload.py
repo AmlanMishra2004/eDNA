@@ -114,13 +114,13 @@ def train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending, port
     results_df = pd.DataFrame()
     for p in portions:
         print(f"Training XGBoost model, portion={p}.", flush=True)
-        xgb_model = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss',
+        xgb_model = XGBClassifier(eval_metric='mlogloss',
                                     random_state=None, #=random.randint(1, sys.maxsize)
                                     seed=random.randint(1, sys.maxsize),
                                     colsample_bytree=p,
                                     colsample_bylevel=p,
                                     colsample_bynode=p,
-                                    tree_method='gpu_hist', gpu_id=0) # to use GPU to make it faster!
+                                    tree_method='hist', device='cuda') # to use GPU to make it faster!
         xgb_model.fit(X_train, y_train)
         y_train_pred = xgb_model.predict(X_train)
         y_test_pred = xgb_model.predict(X_test)
