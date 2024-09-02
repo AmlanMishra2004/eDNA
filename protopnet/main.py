@@ -187,8 +187,11 @@ elif train_noise == 2:
 
 # Either 
 # 1. add online augmentation to the test set by using the three 'if' stmts below, OR
-# 2. use a CSV with noise already added by uncommenting the single line below
+# 2. use a CSV with noise already added by uncommenting the four lines below
 config['test_path'] = f'../datasets/test_same_as_zurich_t70_noise-{test_noise}_thresh-2.csv'
+config['testRandomInsertions'] = [0, 0]
+config['testRandomDeletions'] =  [0, 0]
+config['testMutationRate'] =  0
 
 # if test_noise == 0:
 #     config['testRandomInsertions'] = [0, 0]
