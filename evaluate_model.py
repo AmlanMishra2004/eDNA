@@ -730,8 +730,8 @@ if __name__ == '__main__':
                 'b':'v', 'd':'h', 'h':'d', 'v':'b',
                 's':'w', 'w':'s', 'n':'n', 'z':'z'},
         'data_path': './datasets/v4_combined_reference_sequences.csv',
-        'train_path': '../datasets/train_same_as_zurich_oversampled_t70_noise-0_thresh-2.csv',
-        'test_path': '../datasets/test_same_as_zurich.csv', # may optionally be overridden later
+        'train_path': './datasets/train_same_as_zurich_oversampled_t70_noise-0_thresh-2.csv',
+        'test_path': './datasets/test_same_as_zurich.csv', # may optionally be overridden later
         # 'train_path': './datasets/train_oversampled_t70_noise-0_thresh-2.csv',
         # 'test_path': './datasets/test_t70_noise-0_thresh-2.csv',
         'sep': ',',                       # separator character in the csv file
