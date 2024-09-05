@@ -53,7 +53,7 @@ echo "==========================================="
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 baselines_noload.py --train_noise $train_noise --test_noise $test_noise
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num -1 --train_noise $train_noise --test_noise $test_noise # use if evaluating different noises, not hyperparamers
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num $SLURM_ARRAY_TASK_ID --train_noise 0 --test_noise 0 # use if evaluating different hyperparameters
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num $SLURM_ARRAY_TASK_ID --train_noise 1 --test_noise 0 # use if evaluating different hyperparameters
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
