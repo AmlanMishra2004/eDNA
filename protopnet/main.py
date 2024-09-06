@@ -514,10 +514,10 @@ for trial in range(num_trials):
         'latent_weight':            [0.7],                          # [0, 0.1, 0.2, 0.3, 0.4 ,0.5, 0.6, 0.7, 0.8, 0.9, 1],  #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
 
-        'num_warm_epochs':          [35+4*45],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
+        'num_warm_epochs':          [20+4*15, 20+3*15, 20+2*15, 20+15, 20],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
         'push_start':               [20],  #35                          # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'push_gap':                 [10, 40, 80],  #45                         # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
-        'num_pushes':               [3,4], #4                            # 3-5?
+        'push_gap':                 [15],  #45                         # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
+        'num_pushes':               [4], #4                            # 3-5?
 
         'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
         'clst_weight':              [-1],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
@@ -553,13 +553,13 @@ for trial in range(num_trials):
         'p4_warm_ptype_step_size':  [10],
         # push 5
         'p5_last_layer_lr':         [0.0001],
-        'p5_last_layer_iterations': [20],   #80
+        'p5_last_layer_iterations': [15],   #80
 
         'joint_weight_decay':       [0.000005],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-        'joint_lr_step_size':       [10],                           #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+        'joint_lr_step_size':       [5, 10],                           #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_gamma':              [0.7],
-        'joint_feature_lr':         [0.0001],                           #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
-        'joint_ptype_lr':           [0.02]                             #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
+        'joint_feature_lr':         [0.0001, 0.001],   #0.0001                        #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
+        'joint_ptype_lr':           [0.01, 0.001]   #0.02                          #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
     }
 
     hyperparameters['p0_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p0_warm_ptype_step_size']]
