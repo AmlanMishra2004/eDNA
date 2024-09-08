@@ -514,7 +514,7 @@ for trial in range(num_trials):
         'latent_weight':            [0.7],                          # [0, 0.1, 0.2, 0.3, 0.4 ,0.5, 0.6, 0.7, 0.8, 0.9, 1],  #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
 
-        'num_warm_epochs':          [20+4*15, 20+3*15, 20+2*15, 20+15, 20],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
+        'num_warm_epochs':          [20+2*15],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
         'push_start':               [20],  #35                          # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'push_gap':                 [15],  #45                         # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
         'num_pushes':               [4], #4                            # 3-5?
@@ -555,11 +555,11 @@ for trial in range(num_trials):
         'p5_last_layer_lr':         [0.0001],
         'p5_last_layer_iterations': [15],   #80
 
-        'joint_weight_decay':       [0.000005],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
-        'joint_lr_step_size':       [5, 10],                           #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
+        'joint_weight_decay':       [0, 0.000001, 0.00001, 0.0001, 0.001, 0.01],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+        'joint_lr_step_size':       [7],                           #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_gamma':              [0.7],
-        'joint_feature_lr':         [0.0001, 0.001],   #0.0001                        #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
-        'joint_ptype_lr':           [0.01, 0.001]   #0.02                          #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
+        'joint_feature_lr':         [0.0005],   #0.0001                        #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
+        'joint_ptype_lr':           [0.01]   #0.02                          #[0.1, 0.01, 0.001, 0.0001, 0.00001]  # 0.003
     }
 
     hyperparameters['p0_warm_ptype_step_size'] = [x*train.shape[0]//config['train_batch_size'] for x in hyperparameters['p0_warm_ptype_step_size']]
@@ -836,26 +836,26 @@ for trial in range(num_trials):
                 test_accuracy, test_precision, test_recall, test_f1 = calculate_metrics(ppnet, testloader)
                 print(f'\nTest Accuracy: {test_accuracy}\n Test Precision: {test_precision}\n Test Recall: {test_recall}\n Test F1: {test_f1}')
                 
-                # # Compute metrics for validation set
-                # print(f"Computing and storing results metrics")
-                # val_m_f1 = metrics.f1_score(val_actual, val_predicted, average='macro')
-                # val_m_recall = metrics.recall_score(val_actual, val_predicted, average='macro', zero_division=1)
-                # val_acc = metrics.accuracy_score(val_actual, val_predicted)
-                # val_m_precision = metrics.precision_score(val_actual, val_predicted, average='macro', zero_division=1)
-                # val_w_precision = metrics.precision_score(val_actual, val_predicted, average='weighted', zero_division=1)
-                # val_w_recall = metrics.recall_score(val_actual, val_predicted, average='weighted', zero_division=1)
-                # val_w_f1 = metrics.f1_score(val_actual, val_predicted, average='weighted')
-                # val_balanced_acc = metrics.balanced_accuracy_score(val_actual, val_predicted)
+                # Compute metrics for validation set
+                print(f"Computing and storing results metrics")
+                val_m_f1 = metrics.f1_score(val_actual, val_predicted, average='macro')
+                val_m_recall = metrics.recall_score(val_actual, val_predicted, average='macro', zero_division=1)
+                val_acc = metrics.accuracy_score(val_actual, val_predicted)
+                val_m_precision = metrics.precision_score(val_actual, val_predicted, average='macro', zero_division=1)
+                val_w_precision = metrics.precision_score(val_actual, val_predicted, average='weighted', zero_division=1)
+                val_w_recall = metrics.recall_score(val_actual, val_predicted, average='weighted', zero_division=1)
+                val_w_f1 = metrics.f1_score(val_actual, val_predicted, average='weighted')
+                val_balanced_acc = metrics.balanced_accuracy_score(val_actual, val_predicted)
 
-                # # Compute metrics for test set
-                # test_m_f1 = metrics.f1_score(test_actual, test_predicted, average='macro')
-                # test_m_recall = metrics.recall_score(test_actual, test_predicted, average='macro', zero_division=1)
-                # test_acc = metrics.accuracy_score(test_actual, test_predicted)
-                # test_m_precision = metrics.precision_score(test_actual, test_predicted, average='macro', zero_division=1)
-                # test_w_precision = metrics.precision_score(test_actual, test_predicted, average='weighted', zero_division=1)
-                # test_w_recall = metrics.recall_score(test_actual, test_predicted, average='weighted', zero_division=1)
-                # test_w_f1 = metrics.f1_score(test_actual, test_predicted, average='weighted')
-                # test_bal_acc = metrics.balanced_accuracy_score(test_actual, test_predicted)
+                # Compute metrics for test set
+                test_m_f1 = metrics.f1_score(test_actual, test_predicted, average='macro')
+                test_m_recall = metrics.recall_score(test_actual, test_predicted, average='macro', zero_division=1)
+                test_acc = metrics.accuracy_score(test_actual, test_predicted)
+                test_m_precision = metrics.precision_score(test_actual, test_predicted, average='macro', zero_division=1)
+                test_w_precision = metrics.precision_score(test_actual, test_predicted, average='weighted', zero_division=1)
+                test_w_recall = metrics.recall_score(test_actual, test_predicted, average='weighted', zero_division=1)
+                test_w_f1 = metrics.f1_score(test_actual, test_predicted, average='weighted')
+                test_bal_acc = metrics.balanced_accuracy_score(test_actual, test_predicted)
 
                 # print(f"Final val macro f1-score: {val_m_f1}")
                 # print(f"Final val micro accuracy: {val_acc}")
@@ -871,92 +871,92 @@ for trial in range(num_trials):
                 # print(f"\tSeparation: {test_ptype_results['separation']}")
                 # # print(f"Final test prototype results: {test_ptype_results}")
 
-                # results = {
-                #     # Results
-                #     'val_macro_f1-score': val_m_f1,
-                #     'val_macro_recall': val_m_recall, 
-                #     'val_micro_accuracy': val_acc,
-                #     'val_macro_precision': val_m_precision,
-                #     'val_weighted_precision': val_w_precision, 
-                #     'val_weighted_recall': val_w_recall,
-                #     'val_weighted_f1-score': val_w_f1,
-                #     'val_balanced_accuracy': val_balanced_acc,
-                #     'test_macro_f1-score': test_m_f1,
-                #     'test_macro_recall': test_m_recall,
-                #     'test_micro_accuracy': test_acc,
-                #     'test_macro_precision': test_m_precision,
-                #     'test_weighted_precision': test_w_precision, 
-                #     'test_weighted_recall': test_w_recall,
-                #     'test_weighted_f1-score': test_w_f1,
-                #     'test_balanced_accuracy': test_bal_acc,
-                #     'epochs_taken': epoch+1,
-                #     'test_time': test_ptype_results['time'],
-                #     # Prototype Results
-                #     'val_cross_ent': val_ptype_results['cross_ent'],
-                #     'val_cluster': val_ptype_results['cluster'],
-                #     'val_separation': val_ptype_results['separation'],
-                #     'val_avg_separation': val_ptype_results['avg_separation'],
-                #     'val_p_avg_pair_dist': val_ptype_results['p_avg_pair_dist'],
+                results = {
+                    # Results
+                    'val_macro_f1-score': val_m_f1,
+                    'val_macro_recall': val_m_recall, 
+                    'val_micro_accuracy': val_acc,
+                    'val_macro_precision': val_m_precision,
+                    'val_weighted_precision': val_w_precision, 
+                    'val_weighted_recall': val_w_recall,
+                    'val_weighted_f1-score': val_w_f1,
+                    'val_balanced_accuracy': val_balanced_acc,
+                    'test_macro_f1-score': test_m_f1,
+                    'test_macro_recall': test_m_recall,
+                    'test_micro_accuracy': test_acc,
+                    'test_macro_precision': test_m_precision,
+                    'test_weighted_precision': test_w_precision, 
+                    'test_weighted_recall': test_w_recall,
+                    'test_weighted_f1-score': test_w_f1,
+                    'test_balanced_accuracy': test_bal_acc,
+                    'epochs_taken': epoch+1,
+                    'test_time': test_ptype_results['time'],
+                    # Prototype Results
+                    'val_cross_ent': val_ptype_results['cross_ent'],
+                    'val_cluster': val_ptype_results['cluster'],
+                    'val_separation': val_ptype_results['separation'],
+                    'val_avg_separation': val_ptype_results['avg_separation'],
+                    'val_p_avg_pair_dist': val_ptype_results['p_avg_pair_dist'],
 
 
-                #     # Variable variables
-                #     'num_ptypes_per_class': params['prototype_shape'][0] / config['num_classes'], # num_ptypes_per_class,
-                #     'ptype_length': params['prototype_shape'][2], # ptype_length,
-                #     'prototype_shape': params['prototype_shape'],
-                #     'ptype_activation_fn': 'unused',
-                #     'latent_weight': params['latent_weight'],
-                #     # joint is not used currently
-                #     'joint_features_lr': params['joint_optimizer_lrs']['features'],
-                #     'joint_ptypes_lr': params['joint_optimizer_lrs']['prototype_vectors'],
-                #     'p0_warm_ptype_lr': params['p0_warm_ptype_lr'],
-                #     'p1_warm_ptype_lr': params['p1_warm_ptype_lr'],
-                #     'p2_warm_ptype_lr': params['p2_warm_ptype_lr'],
-                #     'p3_warm_ptype_lr': params['p3_warm_ptype_lr'],
-                #     'p1_last_layer_lr': params['p1_last_layer_lr'],
-                #     'p2_last_layer_lr': params['p2_last_layer_lr'],
-                #     'p3_last_layer_lr': params['p3_last_layer_lr'],
-                #     'p4_last_layer_lr': params['p4_last_layer_lr'],
-                #     'joint_weight_decay': params['joint_weight_decay'],
-                #     'joint_lr_step_size': params['joint_lr_step_size'],
-                #     'warm_lr_step_size': params['warm_lr_step_size'],
-                #     'cross_entropy_weight': params['coefs']['crs_ent'],
-                #     'cluster_weight': params['coefs']['clst'],
-                #     'separation_weight': params['coefs']['sep'],
-                #     'l1_weight': params['coefs']['l1'],
-                #     'num_warm_epochs': params['num_warm_epochs'],
-                #     'push_gap': params['push_gap'],
-                #     'push_start': params['push_start'],
-                #     'num_pushes': params['num_pushes'],
-                #     'last_layer_iterations': params['last_layer_iterations'],
+                    # Variable variables
+                    'num_ptypes_per_class': params['prototype_shape'][0] / config['num_classes'], # num_ptypes_per_class,
+                    'ptype_length': params['prototype_shape'][2], # ptype_length,
+                    'prototype_shape': params['prototype_shape'],
+                    'ptype_activation_fn': 'unused',
+                    'latent_weight': params['latent_weight'],
+                    # joint is not used currently
+                    'joint_features_lr': params['joint_optimizer_lrs']['features'],
+                    'joint_ptypes_lr': params['joint_optimizer_lrs']['prototype_vectors'],
+                    'p0_warm_ptype_lr': params['p0_warm_ptype_lr'],
+                    'p1_warm_ptype_lr': params['p1_warm_ptype_lr'],
+                    'p2_warm_ptype_lr': params['p2_warm_ptype_lr'],
+                    'p3_warm_ptype_lr': params['p3_warm_ptype_lr'],
+                    'p1_last_layer_lr': params['p1_last_layer_lr'],
+                    'p2_last_layer_lr': params['p2_last_layer_lr'],
+                    'p3_last_layer_lr': params['p3_last_layer_lr'],
+                    'p4_last_layer_lr': params['p4_last_layer_lr'],
+                    'joint_weight_decay': params['joint_weight_decay'],
+                    'joint_lr_step_size': params['joint_lr_step_size'],
+                    'warm_lr_step_size': params['warm_lr_step_size'],
+                    'cross_entropy_weight': params['coefs']['crs_ent'],
+                    'cluster_weight': params['coefs']['clst'],
+                    'separation_weight': params['coefs']['sep'],
+                    'l1_weight': params['coefs']['l1'],
+                    'num_warm_epochs': params['num_warm_epochs'],
+                    'push_gap': params['push_gap'],
+                    'push_start': params['push_start'],
+                    'num_pushes': params['num_pushes'],
+                    'last_layer_iterations': params['last_layer_iterations'],
 
-                #     # Static Variables
-                #     'seq_count_thresh': config['seq_count_thresh'],           
-                #     'trainRandomInsertions': config['trainRandomInsertions'],  
-                #     'trainRandomDeletions': config['trainRandomDeletions'],  
-                #     'trainMutationRate': config['trainMutationRate'],      
-                #     'oversample': config['oversample'],               
-                #     'encoding_mode': config['encoding_mode'],    
-                #     'push_encoding_mode': config['push_encoding_mode'],  
-                #     'applying_on_raw_data': config['applying_on_raw_data'],
-                #     'load_existing_train_test': config['load_existing_train_test'], 
-                #     'train_batch_size': config['train_batch_size'], 
-                #     'test_batch_size': config['test_batch_size'],
-                #     'num_classes': config['num_classes'],
-                #     'seq_target_length': config['seq_target_length'],   
-                #     'addTagAndPrimer': config['addTagAndPrimer'],
-                #     'addRevComplements': config['addRevComplements'],
-                #     'val_portion_of_train': val_portion,
-                #     # 'patience': early_stopper.patience,
-                #     # 'min_pc_improvement': early_stopper.min_pct_improvement,
-                # }
-                # utils.update_results(
-                #     results,
-                #     compare_cols='ppn',
-                #     model=ppnet_multi,
-                #     filename='search_for_warm_improvement_3_18_24.csv',
-                #     save_model_dir = None
-                #     # save_model_dir='saved_ppn_models'
-                # )
+                    # Static Variables
+                    'seq_count_thresh': config['seq_count_thresh'],           
+                    'trainRandomInsertions': config['trainRandomInsertions'],  
+                    'trainRandomDeletions': config['trainRandomDeletions'],  
+                    'trainMutationRate': config['trainMutationRate'],      
+                    'oversample': config['oversample'],               
+                    'encoding_mode': config['encoding_mode'],    
+                    'push_encoding_mode': config['push_encoding_mode'],  
+                    'applying_on_raw_data': config['applying_on_raw_data'],
+                    'load_existing_train_test': config['load_existing_train_test'], 
+                    'train_batch_size': config['train_batch_size'], 
+                    'test_batch_size': config['test_batch_size'],
+                    'num_classes': config['num_classes'],
+                    'seq_target_length': config['seq_target_length'],   
+                    'addTagAndPrimer': config['addTagAndPrimer'],
+                    'addRevComplements': config['addRevComplements'],
+                    'val_portion_of_train': val_portion,
+                    # 'patience': early_stopper.patience,
+                    # 'min_pc_improvement': early_stopper.min_pct_improvement,
+                }
+                utils.update_results(
+                    results,
+                    compare_cols='ppn',
+                    model=ppnet_multi,
+                    filename='ppn_joint_weight_decay_search_9_8_24.csv',
+                    save_model_dir = None
+                    # save_model_dir='saved_ppn_models'
+                )
                 break # for early stopping
 
             elif epoch >= params['push_start'] and (epoch - params['push_start']) % params['push_gap'] == 0:

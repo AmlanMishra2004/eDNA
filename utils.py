@@ -1,5 +1,5 @@
 # (c) 2022 ETH Zürich, Switzerland
-# (c) 2023 Sam Waggoner
+# (c) 2023 <name redacted for submission purposes>
 # License: AGPLv3
 
 """This file contains functions that are used by evaluate_model.py and
@@ -16,7 +16,7 @@ include: add_reverse_complements(), oversample_underrepresented_species(),
 add_tag_and_primer(), and stratified_split(). Zürich's function indel_mut() was
 broken down into add_random_insertions(), apply_random_deletions(), and
 apply_random_mutations(). These functions are copyright 2022 ETH Zürich,
-Switzerland. All functions not included in this list are written by Sam
+Switzerland. All functions not included in this list are written by <name redacted for submission purposes>
 Waggoner.
 """
 
@@ -32,7 +32,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import pandas as pd
-import tensorflow as tf
+# import tensorflow as tf
 import torch
 import time
 from sklearn.feature_extraction.text import CountVectorizer
@@ -41,8 +41,8 @@ from sklearn.metrics import classification_report, roc_auc_score
 from sklearn.metrics import accuracy_score, balanced_accuracy_score
 from sklearn.metrics import precision_score, recall_score, f1_score
 
-random.seed(43)
-np.random.seed(43)
+# random.seed(43)
+# np.random.seed(43)
 
 
 # PREPROCESSING ---------------------------------------------------------------
@@ -820,10 +820,9 @@ def update_results(results, compare_cols, model=None, filename='results.csv',
     else:
         df = pd.DataFrame(columns=list(results.keys()))
 
-    # delete these three lines and uncomment below if you want to exclude saving duplicate rows
-    warnings.filterwarnings('ignore', category=FutureWarning)
-    df = df.append(pd.Series(results), ignore_index=True) 
-    warnings.filterwarnings('default', category=FutureWarning)
+    # delete this line and uncomment below if you want to exclude saving duplicate rows
+    df = pd.concat([df, pd.DataFrame([results])], ignore_index=True)
+    
     # idx = check_hyperparam_originality(results, compare_cols, filename)
 
     # # If the model and hyperparameters haven't been tried before, add a new row
