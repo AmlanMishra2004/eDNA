@@ -953,7 +953,7 @@ for trial in range(num_trials):
                     results,
                     compare_cols='ppn',
                     model=ppnet_multi,
-                    filename='ppn_joint_weight_decay_search_9_8_24.csv',
+                    filename='ppn_last_layer_iterations_search_9_10_24.csv',
                     save_model_dir = None
                     # save_model_dir='saved_ppn_models'
                 )
