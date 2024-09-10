@@ -906,8 +906,8 @@ for trial in range(num_trials):
                     'ptype_activation_fn': 'unused',
                     'latent_weight': params['latent_weight'],
                     # joint is not used currently
-                    'joint_features_lr': params['joint_optimizer_lrs']['features'],
-                    'joint_ptypes_lr': params['joint_optimizer_lrs']['prototype_vectors'],
+                    # 'joint_features_lr': params['joint_optimizer_lrs']['features'],
+                    # 'joint_ptypes_lr': params['joint_optimizer_lrs']['prototype_vectors'],
                     'p0_warm_ptype_lr': params['p0_warm_ptype_lr'],
                     'p1_warm_ptype_lr': params['p1_warm_ptype_lr'],
                     'p2_warm_ptype_lr': params['p2_warm_ptype_lr'],
@@ -927,7 +927,12 @@ for trial in range(num_trials):
                     'push_gap': params['push_gap'],
                     'push_start': params['push_start'],
                     'num_pushes': params['num_pushes'],
-                    'last_layer_iterations': params['last_layer_iterations'],
+                    'p0_last_layer_iterations': params['p0_last_layer_iterations'],
+                    'p1_last_layer_iterations': params['p1_last_layer_iterations'],
+                    'p2_last_layer_iterations': params['p2_last_layer_iterations'],
+                    'p3_last_layer_iterations': params['p3_last_layer_iterations'],
+                    'p4_last_layer_iterations': params['p4_last_layer_iterations'],
+                    'p5_last_layer_iterations': params['p5_last_layer_iterations'],
 
                     # Static Variables
                     'seq_count_thresh': config['seq_count_thresh'],           
