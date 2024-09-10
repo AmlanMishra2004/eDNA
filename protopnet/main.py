@@ -954,12 +954,12 @@ for trial in range(num_trials):
                     # 'patience': early_stopper.patience,
                     # 'min_pc_improvement': early_stopper.min_pct_improvement,
                 }
+                # moved to later in case it is unsuccessful
                 utils.update_results(
                     results,
                     compare_cols='ppn',
                     model=ppnet_multi,
-                    filename='ppn_last_layer_iterations_search_9_10_24.csv',
-                    save_model_dir = None
+                    filename='ppn_last_layer_iterations_search_9_10_24.csv'
                     # save_model_dir='saved_ppn_models'
                 )
                 break # for early stopping
