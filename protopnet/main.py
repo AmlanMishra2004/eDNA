@@ -514,7 +514,7 @@ for trial in range(num_trials):
         'latent_weight':            [0.7],                          # [0, 0.1, 0.2, 0.3, 0.4 ,0.5, 0.6, 0.7, 0.8, 0.9, 1],  #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
 
-        'num_warm_epochs':          [20+2*15],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
+        'num_warm_epochs':          [20+3*15],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
         'push_start':               [20],  #35                          # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
         'push_gap':                 [15],  #45                         # 35, 17 # random.randint(10, 20)# 1_000_000 # not set
         'num_pushes':               [4], #4                            # 3-5?
@@ -529,33 +529,33 @@ for trial in range(num_trials):
         'p0_warm_ptype_step_size':  [25],                            # train_shape[0] is 780, train_batch_size is 156 #20 #random.randint(1, 20) # not set, how many BATCHES to cover before updating lr
         # push 1
         'p1_last_layer_lr':         [0.001],                        #GOOD [0.5, 0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001, 0.00005], #[0.5, 0.01, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001], # 0.001 was used, best? idk #random.uniform(0.0001, 0.001) # <name redacted for submission purposes>: 0.02, OG: 0.002
-        'p1_last_layer_iterations': [15],   #80                        #GOOD 80-85 (based off jobs. changed based off visuals) for 0.001, 215 for 0.00075
+        'p1_last_layer_iterations': [15, 100],   #80                        #GOOD 80-85 (based off jobs. changed based off visuals) for 0.001, 215 for 0.00075
         'p1_warm_ptype_lr':         [0.05],                         # the warm prototype lr for after the first push
         'p1_warm_ptype_gamma':      [0.9],
         'p1_warm_ptype_step_size':  [10],
         # push 2
         'p2_last_layer_lr':         [0.008],                            #[0.00005, 0.0001, 0.0005, 0.001, 0.005, 0.01, 0.05, 0.1, 0.5],
-        'p2_last_layer_iterations': [20],    # 80                       #
+        'p2_last_layer_iterations': [20, 100],    # 80                       #
         'p2_warm_ptype_lr':         [0.05],                          # the warm prototype lr for after the second push
         'p2_warm_ptype_gamma':      [0.9],                          # 0.9, every 10
         'p2_warm_ptype_step_size':  [10],
         # push 3
         'p3_last_layer_lr':         [0.01],
-        'p3_last_layer_iterations': [20],     #80                       # 
+        'p3_last_layer_iterations': [20, 100],     #80                       # 
         'p3_warm_ptype_lr':         [0.025],                         # the warm prototype lr for after the third push
         'p3_warm_ptype_gamma':      [0.9],
         'p3_warm_ptype_step_size':  [10],
         # push 4
         'p4_last_layer_lr':         [0.0005],
-        'p4_last_layer_iterations': [20],     #80                      # 
+        'p4_last_layer_iterations': [20, 100],     #80                      # 
         'p4_warm_ptype_lr':         [0.02],                         # the warm prototype lr for after the third push
         'p4_warm_ptype_gamma':      [0.9],
         'p4_warm_ptype_step_size':  [10],
         # push 5
         'p5_last_layer_lr':         [0.0001],
-        'p5_last_layer_iterations': [15],   #80
+        'p5_last_layer_iterations': [15, 100],   #80
 
-        'joint_weight_decay':       [0, 0.000001, 0.00001, 0.0001, 0.001, 0.01],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
+        'joint_weight_decay':       [0.000005],                           #random.uniform(0, 0.01) # 0.001, large number penalizes large weights
         'joint_lr_step_size':       [7],                           #random.randint(1, 20) # not set, 20 is arbitrary and may or may not be greater than the number of epochs
         'joint_gamma':              [0.7],
         'joint_feature_lr':         [0.0005],   #0.0001                        #[0.1, 0.01, 0.001, 0.0001, 0.00001], # should be lower than ptype lr 0.003
