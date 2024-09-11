@@ -476,7 +476,7 @@ backbone.load_state_dict(torch.load(model_path))
 # this is the number of times you want to repeat either the
 # grid search below, or the random search below.
 #######################
-num_trials = 2
+num_trials = 3
 #######################
 val_accs = []
 test_accs = []
@@ -918,7 +918,7 @@ for trial in range(num_trials):
                     'p4_last_layer_lr': params['p4_last_layer_lr'],
                     'joint_weight_decay': params['joint_weight_decay'],
                     'joint_lr_step_size': params['joint_lr_step_size'],
-                    'warm_lr_step_size': params['warm_lr_step_size'],
+                    # 'warm_lr_step_size': params['warm_lr_step_size'],
                     'cross_entropy_weight': params['coefs']['crs_ent'],
                     'cluster_weight': params['coefs']['clst'],
                     'separation_weight': params['coefs']['sep'],
