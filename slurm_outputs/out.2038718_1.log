@@ -1,0 +1,544 @@
+SLURM_JOB_ID: 2038719
+SLURM_ARRAY_JOB_ID: 2038718
+SLURM_ARRAY_TASK_ID: 1
+SLURM_ARRAY_TASK_COUNT: 32
+SLURM_ARRAY_TASK_MAX: 32
+SLURM_ARRAY_TASK_MIN: 1
+===========================================
+/home/swaggoner/eDNA/protopnet
+grtx-1.cluster
+Tue Sep 10 07:06:39 EDT 2024
+===========================================
+13:4: not a valid test operator: (
+13:4: not a valid test operator: 525.85.12
+
+=============
+== PyTorch ==
+=============
+
+NVIDIA Release 23.09 (build 69180607)
+PyTorch Version 2.1.0a0+32f93b1
+
+Container image Copyright (c) 2023, NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+
+Copyright (c) 2014-2023 Facebook Inc.
+Copyright (c) 2011-2014 Idiap Research Institute (Ronan Collobert)
+Copyright (c) 2012-2014 Deepmind Technologies    (Koray Kavukcuoglu)
+Copyright (c) 2011-2012 NEC Laboratories America (Koray Kavukcuoglu)
+Copyright (c) 2011-2013 NYU                      (Clement Farabet)
+Copyright (c) 2006-2010 NEC Laboratories America (Ronan Collobert, Leon Bottou, Iain Melvin, Jason Weston)
+Copyright (c) 2006      Idiap Research Institute (Samy Bengio)
+Copyright (c) 2001-2004 Idiap Research Institute (Ronan Collobert, Samy Bengio, Johnny Mariethoz)
+Copyright (c) 2015      Google Inc.
+Copyright (c) 2015      Yangqing Jia
+Copyright (c) 2013-2016 The Caffe contributors
+All rights reserved.
+
+Various files include modifications (c) NVIDIA CORPORATION & AFFILIATES.  All rights reserved.
+
+This container image and its contents are governed by the NVIDIA Deep Learning Container License.
+By pulling and using the container, you accept the terms and conditions of this license:
+https://developer.nvidia.com/ngc/nvidia-deep-learning-container-license
+
+WARNING: CUDA Minor Version Compatibility mode ENABLED.
+  Using driver version 525.85.12 which has support for CUDA 12.0.  This container
+  was built with CUDA 12.2 and will be run in Minor Version Compatibility mode.
+  CUDA Forward Compatibility is preferred over Minor Version Compatibility for use
+  with this container but was unavailable:
+  [[]]
+  See https://docs.nvidia.com/deploy/cuda-compatibility/ for details.
+
+NOTE: Mellanox network driver detected, but NVIDIA peer memory driver not
+      detected.  Multi-node communication performance may be reduced.
+
+Available CUDA devices: 0
+comb_num: 1
+arr_job_id: 2038718
+job_id: -1
+
+Training on train_noise 1 and test_noise 0
+Training on ../datasets/train_same_as_zurich_oversampled_t70_noise-0_thresh-2.csv
+Testing on ../datasets/test_same_as_zurich_t70_noise-0_thresh-2.csv
+testRandomInsertions: [0, 0]
+testRandomDeletions: [0, 0]
+testMutationRate: 0
+trainRandomInsertions: [0, 2]
+trainRandomDeletions: [0, 2]
+trainMutationRate: 0.05
+All classes in the test set are present in the training set.
+Before oversampling:
+------------------------------------------------------------
+Number of sequences:                                      780
+Number of distinct species_cat                            156
+Average number of sequences per species_cat             5.00
+Range in the number of sequences per species_cat           0
+------------------------------------------------------------
+Oversampled shape: (780, 10)
+
+
+Trial 1
+
+training set size: 780
+push set size: 936
+test set size: 175
+train batch size: 156
+test batch size: 35
+Hyperparameters: {'prototype_shape': [(468, 520, 5)], 'latent_weight': [0.7], 'num_warm_epochs': [65], 'push_start': [20], 'push_gap': [15], 'num_pushes': [4], 'crs_ent_weight': [1], 'clst_weight': [-1], 'sep_weight': [0.3], 'l1_weight': [0.0001], 'p0_warm_ptype_lr': [0.05], 'p0_warm_ptype_gamma': [0.75], 'p0_warm_ptype_step_size': [125], 'p1_last_layer_lr': [0.001], 'p1_last_layer_iterations': [15, 100], 'p1_warm_ptype_lr': [0.05], 'p1_warm_ptype_gamma': [0.9], 'p1_warm_ptype_step_size': [50], 'p2_last_layer_lr': [0.008], 'p2_last_layer_iterations': [20, 100], 'p2_warm_ptype_lr': [0.05], 'p2_warm_ptype_gamma': [0.9], 'p2_warm_ptype_step_size': [50], 'p3_last_layer_lr': [0.01], 'p3_last_layer_iterations': [20, 100], 'p3_warm_ptype_lr': [0.025], 'p3_warm_ptype_gamma': [0.9], 'p3_warm_ptype_step_size': [50], 'p4_last_layer_lr': [0.0005], 'p4_last_layer_iterations': [20, 100], 'p4_warm_ptype_lr': [0.02], 'p4_warm_ptype_gamma': [0.9], 'p4_warm_ptype_step_size': [50], 'p5_last_layer_lr': [0.0001], 'p5_last_layer_iterations': [15, 100], 'joint_weight_decay': [5e-06], 'joint_lr_step_size': [7], 'joint_gamma': [0.7], 'joint_feature_lr': [0.0005], 'joint_ptype_lr': [0.01]}
+
+
+Checking hyperparameters: {'p1_last_layer_iterations': [15, 100], 'p2_last_layer_iterations': [20, 100], 'p3_last_layer_iterations': [20, 100], 'p4_last_layer_iterations': [20, 100], 'p5_last_layer_iterations': [15, 100]}
+
+
+Performing combination number 1 trial 0
+
+
+Exploring 32 hyperparameter combination(s) for grid search.
+
+
+Attempting combination 1/32:
+prototype_shape: (468, 520, 5)
+latent_weight: 0.7
+num_warm_epochs: 65
+push_start: 20
+push_gap: 15
+num_pushes: 4
+crs_ent_weight: 1
+clst_weight: -1
+sep_weight: 0.3
+l1_weight: 0.0001
+p0_warm_ptype_lr: 0.05
+p0_warm_ptype_gamma: 0.75
+p0_warm_ptype_step_size: 125
+p1_last_layer_lr: 0.001
+p1_last_layer_iterations: 15
+p1_warm_ptype_lr: 0.05
+p1_warm_ptype_gamma: 0.9
+p1_warm_ptype_step_size: 50
+p2_last_layer_lr: 0.008
+p2_last_layer_iterations: 20
+p2_warm_ptype_lr: 0.05
+p2_warm_ptype_gamma: 0.9
+p2_warm_ptype_step_size: 50
+p3_last_layer_lr: 0.01
+p3_last_layer_iterations: 20
+p3_warm_ptype_lr: 0.025
+p3_warm_ptype_gamma: 0.9
+p3_warm_ptype_step_size: 50
+p4_last_layer_lr: 0.0005
+p4_last_layer_iterations: 20
+p4_warm_ptype_lr: 0.02
+p4_warm_ptype_gamma: 0.9
+p4_warm_ptype_step_size: 50
+p5_last_layer_lr: 0.0001
+p5_last_layer_iterations: 15
+joint_weight_decay: 5e-06
+joint_lr_step_size: 7
+joint_gamma: 0.7
+joint_feature_lr: 0.0005
+joint_ptype_lr: 0.01
+
+
+
+End epoch: 79
+Val acc before epoch 0: 0.007142857142857143
+Warm optimizer lr: 0.05
+Val acc before epoch 1: 0.08571428571428572
+Warm optimizer lr: 0.05
+Val acc before epoch 2: 0.19285714285714287
+Warm optimizer lr: 0.05
+Val acc before epoch 3: 0.32142857142857145
+Warm optimizer lr: 0.05
+Val acc before epoch 4: 0.4785714285714286
+Warm optimizer lr: 0.05
+Val acc before epoch 5: 0.6357142857142857
+Warm optimizer lr: 0.05
+Val acc before epoch 6: 0.7
+Warm optimizer lr: 0.05
+Val acc before epoch 7: 0.7785714285714286
+Warm optimizer lr: 0.05
+Val acc before epoch 8: 0.8
+Warm optimizer lr: 0.05
+Val acc before epoch 9: 0.8
+Warm optimizer lr: 0.05
+Val acc before epoch 10: 0.7785714285714286
+Warm optimizer lr: 0.05
+Val acc before epoch 11: 0.7642857142857142
+Warm optimizer lr: 0.05
+Val acc before epoch 12: 0.7714285714285715
+Warm optimizer lr: 0.05
+Val acc before epoch 13: 0.7714285714285715
+Warm optimizer lr: 0.05
+Val acc before epoch 14: 0.7928571428571428
+Warm optimizer lr: 0.05
+Val acc before epoch 15: 0.7571428571428571
+Warm optimizer lr: 0.05
+Val acc before epoch 16: 0.7714285714285715
+Warm optimizer lr: 0.05
+Val acc before epoch 17: 0.7714285714285715
+Warm optimizer lr: 0.05
+Val acc before epoch 18: 0.7714285714285715
+Warm optimizer lr: 0.05
+Val acc before epoch 19: 0.7857142857142857
+Warm optimizer lr: 0.05
+Val acc before epoch 20: 0.7928571428571428
+Push epoch at epoch 21.
+Final validation accuracy before push 1: 0.7928571428571428
+Push number 1
+
+
+
+
+
+
+
+
+
+
+
+
+After push, before retraining last layer:
+	Train acc: 0.5144230769230769
+	Train Cluster: 0.8688473701477051
+	Train Separation: 0.905144989490509
+(Directly after push 1) Val acc at iteration 0: 0.8071428571428572
+Retraining last layer: 
+Last layer lr: 0.001
+	Val acc at iteration 0: 0.7785714285714286
+	Val acc at iteration 1: 0.8357142857142857
+	Val acc at iteration 2: 0.8285714285714286
+	Val acc at iteration 3: 0.8357142857142857
+	Val acc at iteration 4: 0.8285714285714286
+	Val acc at iteration 5: 0.85
+	Val acc at iteration 6: 0.8285714285714286
+	Val acc at iteration 7: 0.8357142857142857
+	Val acc at iteration 8: 0.8285714285714286
+	Val acc at iteration 9: 0.8428571428571429
+	Val acc at iteration 10: 0.8428571428571429
+	Val acc at iteration 11: 0.85
+	Val acc at iteration 12: 0.8571428571428571
+	Val acc at iteration 13: 0.8785714285714286
+	Val acc at iteration 14: 0.8571428571428571
+Val acc before epoch 21: 0.8571428571428571
+Warm optimizer lr: 0.05
+Val acc before epoch 22: 0.9142857142857143
+Warm optimizer lr: 0.05
+Val acc before epoch 23: 0.9214285714285714
+Warm optimizer lr: 0.05
+Val acc before epoch 24: 0.9285714285714286
+Warm optimizer lr: 0.05
+Val acc before epoch 25: 0.9357142857142857
+Warm optimizer lr: 0.037500000000000006
+Val acc before epoch 26: 0.95
+Warm optimizer lr: 0.05
+Val acc before epoch 27: 0.9571428571428572
+Warm optimizer lr: 0.05
+Val acc before epoch 28: 0.9428571428571428
+Warm optimizer lr: 0.05
+Val acc before epoch 29: 0.95
+Warm optimizer lr: 0.05
+Val acc before epoch 30: 0.95
+Warm optimizer lr: 0.05
+Val acc before epoch 31: 0.9571428571428572
+Warm optimizer lr: 0.05
+Val acc before epoch 32: 0.9571428571428572
+Warm optimizer lr: 0.05
+Val acc before epoch 33: 0.9571428571428572
+Warm optimizer lr: 0.05
+Val acc before epoch 34: 0.95
+Warm optimizer lr: 0.05
+Val acc before epoch 35: 0.95
+Push epoch at epoch 36.
+Final validation accuracy before push 2: 0.95
+Push number 2
+
+
+
+
+
+
+
+
+
+
+
+
+After push, before retraining last layer:
+	Train acc: 0.6666666666666666
+	Train Cluster: 0.8771542906761169
+	Train Separation: 0.9113487005233765
+(Directly after push 2) Val acc at iteration 0: 0.8642857142857143
+Retraining last layer: 
+Last layer lr: 0.008
+	Val acc at iteration 0: 0.8642857142857143
+	Val acc at iteration 1: 0.8642857142857143
+	Val acc at iteration 2: 0.8857142857142857
+	Val acc at iteration 3: 0.8714285714285714
+	Val acc at iteration 4: 0.8714285714285714
+	Val acc at iteration 5: 0.8857142857142857
+	Val acc at iteration 6: 0.8857142857142857
+	Val acc at iteration 7: 0.8857142857142857
+	Val acc at iteration 8: 0.9142857142857143
+	Val acc at iteration 9: 0.9
+	Val acc at iteration 10: 0.9142857142857143
+	Val acc at iteration 11: 0.8928571428571429
+	Val acc at iteration 12: 0.9285714285714286
+	Val acc at iteration 13: 0.9
+	Val acc at iteration 14: 0.9428571428571428
+	Val acc at iteration 15: 0.9071428571428571
+	Val acc at iteration 16: 0.9142857142857143
+	Val acc at iteration 17: 0.9571428571428572
+	Val acc at iteration 18: 0.95
+	Val acc at iteration 19: 0.9285714285714286
+Val acc before epoch 36: 0.9285714285714286
+Warm optimizer lr: 0.05
+Val acc before epoch 37: 0.95
+Warm optimizer lr: 0.05
+Val acc before epoch 38: 0.95
+Warm optimizer lr: 0.05
+Val acc before epoch 39: 0.9428571428571428
+Warm optimizer lr: 0.05
+Val acc before epoch 40: 0.9571428571428572
+Warm optimizer lr: 0.05
+Val acc before epoch 41: 0.9571428571428572
+Warm optimizer lr: 0.05
+Val acc before epoch 42: 0.9571428571428572
+Warm optimizer lr: 0.05
+Val acc before epoch 43: 0.9642857142857143
+Warm optimizer lr: 0.05
+Val acc before epoch 44: 0.9642857142857143
+Warm optimizer lr: 0.05
+Val acc before epoch 45: 0.9642857142857143
+Warm optimizer lr: 0.05
+Val acc before epoch 46: 0.9714285714285714
+Warm optimizer lr: 0.05
+Val acc before epoch 47: 0.9714285714285714
+Warm optimizer lr: 0.05
+Val acc before epoch 48: 0.9714285714285714
+Warm optimizer lr: 0.05
+Val acc before epoch 49: 0.9714285714285714
+Warm optimizer lr: 0.05
+Val acc before epoch 50: 0.9714285714285714
+Push epoch at epoch 51.
+Final validation accuracy before push 3: 0.9714285714285714
+Push number 3
+
+
+
+
+
+
+
+
+
+
+
+
+After push, before retraining last layer:
+	Train acc: 0.8205128205128205
+	Train Cluster: 0.8578725457191467
+	Train Separation: 0.9027968287467957
+(Directly after push 3) Val acc at iteration 0: 0.9142857142857143
+Retraining last layer: 
+Last layer lr: 0.01
+	Val acc at iteration 0: 0.9071428571428571
+	Val acc at iteration 1: 0.9214285714285714
+	Val acc at iteration 2: 0.9214285714285714
+	Val acc at iteration 3: 0.9142857142857143
+	Val acc at iteration 4: 0.9357142857142857
+	Val acc at iteration 5: 0.95
+	Val acc at iteration 6: 0.9571428571428572
+	Val acc at iteration 7: 0.9285714285714286
+	Val acc at iteration 8: 0.9428571428571428
+	Val acc at iteration 9: 0.9285714285714286
+	Val acc at iteration 10: 0.95
+	Val acc at iteration 11: 0.9357142857142857
+	Val acc at iteration 12: 0.9428571428571428
+	Val acc at iteration 13: 0.9571428571428572
+	Val acc at iteration 14: 0.9357142857142857
+	Val acc at iteration 15: 0.9642857142857143
+	Val acc at iteration 16: 0.9428571428571428
+	Val acc at iteration 17: 0.9571428571428572
+	Val acc at iteration 18: 0.95
+	Val acc at iteration 19: 0.9428571428571428
+Val acc before epoch 51: 0.9428571428571428
+Warm optimizer lr: 0.025
+Val acc before epoch 52: 0.9642857142857143
+Warm optimizer lr: 0.018750000000000003
+Val acc before epoch 53: 0.9642857142857143
+Warm optimizer lr: 0.025
+Val acc before epoch 54: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 55: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 56: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 57: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 58: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 59: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 60: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 61: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 62: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 63: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 64: 0.9714285714285714
+Warm optimizer lr: 0.025
+Val acc before epoch 65: 0.9714285714285714
+Push epoch at epoch 66.
+Final validation accuracy before push 4: 0.9714285714285714
+Push number 4
+
+
+
+
+
+
+
+
+
+
+
+
+After push, before retraining last layer:
+	Train acc: 0.8942307692307693
+	Train Cluster: 0.863323199748993
+	Train Separation: 0.8981262445449829
+(Directly after push 4) Val acc at iteration 0: 0.95
+Retraining last layer: 
+Last layer lr: 0.0005
+	Val acc at iteration 0: 0.9642857142857143
+	Val acc at iteration 1: 0.9642857142857143
+	Val acc at iteration 2: 0.9642857142857143
+	Val acc at iteration 3: 0.9642857142857143
+	Val acc at iteration 4: 0.9642857142857143
+	Val acc at iteration 5: 0.9642857142857143
+	Val acc at iteration 6: 0.9642857142857143
+	Val acc at iteration 7: 0.9642857142857143
+	Val acc at iteration 8: 0.9642857142857143
+	Val acc at iteration 9: 0.9642857142857143
+	Val acc at iteration 10: 0.9642857142857143
+	Val acc at iteration 11: 0.9642857142857143
+	Val acc at iteration 12: 0.9714285714285714
+	Val acc at iteration 13: 0.9642857142857143
+	Val acc at iteration 14: 0.9642857142857143
+	Val acc at iteration 15: 0.9642857142857143
+	Val acc at iteration 16: 0.9642857142857143
+	Val acc at iteration 17: 0.9642857142857143
+	Val acc at iteration 18: 0.9642857142857143
+	Val acc at iteration 19: 0.9642857142857143
+Val acc before epoch 66: 0.9642857142857143
+Joint optimizer lr: 0.0005
+Joint optimizer lr: 0.01
+Val acc before epoch 67: 0.9714285714285714
+Joint optimizer lr: 0.00035
+Joint optimizer lr: 0.006999999999999999
+Val acc before epoch 68: 0.9714285714285714
+Joint optimizer lr: 0.000245
+Joint optimizer lr: 0.004899999999999999
+Val acc before epoch 69: 0.9714285714285714
+Joint optimizer lr: 0.000245
+Joint optimizer lr: 0.004899999999999999
+Val acc before epoch 70: 0.9714285714285714
+Joint optimizer lr: 0.0001715
+Joint optimizer lr: 0.003429999999999999
+Val acc before epoch 71: 0.9714285714285714
+Joint optimizer lr: 0.00012004999999999999
+Joint optimizer lr: 0.002400999999999999
+Val acc before epoch 72: 0.9714285714285714
+Joint optimizer lr: 8.403499999999999e-05
+Joint optimizer lr: 0.0016806999999999992
+Val acc before epoch 73: 0.9714285714285714
+Joint optimizer lr: 8.403499999999999e-05
+Joint optimizer lr: 0.0016806999999999992
+Val acc before epoch 74: 0.9714285714285714
+Joint optimizer lr: 5.882449999999999e-05
+Joint optimizer lr: 0.0011764899999999994
+Val acc before epoch 75: 0.9714285714285714
+Joint optimizer lr: 4.117714999999999e-05
+Joint optimizer lr: 0.0008235429999999996
+Val acc before epoch 76: 0.9714285714285714
+Joint optimizer lr: 4.117714999999999e-05
+Joint optimizer lr: 0.0008235429999999996
+Val acc before epoch 77: 0.9714285714285714
+Joint optimizer lr: 2.8824004999999994e-05
+Joint optimizer lr: 0.0005764800999999997
+Val acc before epoch 78: 0.9714285714285714
+Joint optimizer lr: 2.0176803499999996e-05
+Joint optimizer lr: 0.00040353606999999974
+Val acc before epoch 79: 0.9714285714285714
+Stopping after epoch 80.
+Final validation accuracy before push 5: 0.9714285714285714
+
+
+
+
+
+
+After push, before retraining last layer:
+	Train acc: 0.9182692307692307
+	Train Cluster: 0.8644836783409119
+	TrainSeparation: 0.9067427754402161
+(Directly after push 5) Val acc at iteration 0: 0.9642857142857143
+Retraining last layer
+Last layer lr: 0.0001
+	Train acc at iteration 1: 0.9150641025641025
+	Val acc at iteration 0: 0.9642857142857143
+	Train acc at iteration 2: 0.9086538461538461
+	Val acc at iteration 1: 0.9642857142857143
+	Train acc at iteration 3: 0.9182692307692307
+	Val acc at iteration 2: 0.9642857142857143
+	Train acc at iteration 4: 0.9198717948717948
+	Val acc at iteration 3: 0.9642857142857143
+	Train acc at iteration 5: 0.9102564102564102
+	Val acc at iteration 4: 0.9642857142857143
+	Train acc at iteration 6: 0.9102564102564102
+	Val acc at iteration 5: 0.9642857142857143
+	Train acc at iteration 7: 0.9118589743589743
+	Val acc at iteration 6: 0.9642857142857143
+	Train acc at iteration 8: 0.9326923076923077
+	Val acc at iteration 7: 0.9642857142857143
+	Train acc at iteration 9: 0.9326923076923077
+	Val acc at iteration 8: 0.9642857142857143
+	Train acc at iteration 10: 0.9166666666666666
+	Val acc at iteration 9: 0.9642857142857143
+	Train acc at iteration 11: 0.9214743589743589
+	Val acc at iteration 10: 0.9642857142857143
+	Train acc at iteration 12: 0.9375
+	Val acc at iteration 11: 0.9642857142857143
+	Train acc at iteration 13: 0.9262820512820513
+	Val acc at iteration 12: 0.9642857142857143
+	Train acc at iteration 14: 0.9102564102564102
+	Val acc at iteration 13: 0.9642857142857143
+	Train acc at iteration 15: 0.9310897435897436
+	Val acc at iteration 14: 0.9642857142857143
+/usr/local/lib/python3.10/dist-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/usr/local/lib/python3.10/dist-packages/sklearn/metrics/_classification.py:1344: UndefinedMetricWarning: Precision is ill-defined and being set to 0.0 in labels with no predicted samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+Getting final train, validation, and test accuracy after training.
+Calculating metrics
+
+Train Accuracy: 0.926923076923077
+ Train Precision: 0.9363324175824175
+ Train Recall: 0.9269230769230767
+ Train F1: 0.924692259307644
+
+Validation Accuracy: 0.967948717948718
+ Validation Precision: 0.9583333333333334
+ Validation Recall: 0.967948717948718
+ Validation F1: 0.9615384615384616
+
+Test Accuracy: 0.9314285714285714
+ Test Precision: 0.9038461538461539
+ Test Recall: 0.9294871794871795
+ Test F1: 0.9115384615384615
+Computing and storing results metrics
+Traceback (most recent call last):
+  File "/home/swaggoner/eDNA/protopnet/main.py", line 921, in <module>
+    'warm_lr_step_size': params['warm_lr_step_size'],
+KeyError: 'warm_lr_step_size'
