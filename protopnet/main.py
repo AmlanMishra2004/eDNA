@@ -476,7 +476,7 @@ backbone.load_state_dict(torch.load(model_path))
 # this is the number of times you want to repeat either the
 # grid search below, or the random search below.
 #######################
-num_trials = 3
+num_trials = 2
 #######################
 val_accs = []
 test_accs = []
@@ -515,14 +515,14 @@ for trial in range(num_trials):
         
 
         'num_warm_epochs':          [20+3*15],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set
-        'push_start':               [20],  #35                          # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
-        'push_gap':                 [45],   #45                         # 35, 17 #[15, 20, 25, 35, 40, 45, 50, 55, 60, 65, 75, 80, 85, 95, 100], # random.randint(10, 20)# 1_000_000 # not set
+        'push_start':               [20, 40, 60, 80],  #35                          # 37 35 for 0.01, 0.8,20. 13 for lr=0.1 #25, 38 #random.randint(20, 30) # 1_000_000 #random.randint(0, 10) # not set #10_000_000
+        'push_gap':                 [15, 30, 45, 60, 75, 90, 105],   #45                         # 35, 17 #[15, 20, 25, 35, 40, 45, 50, 55, 60, 65, 75, 80, 85, 95, 100], # random.randint(10, 20)# 1_000_000 # not set
         'num_pushes':               [4], #4                            # 3-5?
 
         'crs_ent_weight':           [1],                            # explore 3-4 powers of 2 in either direction
         'clst_weight':              [-1],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*12*-0.8, 1*12*-0.8, 0.1*12*-0.8], # OG: [12*-0.8], times 0.13, 0.25, 0.5, 1, 2, 4, 8, 16, 32 times this value, # 50 *-0.8 and 100 * 0.08
         'sep_weight':               [0.3],                      #[-1.0, -0.6, -0.2, 0.2, 0.6, 1.0],#[10*30*0.08, 1*30*0.08, 0.1*30*0.08], # OG: [30*0.08], go as high as 50x
-        'l1_weight':                [0.1, 0.01, 0.001, 0.0001, 0.00001, 0.000001, 0],  #0                     #[0, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005], [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
+        'l1_weight':                [0.00001],  #0                     #[0, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005], [0.0001, 0.0005, 0.001, 0.005, 0.01, 0.1, 0.5, 1], #[10, 1, 0.1, 0.01, 0.001],
         
         'p0_warm_ptype_lr':         [0.05],                          #GOOD [0.001, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                               # [0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5],                         # the warm prototype lr for before the first push 0.35 0.1 to 0.5 (0.4) #[0.5, 0.1, 0.05], # 0.7,0.07 #random.uniform(0.0001, 0.001) # 4e-2 
         'p0_warm_ptype_gamma':      [0.75],                          #[0.7, 0.75, 0.8, 0.83, 0.86, 0.9, 0.92, 0.94, 0.96, 0.98, 1],                                #[0.95, 0.9, 0.85, 0.8, 0.75, 0.7, 0.65, 0.6, 0.55, 0.5, 0.45, 0.4, 0.35, 0.3, 0.25, 0.2, 0.15, 0.1],                           #random.choice([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.8, 0.9, 1]) # 0.3
@@ -927,7 +927,7 @@ for trial in range(num_trials):
                     'push_gap': params['push_gap'],
                     'push_start': params['push_start'],
                     'num_pushes': params['num_pushes'],
-                    'p0_last_layer_iterations': params['p0_last_layer_iterations'],
+                    # 'p0_last_layer_iterations': params['p0_last_layer_iterations'],
                     'p1_last_layer_iterations': params['p1_last_layer_iterations'],
                     'p2_last_layer_iterations': params['p2_last_layer_iterations'],
                     'p3_last_layer_iterations': params['p3_last_layer_iterations'],
@@ -959,7 +959,7 @@ for trial in range(num_trials):
                     results,
                     compare_cols='ppn',
                     model=ppnet_multi,
-                    filename='ppn_l1_search_9_11_24.csv'
+                    filename='ppn_push_start_and_gap_search_9_12_24.csv'
                     # save_model_dir='saved_ppn_models'
                 )
                 break # for early stopping
