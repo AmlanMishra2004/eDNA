@@ -476,7 +476,7 @@ backbone.load_state_dict(torch.load(model_path))
 # this is the number of times you want to repeat either the
 # grid search below, or the random search below.
 #######################
-num_trials = 3
+num_trials = 5
 #######################
 val_accs = []
 test_accs = []
@@ -511,7 +511,7 @@ for trial in range(num_trials):
         # if the settings were not applicable, I write "not set".
 
         'prototype_shape':          [tuple(shape) for shape in [[config['num_classes']*ptypes, num_latent_channels+8, length] for ptypes in num_ptypes_per_class for length in ptype_length]], # not set
-        'latent_weight':            [0.7, 1],                          # [0, 0.1, 0.2, 0.3, 0.4 ,0.5, 0.6, 0.7, 0.8, 0.9, 1],  #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
+        'latent_weight':            [0, 0.3, 0.5, 0.7, 1],                          # [0, 0.1, 0.2, 0.3, 0.4 ,0.5, 0.6, 0.7, 0.8, 0.9, 1],  #random.choice([0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1]) # 0.8
         
 
         'num_warm_epochs':          [20+2*15],                        # [0, 35+1*45, 35+2*45, 35+3*45, 35+4*45, 35+5*45],                    # random.randint(0, 10) # not set

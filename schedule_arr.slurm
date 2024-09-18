@@ -10,7 +10,7 @@
 #SBATCH --time=96:00:00		# Time limit, hrs:min:sec
 #SBATCH --gres=gpu:2			# Request 1 gpu            
 #SBATCH --output=slurm_outputs/out.%A_%a.log    # job id is %j, array index is %a
-#SBATCH --array=1-2%2       # inclusive on both ranges. creates 500 jobs, do %15 at a time. creates a separate .out file for each
+#SBATCH --array=1-5%5       # inclusive on both ranges. creates 500 jobs, do %15 at a time. creates a separate .out file for each
 
 # Load versions of modules
 module load singularity
@@ -30,30 +30,31 @@ pwd; hostname; date;
 echo "==========================================="
 
 # Define the combinations of train_noise and test_noise
-# combinations=(
-#     "0 0"
-#     "0 1"
-#     "0 2"
-#     "1 0"
-#     "1 1"
-#     "1 2"
-#     "2 0"
-#     "2 1"
-#     "2 2"
-# )
+combinations=(
+    "0 0"
+    "0 1"
+    "0 2"
+    "1 0"
+    "1 1"
+    "1 2"
+    "2 0"
+    "2 1"
+    "2 2"
+)
 
-# # Get the combination for the current task
-# combination=${combinations[$SLURM_ARRAY_TASK_ID-1]}
-# train_noise=$(echo $combination | cut -d ' ' -f 1)
-# test_noise=$(echo $combination | cut -d ' ' -f 2)
+# Get the combination for the current task
+combination=${combinations[$SLURM_ARRAY_TASK_ID-1]}
+train_noise=$(echo $combination | cut -d ' ' -f 1)
+test_noise=$(echo $combination | cut -d ' ' -f 2)
 
-# echo "train_noise: $train_noise"
-# echo "test_noise: $test_noise"
+echo "train_noise: $train_noise"
+echo "test_noise: $test_noise"
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 baselines_noload.py --train_noise $train_noise --test_noise $test_noise
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num -1 --train_noise $train_noise --test_noise $test_noise # use if evaluating different noises, not hyperparamers
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num $SLURM_ARRAY_TASK_ID --train_noise 1 --test_noise 0 # use if evaluating different hyperparameters
+# singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num $SLURM_ARRAY_TASK_ID --train_noise 1 --test_noise 0 # use if evaluating different hyperparameters
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --arr_job_id $SLURM_ARRAY_JOB_ID --comb_num $SLURM_ARRAY_TASK_ID --train_noise $train_noise --test_noise $test_noise # use if evaluating different noises and hyperparamers
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
