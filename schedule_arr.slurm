@@ -5,7 +5,7 @@
 #SBATCH --job-name=back_to_old_hparams  		# Job name
 #SBATCH --cpus-per-task=5 		# Run on 5 cores per node
 #SBATCH --nodes=1			# Run on 1 node
-#SBATCH --partition=Penobscot		# Select partition
+#SBATCH --partition=haswell		# Select partition
 #SBATCH --mem=100gb			# Job memory request
 #SBATCH --time=96:00:00		# Time limit, hrs:min:sec
 #SBATCH --gres=gpu:1			# Request 1 gpu            
