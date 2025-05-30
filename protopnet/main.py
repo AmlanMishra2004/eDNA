@@ -38,6 +38,14 @@ import ppnet as ppn
 from dataset import Sequence_Data
 from torch.utils.data import DataLoader
 
+# for trial in range(num_trials):
+#   if the number of hyperparameter combinations > 1:
+#       if comb_num != -1:
+#           only do the comb_num-th iteration of hyperparameter combinations
+#       else (if comb_num == -1, which is default)
+#           do all of the hyperparameter combinations
+
+
 def conditionally_save_model(model, model_dir, arr_job_id, comb_num, accu, target_accu, log=print):
     if accu < target_accu:
         # Do not save
@@ -186,7 +194,7 @@ elif train_noise == 2:
     config['trainMutationRate'] =  0.1
 
 # Either 
-# 1. add online augmentation to the test set by using the three 'if' stmts below, OR
+# 1. add online augmentation to the test set by using the three 'if/elif' stmts below, OR
 # 2. use a CSV with noise already added by uncommenting the four lines below
 config['test_path'] = f'../datasets/test_same_as_zurich_t70_noise-{test_noise}_thresh-2.csv'
 config['testRandomInsertions'] = [0, 0]
@@ -476,10 +484,12 @@ backbone.load_state_dict(torch.load(model_path))
 # this is the number of times you want to repeat either the
 # grid search below, or the random search below.
 #######################
-num_trials = 5
+num_trials = 3
 #######################
 val_accs = []
 test_accs = []
+val_f1s = []
+test_f1s = []
 for trial in range(num_trials):
 
     print(f"\n\nTrial {trial+1}\n")
@@ -1153,6 +1163,9 @@ for trial in range(num_trials):
         # save the model results
         val_accs.append(val_accuracy)
         test_accs.append(test_accuracy)
+        val_f1s.append(val_f1)
+        test_f1s.append(test_f1)
+
         new_model_path = os.path.join('saved_ppn_models', (str(args.arr_job_id) + '_' + str(args.comb_num) + '_-1.pth'))
         torch.save(obj=ppnet_multi, f=new_model_path)
         
@@ -1170,7 +1183,11 @@ for trial in range(num_trials):
 # end of number of trials
 print(f"Test accuracies: {val_accs}")
 print(f"Test accuracies: {test_accs}")
+print(f"Test f1 scores: {val_f1s}")
+print(f"Test f1 scores: {test_f1s}")
 print(f"Over {num_trials} trials for all {combos} models evaluated in the grid search, got average validation accuracy: {np.mean(val_accs)}, standard deviation: {np.std(val_accs)}") 
 print(f"Over {num_trials} trials for all {combos} models evaluated in the grid search, got average testing accuracy: {np.mean(test_accs)}, standard deviation: {np.std(test_accs)}") 
+print(f"Over {num_trials} trials for all {combos} models evaluated in the grid search, got average validation f1-score: {np.mean(val_f1s)}, standard deviation: {np.std(val_f1s)}") 
+print(f"Over {num_trials} trials for all {combos} models evaluated in the grid search, got average testing f1-score: {np.mean(test_f1s)}, standard deviation: {np.std(test_f1s)}") 
 
 print(f"Finished search.")
