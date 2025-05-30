@@ -1,4 +1,4 @@
-# (c) 2023 Sam Waggoner
+# (c) 2023 <name redacted for submission purposes>
 # License: AGPLv3
 
 """Defines the dataset class for feeding augmented data to a network.
@@ -8,9 +8,9 @@ initializes any necessary variables, __getitem__() that is able to get a single
 item from the dataset, and __len__() which gives the length of the dataset. In
 __getitem__(), it augments the data before returning it. This is called online
 augmentation, since it is performed when any data item is fetched, instead of
-performing it all beforehand. This file was originally written by Jon Donnely
-(jon.donnely@duke.edu), but it has been heavily modified such that only the
-skeleton of the original code remains. This version improves upon Jon's version
+performing it all beforehand. This file was originally written by <name redacted for submission purposes>
+(<name redacted for submission purposes>), but it has been heavily modified such that only the
+skeleton of the original code remains. This version improves upon <name redacted for submission purposes>'s version
 which assumed species to be the first column in the csv, sequence the second,
 and that the species were grouped together. This version uses the column names
 and doesn't assume species are grouped by rows.
@@ -63,7 +63,8 @@ class Sequence_Data(Dataset):
         
         # Copies X and y s.t. original dataframes/series are not modified.
         self.sequences = X.to_numpy()
-        self.labels = torch.tensor(y.values).long()
+        # self.labels = torch.tensor(y.values).long()
+        self.labels = torch.tensor(y.values, dtype=torch.long)
         self.insertions = insertions
         self.deletions = deletions
         self.mutation_rate = mutation_rate

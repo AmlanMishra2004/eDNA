@@ -1,6 +1,6 @@
 # Summary
 Identifies DNA sequences's species using a CNN.
-Based off Jon Donnely's code, as well as functions from ETH Zurich's research paper "Applying convolutional neural networks to speed up environmental DNA annotation in a highly diverse ecosystem". Some code for the baselines was taken from Rose Gurung.
+Based off <name redacted for submission purposes> code, as well as functions from ETH Zurich's research paper "Applying convolutional neural networks to speed up environmental DNA annotation in a highly diverse ecosystem". Some code for the baselines was taken from <name redacted for submission purposes>.
 
 ## What's What
 ### ./datasets (to download)
@@ -35,7 +35,7 @@ Based off Jon Donnely's code, as well as functions from ETH Zurich's research pa
 - Holds functions that are used by dataset.py and evaluate_model.py. These functions are defined here instead of in those files because it makes those files (which contain the essence of the logic) easier to read. Then, if someone wants to view implementational details, they may look at this file.
 
 # Instructions
-$ git clone https://github.com/SamWaggoner/eDNA.git  
+$ git clone https://github.com/<name redacted for submission purposes> 
 Modify the settings in evaluate_model.py, deciding whether you want to run one of the models in models.py, or if you want to run autokeras or the baselines.  
 Modify the config dict in evaluate_model.py if you would like to run with different sequence lengths, noise rates, train/test split, and more.  
 $ python3 evaluate_model.py

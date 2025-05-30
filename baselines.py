@@ -1,3 +1,7 @@
+# This file runs all of the baselines. It saves the baseline models as it goes,
+# and loads them in to evaluate them (so it doesn't retrain them).
+# Note that functionality may be commented out or modified.
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import MultinomialNB
@@ -31,7 +35,7 @@ np.set_printoptions(threshold=sys.maxsize)
 
 
 # Optionally, truncate to 70 bases
-# Sam: just do this manually and make two new csvs
+# TODO: another option is to just do this manually and make two new csvs
 # X_train, y_train = utils.encode_all_data(
 #     train.copy(),
 #     config['seq_target_length'],
@@ -241,7 +245,7 @@ def train_decision_tree(kmer, y_train, y_test, train_ending, test_ending, ending
     
     # if not os.path.exists(path):
     print("Training Decision Tree model.", flush=True)
-    dt_model = DecisionTreeClassifier(random_state=1327)
+    dt_model = DecisionTreeClassifier(random_state=None)
     X_train = np.load(f'./datasets/ft_{kmer}_{train_ending}.npy')
     dt_model.fit(X_train, y_train)
     dump(dt_model, path)
@@ -258,40 +262,37 @@ def train_decision_tree(kmer, y_train, y_test, train_ending, test_ending, ending
 
 def train_logistic_regression(kmer, y_train, y_test, train_ending, test_ending, ending):
     # Multiclass Logistic Regression models follow the format: lr<k-mer length>
-    print("Searching for pretrained Logistic Regression models...")
-    path = f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/lr{kmer}_{train_ending}.joblib'
+    # print("Searching for pretrained Logistic Regression models...")
+    # path = f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/lr{kmer}_{train_ending}.joblib'
     
     # if not os.path.exists(path):
     # if True:
-    print("Training Logistic Regression model.", flush=True)
+    # print("Training Logistic Regression model.", flush=True)
 
     # # Training in batches
     # batch_size = 300
-    # lr_model = LogisticRegression(max_iter=400, random_state=1327, solver='lbfgs', multi_class='auto')
+    # lr_model = LogisticRegression(max_iter=400, random_state=None, solver='lbfgs', multi_class='auto')
     # X_train = np.load(f'./datasets/ft_{kmer}_{ending}.npy')
     # classes = np.unique(y_train)
     # for X_batch, y_batch in batch_generator(X_train, y_train, batch_size):
     #     lr_model.partial_fit(X_batch, y_batch, classes=classes)
     # dump(lr_model, path)
 
-    lr_model = LogisticRegression(max_iter=1000, random_state=1327, solver='lbfgs', multi_class='auto')
-    print(f"My string: training on: {f'./datasets/ft_{kmer}_{ending}.npy'}")
+    lr_model = LogisticRegression(max_iter=1000, random_state=None, solver='lbfgs', multi_class='auto')
     X_train = np.load(f'./datasets/ft_{kmer}_{train_ending}.npy')
     lr_model.fit(X_train, y_train)
-    dump(lr_model, path)
+    # dump(lr_model, path)
 
-
-    lr_model = load(path)
+    # lr_model = load(path)
 
     X_train = np.load(f'./datasets/ft_{kmer}_{train_ending}.npy')
     y_train_pred = lr_model.predict(X_train)
     del X_train
-
     X_test = np.load(f"./datasets/ft_{kmer}_{test_ending}.npy")
     y_test_pred = lr_model.predict(X_test)
     del X_test
 
-    return evaluate(f'lr{kmer}_{ending}', y_test, y_test_pred, y_train, y_train_pred)
+    return evaluate(f'lr-lbfgs{kmer}_{ending}', y_test, y_test_pred, y_train, y_train_pred)
 
 def train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending):
     # XGBoost models follow the format: xgb<k-mer length>
@@ -300,12 +301,12 @@ def train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending):
     
     # if not os.path.exists(path):
     print("Training XGBoost model.", flush=True)
-    xgb_model = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss')
+    xgb_model = XGBClassifier(use_label_encoder=False, eval_metric='mlogloss', random_state=None, seed=None)
     X_train = np.load(f'./datasets/ft_{kmer}_{train_ending}.npy')
     xgb_model.fit(X_train, y_train)
-    dump(xgb_model, path)
+    # dump(xgb_model, path)
 
-    xgb_model = load(path)
+    # xgb_model = load(path)
     X_train = np.load(f'./datasets/ft_{kmer}_{train_ending}.npy')
     y_train_pred = xgb_model.predict(X_train)
     del X_train
@@ -371,7 +372,7 @@ def train_rf(kmer, y_train, y_test, train_ending, test_ending, ending, num_trees
     print("Training Random Forest models.", flush=True)
     X_train = np.load(f'./datasets/ft_{kmer}_{train_ending}.npy')
     for n in num_trees:
-        rf_model = RandomForestClassifier(n_estimators=n, random_state=1327)
+        rf_model = RandomForestClassifier(n_estimators=n, random_state=None)
         rf_model.fit(X_train, y_train)
         dump(rf_model, f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/rf{kmer}_{n}_{train_ending}.joblib')
     
@@ -409,7 +410,7 @@ def train_adaboost(kmer, y_train, y_test, train_ending, test_ending, ending, n_e
             adaboost_model = AdaBoostClassifier(
                 estimator=DecisionTreeClassifier(max_depth=depth),
                 n_estimators=n, 
-                random_state=1327
+                random_state=None
             )
             adaboost_model.fit(X_train, y_train)
             dump(adaboost_model, f'./pretrained_baselines/trainnoise-{train_noise}_testnoise-{test_noise}/adbt{kmer}_{n}_{depth}_{train_ending}.joblib')
@@ -484,9 +485,9 @@ def evaluate(name, y_test, y_test_pred, y_train, y_train_pred):
         'train_balanced_accuracy': train_bal_acc,
         'train_macro_ovr_roc_auc_score': train_roc_auc,
 
+        'test_micro_accuracy': test_accuracy,
         'test_macro_f1-score': test_macro_f1,
         'test_macro_recall': test_macro_recall,
-        'test_micro_accuracy': test_accuracy,
         'test_macro_precision': test_macro_precision,
         'test_weighted_precision': test_weighted_precision, 
         'test_weighted_recall': test_weighted_recall,
@@ -529,14 +530,20 @@ if oversampled:
 else:
     oversampled = ""
 
+def log(string):
+    if verbose:
+        print(string)
+
+verbose = False
+
 train_noise = None
 test_noise = None
 
-values = [0, 1, 2]
+values = [1] #[0, 1, 2] # noises
 
 for train_val in values:
     for test_val in values:
-        for trial in range(5):
+        for trial in range(3):
             print(f"\n\n\n\ntrain noise: {train_val}, test noise: {test_val}, trial: {trial}\n\n\n\n")
             train_noise = train_val
             test_noise = test_val
@@ -577,20 +584,20 @@ for train_val in values:
             y_train = le.fit_transform(y_train)
             y_test = le.transform(y_test)
 
-            print(f"X_train shape: {X_train.shape}")
+            log(f"X_train shape: {X_train.shape}")
             # print(f"X_train_vectorized shape: {X_train_vectorized.shape}")
-            print(f"X_test shape: {X_test.shape}")
-            print(f"y_train shape: {y_train.shape}")
-            print(f"y_test shape: {y_test.shape}")
-            print(f"First two entries in X_train:\n{X_train[:2]}")
-            print(f"First two entries in X_test:\n{X_test[:2]}")
-            print(f"First two entries in y_train:\n{y_train[:2]}")
-            print(f"First two entries in y_test:\n{y_test[:2]}")
+            log(f"X_test shape: {X_test.shape}")
+            log(f"y_train shape: {y_train.shape}")
+            log(f"y_test shape: {y_test.shape}")
+            log(f"First two entries in X_train:\n{X_train[:2]}")
+            log(f"First two entries in X_test:\n{X_test[:2]}")
+            log(f"First two entries in y_train:\n{y_train[:2]}")
+            log(f"First two entries in y_test:\n{y_test[:2]}")
 
             # Instead of the previous approach, saves the numpy arrays and doesn't
             # use them as local variables. Each ML method loads a specific dataset.
             for k in [3,5,8,10]: #[3,5,8,10]:
-                print(f"Trying to create feature table for k={k}")
+                log(f"Trying to create feature table for k={k}")
                 create_feature_tables(X_train, X_test, train_ending, test_ending, include_iupac_as_features, kmer_lengths=[k])
 
             warnings.filterwarnings('ignore', category=FutureWarning)
@@ -621,51 +628,96 @@ for train_val in values:
                     'test_macro_ovr_roc_auc_score'
                 ])
 
-            for kmer in [3,5,8,10]: #[3,5,8,10]: # 3, 5, 8, 10
+            for kmer in [3]: #[3,5,8,10]: # 3, 5, 8, 10
                 print(f"KMER={kmer}", flush=True)
 
-                res = train_naive_bayes(kmer, y_train, y_test, train_ending, test_ending, ending)
-                results_df = results_df.append(pd.Series(res), ignore_index=True)
-                print(f"Trained naive bayes", flush=True)
-                results_df.to_csv(res_path, index=False)
+                # res = train_naive_bayes(kmer, y_train, y_test, train_ending, test_ending, ending)
+                # results_df = results_df.append(pd.Series(res), ignore_index=True)
+                # print(f"Trained naive bayes", flush=True)
+                # results_df.to_csv(res_path, index=False)
 
-                res = train_svm(kmer, y_train, y_test, train_ending, test_ending, ending)
-                results_df = results_df.append(pd.Series(res), ignore_index=True)
-                print(f"Trained svm", flush=True)
-                results_df.to_csv(res_path, index=False)
+                # res = train_svm(kmer, y_train, y_test, train_ending, test_ending, ending)
+                # results_df = results_df.append(pd.Series(res), ignore_index=True)
+                # print(f"Trained svm", flush=True)
+                # results_df.to_csv(res_path, index=False)
 
-                res = train_decision_tree(kmer, y_train, y_test, train_ending, test_ending, ending)
-                results_df = results_df.append(pd.Series(res), ignore_index=True)
-                print(f"Trained dt", flush=True)
-                results_df.to_csv(res_path, index=False)
+                # res = train_decision_tree(kmer, y_train, y_test, train_ending, test_ending, ending)
+                # results_df = results_df.append(pd.Series(res), ignore_index=True)
+                # print(f"Trained dt", flush=True)
+                # results_df.to_csv(res_path, index=False)
 
-                if kmer < 10:
-                    res = train_logistic_regression(kmer, y_train, y_test, train_ending, test_ending, ending)
-                    results_df = results_df.append(pd.Series(res), ignore_index=True)
-                    print(f"Trained lr", flush=True)
-                    results_df.to_csv(res_path, index=False)
+                # if kmer < 10:
+                #     res = train_logistic_regression(kmer, y_train, y_test, train_ending, test_ending, ending)
+                #     results_df = results_df.append(pd.Series(res), ignore_index=True)
+                #     print(f"Trained lr", flush=True)
+                #     results_df.to_csv(res_path, index=False)
 
                 res = train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending)
                 results_df = results_df.append(pd.Series(res), ignore_index=True)
                 print(f"Trained xgb", flush=True)
                 results_df.to_csv(res_path, index=False)
 
-                res = train_knn(kmer, y_train, y_test, train_ending, test_ending, ending, neighbors=[7])
-                # res = train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
-                results_df = pd.concat([results_df, res], ignore_index=True)
-                print(f"Trained knn", flush=True)
-                results_df.to_csv(res_path, index=False)
+                # res = train_knn(kmer, y_train, y_test, train_ending, test_ending, ending, neighbors=[7])
+                # # res = train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
+                # results_df = pd.concat([results_df, res], ignore_index=True)
+                # print(f"Trained knn", flush=True)
+                # results_df.to_csv(res_path, index=False)
 
-                res = train_rf(kmer, y_train, y_test, train_ending, test_ending, ending, num_trees=[15,30,45])
-                results_df = pd.concat([results_df, res], ignore_index=True)
-                print(f"Trained rf", flush=True)
-                results_df.to_csv(res_path, index=False)
+                # res = train_rf(kmer, y_train, y_test, train_ending, test_ending, ending, num_trees=[15,30,45])
+                # results_df = pd.concat([results_df, res], ignore_index=True)
+                # print(f"Trained rf", flush=True)
+                # results_df.to_csv(res_path, index=False)
 
-                res = train_adaboost(kmer, y_train, y_test, train_ending, test_ending, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
-                results_df = pd.concat([results_df, res], ignore_index=True)
-                print(f"Trained adbt", flush=True)
-                results_df.to_csv(res_path, index=False)
+                # res = train_adaboost(kmer, y_train, y_test, train_ending, test_ending, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
+                # results_df = pd.concat([results_df, res], ignore_index=True)
+                # print(f"Trained adbt", flush=True)
+                # results_df.to_csv(res_path, index=False)
+        
+        # for trial in range(5):
+        #     for kmer in [10]: #[3,5,8,10]: # 3, 5, 8, 10
+        #         print(f"KMER={kmer}", flush=True)
 
+        #         res = train_naive_bayes(kmer, y_train, y_test, train_ending, test_ending, ending)
+        #         results_df = results_df.append(pd.Series(res), ignore_index=True)
+        #         print(f"Trained naive bayes", flush=True)
+        #         results_df.to_csv(res_path, index=False)
+
+        #         res = train_svm(kmer, y_train, y_test, train_ending, test_ending, ending)
+        #         results_df = results_df.append(pd.Series(res), ignore_index=True)
+        #         print(f"Trained svm", flush=True)
+        #         results_df.to_csv(res_path, index=False)
+
+        #         res = train_decision_tree(kmer, y_train, y_test, train_ending, test_ending, ending)
+        #         results_df = results_df.append(pd.Series(res), ignore_index=True)
+        #         print(f"Trained dt", flush=True)
+        #         results_df.to_csv(res_path, index=False)
+
+        #         if kmer < 10:
+        #             res = train_logistic_regression(kmer, y_train, y_test, train_ending, test_ending, ending)
+        #             results_df = results_df.append(pd.Series(res), ignore_index=True)
+        #             print(f"Trained lr", flush=True)
+        #             results_df.to_csv(res_path, index=False)
+
+        #             res = train_xgboost(kmer, y_train, y_test, train_ending, test_ending, ending)
+        #             results_df = results_df.append(pd.Series(res), ignore_index=True)
+        #             print(f"Trained xgb", flush=True)
+        #             results_df.to_csv(res_path, index=False)
+
+        #         res = train_knn(kmer, y_train, y_test, train_ending, test_ending, ending, neighbors=[7])
+        #         # res = train_knn(kmer, y_train, y_test, ending, neighbors=[1,3,5,7,9])
+        #         results_df = pd.concat([results_df, res], ignore_index=True)
+        #         print(f"Trained knn", flush=True)
+        #         results_df.to_csv(res_path, index=False)
+
+        #         res = train_rf(kmer, y_train, y_test, train_ending, test_ending, ending, num_trees=[15,30,45])
+        #         results_df = pd.concat([results_df, res], ignore_index=True)
+        #         print(f"Trained rf", flush=True)
+        #         results_df.to_csv(res_path, index=False)
+
+        #         res = train_adaboost(kmer, y_train, y_test, train_ending, test_ending, ending, n_estimators=[15,30,45], max_depths=[5,10,15])
+        #         results_df = pd.concat([results_df, res], ignore_index=True)
+        #         print(f"Trained adbt", flush=True)
+        #         results_df.to_csv(res_path, index=False)
 
             warnings.filterwarnings('default', category=FutureWarning)
-            print(f"Trained and evaluated all of the models for current level of noise! Saved to file {res_path}")
+            print(f"Trained and evaluated all trials for trainnoise {train_val} testnoise {test_val}! Saved to file {res_path}")

@@ -1,4 +1,4 @@
-Unnamed: 0,seq,species,genus,family,order,order_cat,family_cat,genus_cat,species_cat
+idx,seq,species,genus,family,order,order_cat,family_cat,genus_cat,species_cat
 396,cccccactatagttaaacgtctattatttttatacacctaatattccccggggggagacaagtcgtaa,Crenicichla saxatilis,Crenicichla,Cichlidae,Perciformes,12,16,48,44
 389,cccccccaaataaacatctattacttttatacacctaaattcccatgggggagacaagtcgtaa,Crenicichla saxatilis,Crenicichla,Cichlidae,Perciformes,12,16,48,44
 391,ccccccactaaataaacatctattacttttatacacctaaattcccatgggggagacaagtcgtaa,Crenicichla saxatilis,Crenicichla,Cichlidae,Perciformes,12,16,48,44

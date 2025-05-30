@@ -11,7 +11,7 @@ def _train_or_test(model, dataloader, optimizer=None, class_specific=True, use_l
                    coefs=None, scheduler=None, log=print):
     '''
     model: the multi-gpu model
-    dataloader: sam: an iter() of a dataloader
+    dataloader: an iter() of a dataloader
     optimizer: if None, will be test evaluation
     '''
     # print(f"_train_or_test for dataloader of length {len(dataloader)}")

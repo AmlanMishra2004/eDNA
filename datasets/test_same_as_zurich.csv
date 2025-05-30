@@ -1,4 +1,4 @@
-,seq,species,genus,family,order,order_cat,family_cat,genus_cat,species_cat
+idx,seq,species,genus,family,order,order_cat,family_cat,genus_cat,species_cat
 390,cccccccccccccaaataaacatctattacttttatacacctaaattcccatgggggagacaagtcgtaa,Crenicichla saxatilis,Crenicichla,Cichlidae,Perciformes,12,16,48,44
 394,cccccactatagttaaacgtctatatttttatacacctaatattccccggggggagacaagtcgtaa,Crenicichla saxatilis,Crenicichla,Cichlidae,Perciformes,12,16,48,44
 384,ccccccccactataataaacatctataattttatacacctaaattcccatgggggagacaagtcgtaa,Crenicichla albopunctata,Crenicichla,Cichlidae,Perciformes,12,16,48,41

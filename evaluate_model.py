@@ -639,11 +639,11 @@ def evaluate(model, train, test, k_folds, k_iters, epochs, oversample,
     #            "not performing a grid search. Skipping saving the model.")
     
     # TEMPORARILY, don't save results in the csv, just the model
-    now = datetime.now()
-    timestamp = now.strftime("%Y%m%d_%H%M%S")
-    torch.save(model.state_dict(),f'best_model_{timestamp}.pt')
+    # now = datetime.now()
+    # timestamp = now.strftime("%Y%m%d_%H%M%S")
+    # torch.save(model.state_dict(),f'best_model_{timestamp}.pt')
 
-    return test_acc, epoch+1
+    return test_acc, epoch+1, avg_val_acc
 
     # add the variable number of layers to the results
     for layer in range(1, len(input_channels)+1):
@@ -788,7 +788,7 @@ if __name__ == '__main__':
         config['trainRandomDeletions'] =  [0, 4]
         config['trainMutationRate'] =  0.1
 
-    # COMMENT OUT IF YOU SPECIFIED A SPECIFIC TEST SET ABOVE (for a specific train/test split)
+    # UNCOMMENT if you want to use offline augmentation (and set augment_test_data to False)
     config['test_path'] = f'./datasets/test_same_as_zurich_t70_noise-{test_noise}_thresh-2.csv'
 
     print(f"\nTraining on train_noise {train_noise} and test_noise {test_noise}\n")
@@ -841,7 +841,6 @@ if __name__ == '__main__':
         # as in Zurich's paper, uncomment the lines below and compare files.
         # train.to_csv("/Users/<name redacted for submission purposes>/OneDrive/Desktop/<last name redacted for submission purposes>_train.csv")
         # test.to_csv("/Users/<name redacted for submission purposes>/OneDrive/Desktop/<last name redacted for submission purposes>_test.csv")
-        # pause = input("PAUSE")
 
     elif config['load_existing_train_test']:
         cols = ['species']
@@ -849,7 +848,6 @@ if __name__ == '__main__':
         utils.print_descriptive_stats(train, cols)
         test = pd.read_csv(config['test_path'], sep=',')
         utils.print_descriptive_stats(test, cols)
-        # wait = input("PAUSE")
 
     print(f"\nTraining on train_noise {train_noise} and test_noise {test_noise}")
     print(f"Training on {config['train_path']}")
@@ -1169,7 +1167,7 @@ if __name__ == '__main__':
         # small_best = models.Small_Best()
         # model_path = "best_model_20240111_060457.pt"
 
-        small_best_updated = models.Small_Best_Updated()
+        small_best_updated = models.Small_Best_Updated_5layer() # _4layer
         # zurich = models.Zurich()
         
         # UNCOMMENT THIS IF YOU WANT TO LOAD THE WEIGHTS FOR A MODEL AND HARDCODE IT
@@ -1238,7 +1236,7 @@ if __name__ == '__main__':
         
         # num_trials sets the number of times each model with each set of
         # hyperparameters is run. Results are stored in a 2d list and averaged.
-        num_trials = 3
+        num_trials = 5
         learning_rates = [0.002] # 0.002 for 12-31 and small best, 0.005 for large best, 0.0005 for Zurich
         # learning_rates = [0.001]
         # learning_rates = [0.0005, 0.001]
@@ -1287,6 +1285,7 @@ if __name__ == '__main__':
         start_time = time.time()
 
         for model in models:
+            model_val_accs = []
             model_test_accs = []
             for trial in range(num_trials):
                 for lr in learning_rates:
@@ -1303,7 +1302,7 @@ if __name__ == '__main__':
                                 # np.save(data_path, data.numpy())
                                 # np.save(labels_path, labels.numpy())
 
-                                test_acc, _ = evaluate(
+                                test_acc, _, val_acc = evaluate(
                                     model,
                                     train = train,
                                     test = test,
@@ -1330,7 +1329,9 @@ if __name__ == '__main__':
                                 )
                                 
                                 print(f"Total search runtime: {round((time.time() - start_time)/60,1)} minutes")
+                                model_val_accs.append(val_acc)
                                 model_test_accs.append(test_acc)
+            print(f"Over {num_trials} for current model, got average validation accuracy: {np.mean(model_val_accs)}, standard deviation: {np.std(model_val_accs)}") 
             print(f"Over {num_trials} for current model, got average testing accuracy: {np.mean(model_test_accs)}, standard deviation: {np.std(model_test_accs)}") 
     if run_autokeras:
 

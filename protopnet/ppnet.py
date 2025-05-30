@@ -40,7 +40,7 @@ class PPNet(nn.Module):
 
         assert(self.num_prototypes % self.num_classes == 0)
         # a one-hot indication matrix for each prototype's class identity, 
-        # sam: ex. [512, 156], tells you how well each prototype matches to each class?
+        # ex. [512, 156], tells you how well each prototype matches to each class?
         self.prototype_class_identity = torch.zeros(
             self.num_prototypes,
             self.num_classes

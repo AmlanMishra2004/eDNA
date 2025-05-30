@@ -293,6 +293,63 @@ def plot_species_distribution(df, species_col):
     plt.ylabel('Count')
     plt.show()
 
+def array_to_sequence(sequence_arr):
+    """Converts an string of DNA bases to a 4 channel numpy array.
+
+    This function converts a 4 channel numpy array to a string of DNA bases,
+    with A -> channel 0, T -> channel 1, C -> channel 2, and G -> channel 3.
+    For probability mode, it uses fractional values for ambiguity codes.
+    For example, N would be encoded as [.25, .25, .25, .25] since N means that
+    the base could be either A, T, C, or G. A full list of these codes can be
+    found at the https://droog.gs.washington.edu/mdecode/images/iupac.html 
+    or https://www.dnabaser.com/articles/IUPAC%20ambiguity%20codes.html.
+    If a character is not a member of the IUPAC ambiguity codes, then it will
+    be encoded as [0, 0, 0, 0]. (This is how padding bases are encoded.)
+
+    Args:
+       sequence_arr (numpy.ndarray): A 4 x str_len array where the associated bases are the
+            nth entries of every vector. For example,
+            array_to_sequencec([[1 0 0 0], [0 1 0 0], [0 0 0 1], [0 0 1 0]]) would return
+            'ATCG'
+
+    Returns:
+        sequence (str): A string of bases, e.g. 'AGTCCCTC'
+    """
+    mapping_char_to_arr = {
+        'a':[1, 0, 0, 0],
+        't':[0, 1, 0, 0],
+        'u':[0, 1, 0, 0], # u = t
+        'c':[0, 0, 1, 0],
+        'g':[0, 0, 0, 1],
+        # two options
+        'y':[0, 0.5, 0.5 ,0],
+        'r':[0.5, 0, 0, 0.5],
+        'w':[0.5, 0.5, 0, 0],
+        's':[0, 0, 0.5, 0.5],
+        'k':[0, 0.5, 0, 0.5],
+        'm':[0.5, 0, 0.5, 0],
+        # three options
+        'd':[1/3, 1/3, 0, 1/3],
+        'v':[1/3, 0, 1/3, 1/3],
+        'h':[1/3, 1/3, 1/3, 0],
+        'b':[0, 1/3, 1/3, 1/3],
+        # four options
+        'x':[0.25, 0.25, 0.25, 0.25],
+        'n':[0.25, 0.25, 0.25, 0.25]
+    }
+    # reverse the keys and values of the dict
+    mapping = {tuple(v): k for k, v in mapping_char_to_arr.items()}
+    mapping = defaultdict(lambda: 'N', mapping)
+    result = ''
+    for i in range(len(sequence_arr[0])):
+        vector = [sequence_arr[0][i],
+                  sequence_arr[1][i],
+                  sequence_arr[2][i],
+                  sequence_arr[3][i]]
+        result += mapping[tuple(vector)]
+    result = result.upper()
+    return result
+
 def sequence_to_array(sequence, mode):
     """Converts an string of DNA bases to a 4 channel numpy array.
 

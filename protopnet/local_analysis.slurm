@@ -2,7 +2,7 @@
 
 #SBATCH --job-name=local_analysis  # Job name
 # not SBATCH --mail-type=ALL          # Mail events (NONE, BEGIN, END, FAIL, ALL)
-# not SBATCH --mail-user=rose.gurung@maine.edu     # Where to send mail
+# not SBATCH --mail-user=<name redacted for submission purposes>     # Where to send mail
 #SBATCH --output=data_prep_%j.out
 #SBATCH --ntasks=1                    # Run on a single Node
 #SBATCH --cpus-per-task=24

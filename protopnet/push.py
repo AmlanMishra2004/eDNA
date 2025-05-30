@@ -175,7 +175,7 @@ def update_prototypes_on_batch(search_batch_input,
         # proto_act_torch is the activation maps for each prototype, which is the cosine similarity between 
         protoL_input_torch, proto_act_torch = prototype_network_parallel.push_forward(search_batch)
 
-        # Jon says delete
+        # <name redacted for submission purposes> says delete
         # x_norm = torch.norm(protoL_input_torch, p=2, dim=(1))
         # x_reshape = x_norm.view(protoL_input_torch.shape[0], 1, protoL_input_torch.shape[-1])
         # protoL_input_torch = (protoL_input_torch / x_reshape) / (prototype_network_parallel.prototype_shape[-1])**0.5
@@ -358,7 +358,7 @@ def save_self_activations(dir_for_saving_prototypes,
             #     zeros = np.zeros((original_seq_j.shape[0], -(img_space_start)))
             #     high_act_region = np.concatenate((zeros, high_act_region), axis=-1)
 
-            # # What Jon suggested we change it to (what produced these prototypes)
+            # # What <name redacted for submission purposes> suggested we change it to (what produced these prototypes)
             img_space_start = center_loc * upsampling_factor
             img_space_end = (center_loc + proto_h) * upsampling_factor # was + upsampling_factor
             if img_space_start < 0 or img_space_end > original_seq_j.shape[-1]:

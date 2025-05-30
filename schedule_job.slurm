@@ -28,7 +28,7 @@ pwd; hostname; date;
 echo "==========================================="
 
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 evaluate_model.py
-singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --train_noise 1 --test_noise 1
+singularity run --nv ~/containers/pytorch-waggoner2.simg python3 main.py --train_noise 1 --test_noise 0
 # singularity run --nv ~/containers/pytorch-waggoner2.simg python3 baselines_noload.py
 # singularity run --nv ~/containers/pytorch-waggoner.simg python3 zurich_replica/code/exploration_full_clean.py
 

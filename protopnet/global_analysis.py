@@ -165,6 +165,7 @@ ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
 # ppnet = ppnet.cuda()
 # ppnet = torch.load(load_model_path, map_location=torch.device('cpu'))
 # ppnet.to(torch.device('cuda'))
+# ppnet.to('cuda')
 
 prototype_shape = ppnet.prototype_shape
 class_specific = True
