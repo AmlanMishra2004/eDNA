@@ -14,6 +14,10 @@
 /old_best_saved_models
 /protopnet/global_results
 /venv_py3120
+pretrained_baselines/trainnoise-1_testnoise-1/svm8_train_oversampled_t70_noise-1_thresh-2.joblib
+pretrained_baselines/trainnoise-1_testnoise-1/nb10_train_oversampled_t70_noise-1_thresh-2.joblib
+pretrained_baselines/trainnoise-1_testnoise-1/svm10_train_oversampled_t70_noise-1_thresh-2.joblib
+pretrained_baselines/trainnoise-1_testnoise-1/nb8_train_oversampled_t70_noise-1_thresh-2.joblib
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
