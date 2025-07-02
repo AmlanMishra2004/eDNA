@@ -2,7 +2,7 @@
 Identifies DNA sequences's species using a CNN.
 Based off Jon Donnely and Rose Gurung's code, as well as functions from ETH Zurich's research paper "Applying convolutional neural networks to speed up environmental DNA annotation in a highly diverse ecosystem".
 
-## Important files/folders
+# Important files/folders
 
 ### saved_ppn_models/best_ppn_weights_only_1892566_8_-1.pth
 - Our saved model weights for the protopnet at latent weight 0.7
